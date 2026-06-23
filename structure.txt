@@ -1,0 +1,242 @@
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:33                backend
+d-----        22-06-2026     12:41                frontend
+-a----        22-06-2026     13:00         494814 structure.txt
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\backend
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:30                config
+d-----        22-06-2026     12:30                middleware
+d-----        22-06-2026     12:34                modules
+d-----        22-06-2026     12:30                shared
+-a----        22-06-2026     12:33          73355 package-lock.json
+-a----        22-06-2026     12:33            577 package.json
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\backend\modules
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:30                admin
+d-----        22-06-2026     12:30                ai
+d-----        22-06-2026     12:30                auth
+d-----        22-06-2026     12:30                chat
+d-----        22-06-2026     12:30                food-ai
+d-----        22-06-2026     12:34                manager
+d-----        22-06-2026     12:30                nutrition
+d-----        22-06-2026     12:30                plans
+d-----        22-06-2026     12:30                subscriptions
+d-----        22-06-2026     12:30                trainers
+d-----        22-06-2026     12:30                users
+d-----        22-06-2026     12:30                video
+d-----        22-06-2026     12:30                workout
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\backend\shared
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:30                cache
+d-----        22-06-2026     12:30                constants
+d-----        22-06-2026     12:30                utils
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:39                public
+d-----        22-06-2026     12:46                src
+-a----        12-05-2026     09:21            253 .gitignore
+-a----        12-05-2026     09:21            568 eslint.config.js
+-a----        22-06-2026     12:39            360 index.html
+-a----        22-06-2026     12:41         115372 package-lock.json
+-a----        22-06-2026     12:41            727 package.json
+-a----        22-06-2026     12:41             80 postcss.config.js
+-a----        12-05-2026     09:21           1027 README.md
+-a----        22-06-2026     12:42            176 tailwind.config.js
+-a----        12-05-2026     09:21            161 vite.config.js
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\public
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        12-05-2026     09:21           9522 favicon.svg
+-a----        12-05-2026     09:21           5031 icons.svg
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:39                assets
+d-----        22-06-2026     12:46                modules
+d-----        22-06-2026     12:46                shared
+-a----        22-06-2026     12:52            415 App.jsx
+-a----        22-06-2026     12:43             58 index.css
+-a----        12-05-2026     09:21            229 main.jsx
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\assets
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        12-05-2026     09:21          13057 hero.png
+-a----        12-05-2026     09:21           4126 react.svg
+-a----        12-05-2026     09:21           8709 vite.svg
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                admin
+d-----        22-06-2026     12:48                ai
+d-----        22-06-2026     12:48                auth
+d-----        22-06-2026     12:48                chat
+d-----        22-06-2026     12:48                client
+d-----        22-06-2026     12:48                dashboard
+d-----        22-06-2026     12:48                manager
+d-----        22-06-2026     12:48                nutrition
+d-----        22-06-2026     12:48                trainer
+d-----        22-06-2026     12:48                video
+d-----        22-06-2026     12:48                workout
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\admin
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:48                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\ai
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:48                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\auth
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:52                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\auth\pages
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        22-06-2026     12:56          12960 LoginPage.jsx
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\chat
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:48                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\client
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:49                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\client\pages
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        22-06-2026     12:51           8999 LandingPage.jsx
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\dashboard
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:48                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\manager
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:48                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\nutrition
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:48                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\trainer
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:48                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\video
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:48                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\modules\workout
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:48                components
+d-----        22-06-2026     12:48                pages
+
+
+    Directory: C:\Users\hilal\OneDrive\Desktop\single project t\frontend\src\shared
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        22-06-2026     12:46                components
+d-----        22-06-2026     12:46                context
+d-----        22-06-2026     12:46                hooks
+d-----        22-06-2026     12:46                utils
