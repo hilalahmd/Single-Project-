@@ -1,38 +1,36 @@
-export default function Avatar({ src, name, size = 'md', onClick, className = '' }) {
+export default function Avatar({ src, name = '', size = 'md', className = '' }) {
   const sizes = {
-    sm: 'w-8 h-8 text-xs',
-    md: 'w-10 h-10 text-sm',
-    lg: 'w-12 h-12 text-base',
-    xl: 'w-16 h-16 text-xl'
+    xs:  'w-6 h-6 text-[8px]',
+    sm:  'w-8 h-8 text-xs',
+    md:  'w-10 h-10 text-sm',
+    lg:  'w-14 h-14 text-lg',
+    xl:  'w-20 h-20 text-2xl'
   }
 
-  const getInitials = (fullName) => {
-    if (!fullName) return '?'
-    const parts = fullName.trim().split(' ')
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
-  }
+  const initials = name
+    .split(' ')
+    .map(w => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
-  const baseStyles = `relative inline-flex items-center justify-center shrink-0 rounded-full overflow-hidden border border-[#E5E4E0] shadow-sm ${sizes[size]} ${className}`
-  const interactiveStyles = onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''
-
-  if (src) {
-    return (
-      <img 
-        src={src} 
-        alt={name} 
-        onClick={onClick}
-        className={`${baseStyles} object-cover ${interactiveStyles}`}
-      />
-    )
-  }
-
-  return (
-    <div 
-      onClick={onClick}
-      className={`${baseStyles} bg-[#F5F4F0] text-[#1A1A1A] font-bold tracking-tight ${interactiveStyles}`}
+  return src ? (
+    <img
+      src={src}
+      alt={name}
+      className={`${sizes[size]} rounded-full object-cover border border-white/10 ${className}`}
+    />
+  ) : (
+    <div
+      className={`
+        ${sizes[size]} rounded-full flex items-center justify-center
+        bg-[#2563EB]/20 border border-[#2563EB]/30
+        text-[#2563EB] font-[800] font-['Syne']
+        shadow-[0_0_15px_rgba(37,99,235,0.2)]
+        ${className}
+      `}
     >
-      {getInitials(name)}
+      {initials || '?'}
     </div>
   )
 }

@@ -4,87 +4,87 @@ export default function ClientDashboardPage() {
   const today = "Thursday, December 12"
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 text-[#1A1A1A]">
+    <div className="max-w-6xl mx-auto space-y-8">
       
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-[28px] font-bold tracking-tight">Good morning, Jordan</h1>
-        <p className="text-gray-500 font-medium text-sm mt-1">{today} — here's your overview</p>
+      <div>
+        <h1 className="text-[32px] font-bold text-white tracking-tight">Good morning, Jordan</h1>
+        <p className="text-gray-400 font-medium text-[14px] mt-1">{today} — here's your overview</p>
       </div>
 
       {/* Top Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <div className="bg-white border border-[#E5E4E0] rounded-2xl p-5 shadow-sm">
-          <p className="text-[13px] text-gray-500 font-medium mb-2">Weight</p>
-          <p className="text-3xl font-bold mb-1">72.4 kg</p>
-          <p className="text-[13px] text-gray-400 font-medium">-0.3 this week</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 shadow-sm hover:border-[#2563EB] transition-colors">
+          <p className="text-[12px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Weight</p>
+          <p className="text-[32px] font-bold text-white mb-1">72.4 kg</p>
+          <p className="text-[13px] font-medium text-[#22C55E]">-0.3 this week</p>
         </div>
-        <div className="bg-white border border-[#E5E4E0] rounded-2xl p-5 shadow-sm">
-          <p className="text-[13px] text-gray-500 font-medium mb-2">Body Fat</p>
-          <p className="text-3xl font-bold mb-1">18.2%</p>
-          <p className="text-[13px] text-gray-400 font-medium">-0.4 this week</p>
+        <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 shadow-sm hover:border-[#2563EB] transition-colors">
+          <p className="text-[12px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Body Fat</p>
+          <p className="text-[32px] font-bold text-white mb-1">18.2%</p>
+          <p className="text-[13px] font-medium text-[#22C55E]">-0.4 this week</p>
         </div>
-        <div className="bg-white border border-[#E5E4E0] rounded-2xl p-5 shadow-sm">
-          <p className="text-[13px] text-gray-500 font-medium mb-2">Workouts</p>
-          <p className="text-3xl font-bold mb-1">14</p>
-          <p className="text-[13px] text-gray-400 font-medium">this month</p>
+        <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 shadow-sm hover:border-[#2563EB] transition-colors">
+          <p className="text-[12px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Workouts</p>
+          <p className="text-[32px] font-bold text-white mb-1">14</p>
+          <p className="text-[13px] font-medium text-gray-500">this month</p>
         </div>
-        <div className="bg-white border border-[#E5E4E0] rounded-2xl p-5 shadow-sm">
-          <p className="text-[13px] text-gray-500 font-medium mb-2">Streak</p>
-          <p className="text-3xl font-bold mb-1">7 days</p>
-          <p className="text-[13px] text-gray-400 font-medium">personal best</p>
+        <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 shadow-sm hover:border-[#2563EB] transition-colors">
+          <p className="text-[12px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Streak</p>
+          <p className="text-[32px] font-bold text-[#2563EB] mb-1">7 days</p>
+          <p className="text-[13px] font-medium text-[#F59E0B]">personal best</p>
         </div>
       </div>
 
       {/* Second Row Grid */}
-      <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid lg:grid-cols-3 gap-6">
         
         {/* Today's Calories */}
-        <div className="bg-white border border-[#E5E4E0] rounded-2xl p-6 shadow-sm flex flex-col">
-          <h2 className="text-lg font-bold mb-8">Today's Calories</h2>
+        <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-8 shadow-sm flex flex-col hover:border-[#2563EB] transition-colors">
+          <h2 className="text-[20px] font-semibold text-white mb-8">Today's Calories</h2>
           
-          <div className="flex-1 flex flex-col items-center justify-center mb-8">
-            <div className="relative w-32 h-32 flex items-center justify-center">
+          <div className="flex-1 flex flex-col items-center justify-center mb-10">
+            <div className="relative w-40 h-40 flex items-center justify-center">
               {/* SVG Circle Chart Mock */}
               <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                <circle cx="64" cy="64" r="56" className="stroke-gray-100" strokeWidth="12" fill="none" />
-                <circle cx="64" cy="64" r="56" className="stroke-black" strokeWidth="12" strokeDasharray="351" strokeDashoffset="112" fill="none" strokeLinecap="round" />
+                <circle cx="80" cy="80" r="70" className="stroke-[#0F172A]" strokeWidth="16" fill="none" />
+                <circle cx="80" cy="80" r="70" className="stroke-[#2563EB]" strokeWidth="16" strokeDasharray="440" strokeDashoffset="140" fill="none" strokeLinecap="round" />
               </svg>
               <div className="text-center mt-1">
-                <p className="text-xl font-bold">1,360</p>
-                <p className="text-[10px] font-bold text-gray-400 uppercase">of 2,000 kcal</p>
+                <p className="text-[28px] font-bold text-white">1,360</p>
+                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">of 2,000 kcal</p>
               </div>
             </div>
           </div>
 
           {/* Macros */}
-          <div className="flex justify-between px-2 pt-4 border-t border-gray-100">
+          <div className="flex justify-between px-2 pt-6 border-t border-[#1E293B]">
             <div className="text-center">
-              <div className="w-12 h-1.5 bg-black rounded-full mb-2 mx-auto"></div>
-              <p className="text-sm font-bold">98g</p>
-              <p className="text-[11px] text-gray-400 font-medium">Protein</p>
+              <div className="w-12 h-1.5 bg-[#2563EB] rounded-full mb-3 mx-auto"></div>
+              <p className="text-[16px] font-bold text-white">98g</p>
+              <p className="text-[12px] text-gray-500 font-medium mt-1">Protein</p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-1.5 bg-black rounded-full mb-2 mx-auto"></div>
-              <p className="text-sm font-bold">156g</p>
-              <p className="text-[11px] text-gray-400 font-medium">Carbs</p>
+              <div className="w-12 h-1.5 bg-[#22C55E] rounded-full mb-3 mx-auto"></div>
+              <p className="text-[16px] font-bold text-white">156g</p>
+              <p className="text-[12px] text-gray-500 font-medium mt-1">Carbs</p>
             </div>
             <div className="text-center">
-              <div className="w-12 h-1.5 bg-black rounded-full mb-2 mx-auto"></div>
-              <p className="text-sm font-bold">42g</p>
-              <p className="text-[11px] text-gray-400 font-medium">Fat</p>
+              <div className="w-12 h-1.5 bg-[#F59E0B] rounded-full mb-3 mx-auto"></div>
+              <p className="text-[16px] font-bold text-white">42g</p>
+              <p className="text-[12px] text-gray-500 font-medium mt-1">Fat</p>
             </div>
           </div>
         </div>
 
         {/* Today's Workout */}
-        <div className="bg-white border border-[#E5E4E0] rounded-2xl p-6 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold">Today's Workout</h2>
-            <span className="px-3 py-1 bg-gray-100 text-gray-600 text-[11px] font-bold rounded-full">Upper Body</span>
+        <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-8 shadow-sm flex flex-col hover:border-[#2563EB] transition-colors">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-[20px] font-semibold text-white">Today's Workout</h2>
+            <span className="px-3 py-1 bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/20 text-[11px] font-bold rounded-lg uppercase tracking-wider">Upper Body</span>
           </div>
           
-          <div className="space-y-4 mb-8 flex-1">
+          <div className="space-y-5 mb-8 flex-1">
             {[
               { name: 'Bench Press', sets: '4x8', done: true },
               { name: 'Pull-ups', sets: '3x10', done: true },
@@ -93,48 +93,48 @@ export default function ClientDashboardPage() {
               { name: 'Face Pulls', sets: '3x20', done: false }
             ].map((ex, i) => (
               <div key={i} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
-                    ex.done ? 'bg-black border-black text-white' : 'border-[#E5E4E0] bg-[#F9FAFB]'
+                <div className="flex items-center gap-4">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center border transition-colors ${
+                    ex.done ? 'bg-[#22C55E] border-[#22C55E] text-[#111827]' : 'border-[#1E293B] bg-[#0F172A]'
                   }`}>
-                    {ex.done && <Check size={12} strokeWidth={3} />}
+                    {ex.done && <Check size={14} strokeWidth={4} />}
                   </div>
-                  <span className={`text-sm font-medium ${ex.done ? 'text-gray-400 line-through' : 'text-black'}`}>
+                  <span className={`text-[15px] font-semibold ${ex.done ? 'text-gray-500 line-through' : 'text-white'}`}>
                     {ex.name}
                   </span>
                 </div>
-                <span className="text-xs text-gray-500 font-medium">{ex.sets}</span>
+                <span className="text-[13px] text-gray-400 font-medium">{ex.sets}</span>
               </div>
             ))}
           </div>
 
-          <div className="pt-4 border-t border-gray-100">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] text-gray-500 font-bold uppercase tracking-wide">Progress</span>
-              <span className="text-[11px] text-gray-500 font-bold">2 / 5 done</span>
+          <div className="pt-6 border-t border-[#1E293B]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[12px] text-gray-400 font-bold uppercase tracking-wider">Progress</span>
+              <span className="text-[12px] text-gray-300 font-bold">2 / 5 done</span>
             </div>
-            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div className="w-2/5 h-full bg-black rounded-full"></div>
+            <div className="w-full h-2 bg-[#0F172A] rounded-full overflow-hidden border border-[#1E293B]">
+              <div className="w-2/5 h-full bg-gradient-to-r from-[#2563EB] to-blue-400 rounded-full"></div>
             </div>
           </div>
         </div>
 
         {/* Upcoming Sessions */}
-        <div className="bg-white border border-[#E5E4E0] rounded-2xl p-6 shadow-sm">
-          <h2 className="text-lg font-bold mb-6">Upcoming Sessions</h2>
+        <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-8 shadow-sm hover:border-[#2563EB] transition-colors">
+          <h2 className="text-[20px] font-semibold text-white mb-8">Upcoming Sessions</h2>
           <div className="space-y-6">
             {[
-              { title: 'Strength with Alex Chen', time: 'Today, 6:00 PM · 60 min' },
-              { title: 'HIIT with Alex Chen', time: 'Sat Dec 14, 9:00 AM · 45 min' },
-              { title: 'Strength with Alex Chen', time: 'Mon Dec 16, 6:00 PM · 60 min' }
+              { title: 'Strength with Alex Chen', time: 'Today, 6:00 PM · 60 min', active: true },
+              { title: 'HIIT with Alex Chen', time: 'Sat Dec 14, 9:00 AM · 45 min', active: false },
+              { title: 'Strength with Alex Chen', time: 'Mon Dec 16, 6:00 PM · 60 min', active: false }
             ].map((s, i) => (
-              <div key={i} className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-[#F9FAFB] border border-[#E5E4E0] flex items-center justify-center shrink-0">
-                  <CalendarIcon size={18} className="text-gray-600" />
+              <div key={i} className="flex items-start gap-5">
+                <div className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 shadow-sm ${s.active ? 'bg-[#2563EB]/10 border-[#2563EB]/30 text-[#2563EB]' : 'bg-[#0F172A] border-[#1E293B] text-gray-500'}`}>
+                  <CalendarIcon size={20} />
                 </div>
                 <div>
-                  <p className="font-bold text-[14px] leading-tight mb-1">{s.title}</p>
-                  <p className="text-xs text-gray-500 font-medium">{s.time}</p>
+                  <p className={`font-semibold text-[15px] leading-tight mb-1.5 ${s.active ? 'text-white' : 'text-gray-300'}`}>{s.title}</p>
+                  <p className={`text-[13px] font-medium ${s.active ? 'text-[#2563EB]' : 'text-gray-500'}`}>{s.time}</p>
                 </div>
               </div>
             ))}
@@ -143,12 +143,12 @@ export default function ClientDashboardPage() {
       </div>
 
       {/* Third Row: Weekly Calorie Intake (Mocked Chart) */}
-      <div className="bg-white border border-[#E5E4E0] rounded-2xl p-6 shadow-sm relative overflow-hidden">
-        <h2 className="text-lg font-bold mb-6">Weekly Calorie Intake</h2>
+      <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-8 shadow-sm relative overflow-hidden hover:border-[#2563EB] transition-colors">
+        <h2 className="text-[20px] font-semibold text-white mb-8">Weekly Calorie Intake</h2>
         
-        <div className="h-48 relative w-full flex items-end">
+        <div className="h-64 relative w-full flex items-end">
           {/* Y Axis labels */}
-          <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[11px] font-semibold text-gray-400 py-2">
+          <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[12px] font-bold text-gray-500 py-2">
             <span>2500</span>
             <span>2250</span>
             <span>2000</span>
@@ -156,28 +156,29 @@ export default function ClientDashboardPage() {
           </div>
 
           {/* Grid lines */}
-          <div className="absolute left-10 right-0 top-0 bottom-0 flex flex-col justify-between py-3">
-            <div className="w-full border-b border-dashed border-gray-200"></div>
-            <div className="w-full border-b border-dashed border-gray-200"></div>
-            <div className="w-full border-b border-dashed border-gray-200"></div>
-            <div className="w-full border-b border-dashed border-gray-200"></div>
+          <div className="absolute left-14 right-0 top-0 bottom-0 flex flex-col justify-between py-3">
+            <div className="w-full border-b border-dashed border-[#1E293B]"></div>
+            <div className="w-full border-b border-dashed border-[#1E293B]"></div>
+            <div className="w-full border-b border-dashed border-[#1E293B]"></div>
+            <div className="w-full border-b border-dashed border-[#1E293B]"></div>
           </div>
 
           {/* SVG Line Chart Mock */}
-          <div className="absolute left-10 right-0 top-0 bottom-0 px-4">
-             <svg className="w-full h-full" viewBox="0 0 1000 200" preserveAspectRatio="none">
+          <div className="absolute left-14 right-0 top-0 bottom-0 px-4">
+             <svg className="w-full h-full drop-shadow-[0_0_15px_rgba(37,99,235,0.3)]" viewBox="0 0 1000 200" preserveAspectRatio="none">
                <path 
                  d="M0,150 C100,100 200,90 300,100 C400,120 500,140 600,110 C700,70 800,160 900,120 L1000,150" 
                  fill="none" 
-                 stroke="black" 
-                 strokeWidth="3" 
+                 stroke="#2563EB" 
+                 strokeWidth="4" 
+                 strokeLinecap="round"
                />
-               <circle cx="250" cy="95" r="4" fill="black" />
+               <circle cx="250" cy="95" r="6" fill="#2563EB" stroke="#111827" strokeWidth="3" />
              </svg>
              {/* Tooltip mockup */}
-             <div className="absolute left-[20%] top-[30%] bg-white border border-[#E5E4E0] shadow-md rounded-lg p-2 px-3 z-10">
-               <p className="text-[11px] font-bold text-gray-500 mb-0.5">Tue</p>
-               <p className="text-xs font-bold">calories : 2100</p>
+             <div className="absolute left-[20%] top-[30%] bg-[#0F172A] border border-[#2563EB]/30 shadow-[0_0_20px_rgba(37,99,235,0.1)] rounded-xl p-3 px-4 z-10">
+               <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Tue</p>
+               <p className="text-[14px] font-bold text-white">2,100 kcal</p>
              </div>
           </div>
         </div>

@@ -76,25 +76,25 @@ export default function TrainerListingPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#F9FAFB] min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#030712] min-h-screen">
       
       {/* Search & Filters Bar */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 mb-8 shadow-sm">
+      <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-4 sm:p-6 mb-8 shadow-sm">
         
         {/* Top Row: Search and Dropdowns */}
         <div className="flex flex-col lg:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
             <input
               type="text"
               placeholder="Search by name or specialty..."
-              className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all"
+              className="w-full pl-11 pr-4 py-3 bg-[#030712] border border-[#1E293B] rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
             />
           </div>
           
           <div className="flex gap-4 overflow-x-auto pb-2 lg:pb-0 shrink-0">
             {['Any language', 'Any price', 'Any rating'].map((label, i) => (
-              <select key={i} className="px-4 py-3 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-black appearance-none pr-10 relative bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%236b7280%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[position:right_12px_center] shrink-0">
+              <select key={i} className="px-4 py-3 border border-[#1E293B] rounded-xl text-sm bg-[#030712] text-white focus:outline-none focus:border-blue-500 appearance-none pr-10 relative shrink-0">
                 <option>{label}</option>
               </select>
             ))}
@@ -108,8 +108,8 @@ export default function TrainerListingPage() {
               key={tag}
               className={`px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-colors ${
                 tag === 'All' 
-                  ? 'bg-black text-white' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-blue-600 text-white shadow-[0_0_10px_rgba(37,99,235,0.4)]' 
+                  : 'bg-[#1E293B] text-gray-400 hover:bg-[#2A364D]'
               }`}
             >
               {tag}
@@ -121,18 +121,18 @@ export default function TrainerListingPage() {
       {/* Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {TRAINERS.map(t => (
-          <div key={t.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col group shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer">
+          <div key={t.id} className="bg-[#0F172A] rounded-2xl border border-[#1E293B] overflow-hidden flex flex-col group shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer">
             
             {/* Image Section */}
-            <div className="relative h-56 bg-gray-100">
+            <div className="relative h-56 bg-[#111827]">
               <img 
                 src={t.image} 
                 alt={t.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
               />
-              <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                <Star size={14} className="fill-black text-black" />
-                <span className="text-sm font-bold text-black">{t.rating}</span>
+              <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm border border-white/10">
+                <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                <span className="text-sm font-bold text-white">{t.rating}</span>
               </div>
             </div>
 
@@ -140,42 +140,42 @@ export default function TrainerListingPage() {
             <div className="p-6 flex-1 flex flex-col">
               
               <div className="flex items-center gap-1.5 mb-1">
-                <h2 className="text-xl font-bold text-black">{t.name}</h2>
-                <ShieldCheck size={18} className="text-gray-400" />
+                <h2 className="text-xl font-bold text-white">{t.name}</h2>
+                <ShieldCheck size={18} className="text-blue-500" />
               </div>
               
-              <p className="text-sm text-gray-500 font-medium mb-1">
+              <p className="text-sm text-blue-400 font-medium mb-1">
                 {t.role}
               </p>
               
-              <p className="text-xs text-gray-400 mb-5">
+              <p className="text-xs text-gray-500 mb-5">
                 {t.languages.join(' · ')}
               </p>
               
               <div className="flex flex-wrap gap-2 mb-8">
                 {t.tags.map(tag => (
-                  <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                  <span key={tag} className="px-3 py-1 bg-[#1E293B] text-gray-300 text-xs font-semibold rounded-full border border-white/5">
                     {tag}
                   </span>
                 ))}
               </div>
 
               {/* Footer row */}
-              <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100">
+              <div className="mt-auto flex items-center justify-between pt-4 border-t border-[#1E293B]">
                 <div>
-                  <span className="font-bold text-lg text-black">${t.price}</span>
+                  <span className="font-bold text-lg text-white">${t.price}</span>
                   <span className="text-sm text-gray-500">/mo</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={() => navigate(`/trainers/${t.id}`)}
-                    className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-bold text-black hover:bg-gray-50 transition-colors"
+                    className="px-5 py-2.5 border border-[#1E293B] rounded-xl text-sm font-bold text-white hover:bg-[#1E293B] transition-colors"
                   >
                     View
                   </button>
                   <button 
                     onClick={() => navigate('/plans')}
-                    className="px-5 py-2.5 bg-black rounded-xl text-sm font-bold text-white hover:bg-gray-800 transition-colors"
+                    className="px-5 py-2.5 bg-blue-600 rounded-xl text-sm font-bold text-white hover:bg-blue-700 shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-colors"
                   >
                     Subscribe
                   </button>

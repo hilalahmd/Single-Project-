@@ -1,56 +1,80 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ShieldCheck } from 'lucide-react'
-import Button from '../../../shared/components/Button'
-import Input from '../../../shared/components/Input'
 
+// Standalone component for Admin Login exactly as requested.
 export default function AdminLoginPage() {
   const [showPw, setShowPw] = useState(false)
-  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const handleLogin = (e) => {
+    e.preventDefault()
+    // Admin login logic would go here
+    window.location.href = '/admin'
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">
+    <div className="w-full max-w-md mx-auto bg-white p-10 rounded-3xl border border-gray-200 shadow-xl shadow-black/5">
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-black/20">
+          <ShieldCheck size={32} className="text-white" strokeWidth={2.5} />
+        </div>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
           Restricted Access
         </p>
-        <div className="flex items-center justify-center gap-2">
-          <ShieldCheck size={20} className="text-black" />
-          <h1 className="text-xl font-black text-black">Admin Portal</h1>
+        <h1 className="text-2xl font-black text-black tracking-tight">Admin Portal</h1>
+        <p className="text-sm text-gray-500 mt-2 font-medium">Authorized administrators only.</p>
+      </div>
+
+      <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-xs text-red-700 text-center font-bold mb-8">
+        This area is strictly restricted to FitForge platform administrators.
+      </div>
+
+      <form onSubmit={handleLogin} className="space-y-6">
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+            Admin Email
+          </label>
+          <input 
+            type="email" 
+            placeholder="admin@fitforge.com" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors"
+            required
+          />
         </div>
-        <p className="text-sm text-gray-500 mt-1">Authorized administrators only.</p>
-      </div>
 
-      <div className="bg-gray-50 border border-gray-200 px-4 py-3 text-xs text-gray-500 text-center">
-        This area is restricted to FitForge platform administrators.
-      </div>
-
-      <div className="space-y-4">
-        <Input label="Admin Email" type="email" placeholder="admin@fitforge.com" />
-        <div className="space-y-1">
-          <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide">
+        <div>
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
             Password
           </label>
-          <div className="flex items-center border border-gray-300 focus-within:border-black transition-colors">
+          <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl focus-within:border-black focus-within:ring-1 focus-within:ring-black transition-colors overflow-hidden">
             <input
               type={showPw ? 'text' : 'password'}
               placeholder="••••••••"
-              className="flex-1 px-3 py-2.5 text-sm focus:outline-none bg-white"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="flex-1 px-4 py-3 text-sm focus:outline-none bg-transparent text-black"
+              required
             />
             <button
               type="button"
               onClick={() => setShowPw(!showPw)}
-              className="px-3 text-gray-400 hover:text-black transition-colors"
+              className="px-4 text-gray-400 hover:text-black transition-colors"
             >
-              {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
         </div>
-      </div>
 
-      <Button variant="primary" fullWidth onClick={() => navigate('/admin')}>
-        Access Dashboard
-      </Button>
+        <button 
+          type="submit"
+          className="w-full py-4 mt-2 bg-black text-white text-sm font-bold rounded-xl hover:bg-gray-800 shadow-md hover:shadow-xl transition-all active:scale-[0.98]"
+        >
+          Access Dashboard
+        </button>
+      </form>
     </div>
   )
 }

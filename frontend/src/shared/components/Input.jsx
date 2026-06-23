@@ -7,6 +7,7 @@ export default function Input({
   error,
   disabled = false,
   icon: Icon,
+  suffix,
   name,
   id,
   required = false,
@@ -15,14 +16,17 @@ export default function Input({
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label htmlFor={id || name} className="block text-sm font-medium text-gray-700 mb-1">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label
+          htmlFor={id || name}
+          className="block text-[0.65rem] font-[800] text-gray-400 uppercase tracking-[0.2em] mb-2 font-['Syne']"
+        >
+          {label}{required && <span className="text-[#2563EB] ml-1">*</span>}
         </label>
       )}
-      <div className="relative">
+      <div className="relative flex items-center">
         {Icon && (
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Icon className="h-5 w-5 text-gray-400" />
+          <div className="absolute left-4 flex items-center pointer-events-none">
+            <Icon className="h-4 w-4 text-gray-500" />
           </div>
         )}
         <input
@@ -35,16 +39,28 @@ export default function Input({
           placeholder={placeholder}
           required={required}
           className={`
-            w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400
-            transition-colors focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black
-            disabled:bg-gray-50 disabled:text-gray-400
+            w-full bg-white/5 border rounded-xl px-4 py-3
+            text-sm text-white placeholder-gray-600
+            font-['Inter'] transition-all duration-200
+            focus:outline-none focus:border-[#2563EB] focus:bg-white/8
+            focus:shadow-[0_0_0_3px_rgba(37,99,235,0.15)]
+            disabled:opacity-40
             ${Icon ? 'pl-10' : ''}
-            ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/10' : 'border-gray-200 hover:border-gray-300'}
+            ${suffix ? 'pr-12' : ''}
+            ${error
+              ? 'border-red-500/50 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]'
+              : 'border-white/10 hover:border-white/20'
+            }
           `}
         />
+        {suffix && (
+          <div className="absolute right-4 flex items-center pointer-events-none text-gray-500 text-xs font-semibold">
+            {suffix}
+          </div>
+        )}
       </div>
       {error && (
-        <p className="mt-1.5 text-sm text-red-500">{error}</p>
+        <p className="mt-1.5 text-xs text-red-400 font-['Inter']">{error}</p>
       )}
     </div>
   )

@@ -75,15 +75,11 @@ const ClientRegisterPage = () => {
   const handleBack = () => setCurrentStep(prev => prev - 1);
 
   const handleSendOtp = async () => {
-    // API call: POST /api/auth/send-otp
-    // Body: { email: formData.email, type: 'register' }
     console.log('Sending OTP to:', formData.email);
     setOtpSent(true);
   };
 
   const handleVerifyOtp = async () => {
-    // API call: POST /api/auth/verify-otp
-    // Body: { email: formData.email, otp: otp, type: 'register' }
     if (otp.length !== 6) {
       setOtpError('Enter 6-digit OTP');
       return;
@@ -94,7 +90,6 @@ const ClientRegisterPage = () => {
   };
 
   const handleResendOtp = async () => {
-    // API call: POST /api/auth/send-otp (same as handleSendOtp)
     console.log('Resending OTP to:', formData.email);
     setOtp('');
     setOtpError('');
@@ -119,12 +114,12 @@ const ClientRegisterPage = () => {
         {steps.map((step, index) => (
           <div key={step.num} className="flex items-center">
             <div className="flex flex-col items-center">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${currentStep > step.num ? 'bg-black text-white' : currentStep === step.num ? 'bg-black text-white ring-2 ring-gray-300' : 'bg-gray-200 text-gray-400'}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${currentStep > step.num ? 'bg-[#2563EB] text-white shadow-[0_0_10px_rgba(37,99,235,0.4)]' : currentStep === step.num ? 'bg-[#111827] text-[#2563EB] border-2 border-[#2563EB]' : 'bg-[#0F172A] border border-[#1E293B] text-gray-500'}`}>
                 {currentStep > step.num ? <CheckCircle size={14} /> : step.num}
               </div>
-              <span className={`text-xs mt-1 font-medium ${currentStep >= step.num ? 'text-black' : 'text-gray-400'}`}>{step.label}</span>
+              <span className={`text-xs mt-2 font-medium ${currentStep >= step.num ? 'text-white' : 'text-gray-500'}`}>{step.label}</span>
             </div>
-            {index < steps.length - 1 && <div className={`w-12 h-px mx-2 ${currentStep > step.num ? 'bg-black' : 'bg-gray-200'}`} />}
+            {index < steps.length - 1 && <div className={`w-12 h-px mx-2 ${currentStep > step.num ? 'bg-[#2563EB]' : 'bg-[#1E293B]'}`} />}
           </div>
         ))}
       </div>
@@ -134,151 +129,151 @@ const ClientRegisterPage = () => {
   const renderStep1 = () => (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+        <label className="block text-[13px] font-semibold text-gray-300 mb-1.5">Full Name</label>
         <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-          <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Enter your full name" className={`w-full pl-10 pr-4 py-2.5 rounded-lg border bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black ${errors.fullName ? 'border-red-500' : 'border-gray-300'}`} />
+          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+          <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Enter your full name" className={`w-full pl-11 pr-4 py-3 rounded-xl border bg-[#0F172A] text-white placeholder-gray-500 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${errors.fullName ? 'border-red-500' : 'border-[#1E293B]'}`} />
         </div>
-        {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
+        {errors.fullName && <p className="text-red-500 text-xs mt-1.5">{errors.fullName}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+        <label className="block text-[13px] font-semibold text-gray-300 mb-1.5">Email Address</label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-          <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" className={`w-full pl-10 pr-4 py-2.5 rounded-lg border bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black ${errors.email ? 'border-red-500' : 'border-gray-300'}`} />
+          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+          <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" className={`w-full pl-11 pr-4 py-3 rounded-xl border bg-[#0F172A] text-white placeholder-gray-500 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${errors.email ? 'border-red-500' : 'border-[#1E293B]'}`} />
         </div>
-        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+        {errors.email && <p className="text-red-500 text-xs mt-1.5">{errors.email}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <label className="block text-[13px] font-semibold text-gray-300 mb-1.5">Password</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-          <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="Minimum 8 characters" className={`w-full pl-10 pr-10 py-2.5 rounded-lg border bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black ${errors.password ? 'border-red-500' : 'border-gray-300'}`} />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+          <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="Minimum 8 characters" className={`w-full pl-11 pr-11 py-3 rounded-xl border bg-[#0F172A] text-white placeholder-gray-500 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${errors.password ? 'border-red-500' : 'border-[#1E293B]'}`} />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+        {errors.password && <p className="text-red-500 text-xs mt-1.5">{errors.password}</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+        <label className="block text-[13px] font-semibold text-gray-300 mb-1.5">Confirm Password</label>
         <div className="relative">
-          <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-          <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm your password" className={`w-full pl-10 pr-10 py-2.5 rounded-lg border bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`} />
-          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-            {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+          <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm your password" className={`w-full pl-11 pr-11 py-3 rounded-xl border bg-[#0F172A] text-white placeholder-gray-500 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${errors.confirmPassword ? 'border-red-500' : 'border-[#1E293B]'}`} />
+          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300">
+            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+        {errors.confirmPassword && <p className="text-red-500 text-xs mt-1.5">{errors.confirmPassword}</p>}
       </div>
     </div>
   );
 
   const renderStep2 = () => (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
-          <input type="number" name="age" value={formData.age} onChange={handleChange} placeholder="25" min="13" max="80" className={`w-full px-4 py-2.5 rounded-lg border bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black ${errors.age ? 'border-red-500' : 'border-gray-300'}`} />
-          {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age}</p>}
+          <label className="block text-[13px] font-semibold text-gray-300 mb-1.5">Age</label>
+          <input type="number" name="age" value={formData.age} onChange={handleChange} placeholder="25" min="13" max="80" className={`w-full px-4 py-3 rounded-xl border bg-[#0F172A] text-white placeholder-gray-500 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${errors.age ? 'border-red-500' : 'border-[#1E293B]'}`} />
+          {errors.age && <p className="text-red-500 text-xs mt-1.5">{errors.age}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-          <select name="gender" value={formData.gender} onChange={handleChange} className={`w-full px-4 py-2.5 rounded-lg border bg-white text-gray-900 outline-none focus:border-black focus:ring-1 focus:ring-black ${errors.gender ? 'border-red-500' : 'border-gray-300'}`}>
-            <option value="">Select</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
+          <label className="block text-[13px] font-semibold text-gray-300 mb-1.5">Gender</label>
+          <select name="gender" value={formData.gender} onChange={handleChange} className={`w-full px-4 py-3 rounded-xl border bg-[#0F172A] text-white outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${errors.gender ? 'border-red-500' : 'border-[#1E293B]'}`}>
+            <option value="" className="bg-[#0F172A]">Select</option>
+            <option value="male" className="bg-[#0F172A]">Male</option>
+            <option value="female" className="bg-[#0F172A]">Female</option>
+            <option value="other" className="bg-[#0F172A]">Other</option>
           </select>
-          {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
+          {errors.gender && <p className="text-red-500 text-xs mt-1.5">{errors.gender}</p>}
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-        <input type="text" name="city" value={formData.city} onChange={handleChange} placeholder="Kochi, Kerala" className={`w-full px-4 py-2.5 rounded-lg border bg-white text-gray-900 placeholder-gray-400 outline-none focus:border-black focus:ring-1 focus:ring-black ${errors.city ? 'border-red-500' : 'border-gray-300'}`} />
-        {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+        <label className="block text-[13px] font-semibold text-gray-300 mb-1.5">City</label>
+        <input type="text" name="city" value={formData.city} onChange={handleChange} placeholder="Kochi, Kerala" className={`w-full px-4 py-3 rounded-xl border bg-[#0F172A] text-white placeholder-gray-500 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${errors.city ? 'border-red-500' : 'border-[#1E293B]'}`} />
+        {errors.city && <p className="text-red-500 text-xs mt-1.5">{errors.city}</p>}
       </div>
     </div>
   );
 
   const renderStep3 = () => (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Fitness Goal</label>
-        <div className="grid grid-cols-2 gap-2">
+        <label className="block text-[14px] font-semibold text-gray-300 mb-3">Fitness Goal</label>
+        <div className="grid grid-cols-2 gap-3">
           {fitnessGoals.map((goal) => (
-            <button key={goal.id} type="button" onClick={() => setFormData(prev => ({ ...prev, fitnessGoal: goal.id }))} className={`p-3 rounded-lg border text-left transition-all ${formData.fitnessGoal === goal.id ? 'border-black bg-gray-100' : 'border-gray-200 hover:border-gray-400'}`}>
-              <div className="font-medium text-sm text-gray-900">{goal.label}</div>
-              <div className="text-xs text-gray-500">{goal.desc}</div>
+            <button key={goal.id} type="button" onClick={() => setFormData(prev => ({ ...prev, fitnessGoal: goal.id }))} className={`p-4 rounded-xl border text-left transition-all ${formData.fitnessGoal === goal.id ? 'border-[#2563EB] bg-[#2563EB]/10 shadow-[0_0_15px_rgba(37,99,235,0.15)]' : 'border-[#1E293B] bg-[#0F172A] hover:border-gray-500'}`}>
+              <div className={`font-semibold text-[14px] mb-1 ${formData.fitnessGoal === goal.id ? 'text-white' : 'text-gray-300'}`}>{goal.label}</div>
+              <div className={`text-[12px] ${formData.fitnessGoal === goal.id ? 'text-[#2563EB]' : 'text-gray-500'}`}>{goal.desc}</div>
             </button>
           ))}
         </div>
-        {errors.fitnessGoal && <p className="text-red-500 text-xs mt-1">{errors.fitnessGoal}</p>}
+        {errors.fitnessGoal && <p className="text-red-500 text-xs mt-2">{errors.fitnessGoal}</p>}
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Experience Level</label>
-        <div className="space-y-2">
+        <label className="block text-[14px] font-semibold text-gray-300 mb-3">Experience Level</label>
+        <div className="space-y-3">
           {experienceLevels.map((level) => (
-            <button key={level.id} type="button" onClick={() => setFormData(prev => ({ ...prev, experienceLevel: level.id }))} className={`w-full p-3 rounded-lg border text-left transition-all flex items-center gap-3 ${formData.experienceLevel === level.id ? 'border-black bg-gray-100' : 'border-gray-200 hover:border-gray-400'}`}>
-              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${formData.experienceLevel === level.id ? 'border-black' : 'border-gray-300'}`}>
-                {formData.experienceLevel === level.id && <div className="w-2 h-2 rounded-full bg-black" />}
+            <button key={level.id} type="button" onClick={() => setFormData(prev => ({ ...prev, experienceLevel: level.id }))} className={`w-full p-4 rounded-xl border text-left transition-all flex items-center gap-4 ${formData.experienceLevel === level.id ? 'border-[#2563EB] bg-[#2563EB]/10 shadow-[0_0_15px_rgba(37,99,235,0.15)]' : 'border-[#1E293B] bg-[#0F172A] hover:border-gray-500'}`}>
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${formData.experienceLevel === level.id ? 'border-[#2563EB]' : 'border-gray-500'}`}>
+                {formData.experienceLevel === level.id && <div className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />}
               </div>
               <div>
-                <div className="font-medium text-sm text-gray-900">{level.label}</div>
-                <div className="text-xs text-gray-500">{level.desc}</div>
+                <div className={`font-semibold text-[14px] ${formData.experienceLevel === level.id ? 'text-white' : 'text-gray-300'}`}>{level.label}</div>
+                <div className={`text-[12px] mt-0.5 ${formData.experienceLevel === level.id ? 'text-[#2563EB]' : 'text-gray-500'}`}>{level.desc}</div>
               </div>
             </button>
           ))}
         </div>
-        {errors.experienceLevel && <p className="text-red-500 text-xs mt-1">{errors.experienceLevel}</p>}
+        {errors.experienceLevel && <p className="text-red-500 text-xs mt-2">{errors.experienceLevel}</p>}
       </div>
     </div>
   );
 
   const renderOtpStep = () => (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {!verified ? (
         <>
-          <div className="text-center mb-6">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Mail size={20} className="text-gray-700" />
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-[#111827] border border-[#1E293B] rounded-full flex items-center justify-center mx-auto mb-4">
+              <Mail size={24} className="text-[#2563EB]" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900">Verify your email</h3>
-            <p className="text-sm text-gray-500 mt-1">We sent a 6-digit code to <span className="font-medium text-gray-700">{formData.email}</span></p>
+            <h3 className="text-[20px] font-bold text-white">Verify your email</h3>
+            <p className="text-[14px] text-gray-400 mt-2">We sent a 6-digit code to <span className="font-semibold text-white">{formData.email}</span></p>
           </div>
 
           {!otpSent ? (
-            <button onClick={handleSendOtp} className="w-full py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              Send OTP <ArrowRight size={16} />
+            <button onClick={handleSendOtp} className="w-full py-3.5 bg-gradient-to-r from-[#2563EB] to-blue-500 text-white font-semibold rounded-xl hover:to-blue-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.3)]">
+              Send OTP <ArrowRight size={18} />
             </button>
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
-                <input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" maxLength={6} className={`w-full px-4 py-3 text-center text-2xl tracking-[0.5em] rounded-lg border bg-white text-gray-900 placeholder-gray-300 outline-none focus:border-black focus:ring-1 focus:ring-black ${otpError ? 'border-red-500' : 'border-gray-300'}`} />
-                {otpError && <p className="text-red-500 text-xs mt-1 text-center">{otpError}</p>}
+                <label className="block text-[13px] font-semibold text-gray-300 mb-2 text-center">Enter OTP</label>
+                <input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" maxLength={6} className={`w-full px-4 py-4 text-center text-[28px] font-bold tracking-[0.5em] rounded-xl border bg-[#0F172A] text-white placeholder-gray-600 outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors ${otpError ? 'border-red-500' : 'border-[#1E293B]'}`} />
+                {otpError && <p className="text-red-500 text-xs mt-2 text-center">{otpError}</p>}
               </div>
-              <button onClick={handleVerifyOtp} className="w-full py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 active:scale-[0.98] transition-all">
+              <button onClick={handleVerifyOtp} className="w-full py-3.5 bg-gradient-to-r from-[#2563EB] to-blue-500 text-white font-semibold rounded-xl hover:to-blue-400 active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)] mt-2">
                 Verify Email
               </button>
-              <div className="text-center">
-                <button onClick={handleResendOtp} className="text-sm text-gray-500 hover:text-black underline">Resend OTP</button>
+              <div className="text-center mt-4">
+                <button onClick={handleResendOtp} className="text-[14px] text-gray-400 hover:text-white transition-colors">Didn't receive it? <span className="text-[#2563EB] font-medium">Resend OTP</span></button>
               </div>
             </>
           )}
         </>
       ) : (
-        <div className="text-center py-6">
-          <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle size={28} className="text-black" />
+        <div className="text-center py-8">
+          <div className="w-20 h-20 bg-[#111827] border border-[#1E293B] rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(34,197,94,0.15)]">
+            <CheckCircle size={36} className="text-[#22C55E]" />
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Email Verified!</h3>
-          <p className="text-sm text-gray-500 mb-6">Your account is ready. Complete your registration.</p>
-          <button onClick={() => setCurrentStep(5)} className="w-full py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-            Complete Registration <ArrowRight size={16} />
+          <h3 className="text-[24px] font-bold text-white mb-2">Email Verified!</h3>
+          <p className="text-[15px] text-gray-400 mb-8">Your account is ready. Complete your registration.</p>
+          <button onClick={() => setCurrentStep(5)} className="w-full py-3.5 bg-gradient-to-r from-[#2563EB] to-blue-500 text-white font-semibold rounded-xl hover:to-blue-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.3)]">
+            Complete Registration <ArrowRight size={18} />
           </button>
         </div>
       )}
@@ -286,51 +281,59 @@ const ClientRegisterPage = () => {
   );
 
   const renderSuccess = () => (
-    <div className="text-center py-8">
-      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <CheckCircle size={32} className="text-black" />
+    <div className="text-center py-10">
+      <div className="w-20 h-20 bg-[#111827] border border-[#1E293B] rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
+        <Dumbbell size={36} className="text-[#2563EB]" />
       </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to FitForge!</h2>
-      <p className="text-gray-500 text-sm mb-6">Your account has been created successfully.</p>
-      <button className="w-full py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 active:scale-[0.98] transition-all">
+      <h2 className="text-[28px] font-bold text-white mb-2">Welcome to FitForge!</h2>
+      <p className="text-gray-400 text-[15px] mb-8">Your premium account has been created successfully.</p>
+      <button className="w-full py-3.5 bg-gradient-to-r from-[#2563EB] to-blue-500 text-white font-semibold rounded-xl hover:to-blue-400 active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]">
         Go to Dashboard
       </button>
-      <p className="mt-4 text-sm text-gray-400">Already have an account? <button className="text-black font-medium hover:underline">Sign In</button></p>
+      <p className="mt-6 text-[14px] text-gray-400">Already have an account? <button className="text-white font-medium hover:text-[#2563EB] transition-colors">Sign In</button></p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-white flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-gray-50 border-r border-gray-200 items-center justify-center p-12">
-        <div className="max-w-sm">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-              <Dumbbell size={20} className="text-white" />
+    <div className="min-h-screen bg-[#030712] flex">
+      {/* Left side banner */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#0A0F1C] border-r border-[#1E293B] items-center justify-center p-12 relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-[#2563EB] opacity-[0.05] blur-[100px]"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-cyan-400 opacity-[0.03] blur-[100px]"></div>
+        </div>
+
+        <div className="max-w-md relative z-10">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="w-12 h-12 bg-[#111827] border border-[#1E293B] rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.2)]">
+              <Dumbbell size={24} className="text-[#2563EB]" />
             </div>
-            <span className="text-xl font-bold text-gray-900">FitForge</span>
+            <span className="text-[24px] font-bold text-white tracking-tight">FitForge</span>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 leading-tight mb-4">Forge Your Best Self</h1>
-          <p className="text-gray-500 leading-relaxed">Join Kerala's premier fitness coaching platform. Connect with expert trainers and achieve your goals.</p>
+          <h1 className="text-[48px] font-bold text-white leading-tight mb-6">Forge Your<br/>Best Self</h1>
+          <p className="text-[18px] text-gray-400 leading-relaxed">Join the premium fitness coaching platform. Connect with elite trainers and achieve your goals with cinematic precision.</p>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col">
-        <div className="lg:hidden flex items-center p-6 border-b border-gray-100">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-              <Dumbbell size={16} className="text-white" />
+      {/* Right side form */}
+      <div className="flex-1 flex flex-col relative z-10">
+        <div className="lg:hidden flex items-center p-6 border-b border-[#1E293B] bg-[#030712]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#111827] border border-[#1E293B] rounded-lg flex items-center justify-center shadow-[0_0_10px_rgba(37,99,235,0.2)]">
+              <Dumbbell size={20} className="text-[#2563EB]" />
             </div>
-            <span className="text-lg font-bold text-gray-900">FitForge</span>
+            <span className="text-[20px] font-bold text-white tracking-tight">FitForge</span>
           </div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-sm">
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+          <div className="w-full max-w-md">
             {currentStep < 4 && (
-              <>
-                <div className="mb-6">
-                  <span className="inline-block px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-md mb-3">Client Registration</span>
-                  <h2 className="text-xl font-bold text-gray-900">
+              <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-8 shadow-xl">
+                <div className="mb-8">
+                  <span className="inline-block px-3 py-1 bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] text-[11px] font-bold uppercase tracking-wider rounded-lg mb-4">Client Registration</span>
+                  <h2 className="text-[24px] font-bold text-white">
                     {currentStep === 1 && 'Create your account'}
                     {currentStep === 2 && 'About yourself'}
                     {currentStep === 3 && 'Your fitness goals'}
@@ -341,22 +344,26 @@ const ClientRegisterPage = () => {
                   {currentStep === 1 && renderStep1()}
                   {currentStep === 2 && renderStep2()}
                   {currentStep === 3 && renderStep3()}
-                  <div className="flex gap-3 mt-6">
-                    {currentStep > 1 && <button type="button" onClick={handleBack} className="px-5 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 active:scale-[0.98] transition-all flex items-center gap-1"><ChevronLeft size={16} /> Back</button>}
-                    {currentStep < 3 ? <button type="button" onClick={handleNext} className="flex-1 py-2.5 bg-black text-white font-medium rounded-lg hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-1">Continue <ArrowRight size={16} /></button> : <button type="submit" className="flex-1 py-2.5 bg-black text-white font-medium rounded-lg hover:bg-gray-800 active:scale-[0.98] transition-all flex items-center justify-center gap-1">Next <ArrowRight size={16} /></button>}
+                  <div className="flex gap-4 mt-8">
+                    {currentStep > 1 && <button type="button" onClick={handleBack} className="px-6 py-3 bg-[#0F172A] border border-[#1E293B] text-white font-semibold rounded-xl hover:border-gray-500 active:scale-[0.98] transition-all flex items-center gap-2"><ChevronLeft size={18} /> Back</button>}
+                    {currentStep < 3 ? <button type="button" onClick={handleNext} className="flex-1 py-3 bg-gradient-to-r from-[#2563EB] to-blue-500 text-white font-semibold rounded-xl hover:to-blue-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.3)]">Continue <ArrowRight size={18} /></button> : <button type="submit" className="flex-1 py-3 bg-gradient-to-r from-[#2563EB] to-blue-500 text-white font-semibold rounded-xl hover:to-blue-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.3)]">Next <ArrowRight size={18} /></button>}
                   </div>
                 </form>
-                <div className="mt-6 pt-5 border-t border-gray-100">
-                  <p className="text-xs text-gray-400 text-center mb-3">Are you a professional?</p>
-                  <div className="flex gap-2">
-                    <button className="flex-1 py-2 border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:border-black hover:text-black transition-all">Trainer Sign Up</button>
-                    <button className="flex-1 py-2 border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:border-black hover:text-black transition-all">Wellness Coach Login</button>
-                  </div>
-                </div>
-              </>
+              </div>
             )}
-            {currentStep === 4 && renderOtpStep()}
-            {currentStep === 5 && renderSuccess()}
+            
+            {currentStep < 4 && (
+              <div className="mt-8 pt-6 border-t border-[#1E293B]">
+                <p className="text-[13px] text-gray-500 text-center mb-4 font-medium">Are you a professional trainer?</p>
+                <div className="flex gap-3">
+                  <button className="flex-1 py-3 bg-[#111827] border border-[#1E293B] text-gray-300 text-[13px] font-semibold rounded-xl hover:border-[#2563EB] hover:text-white transition-all">Trainer Sign Up</button>
+                  <button className="flex-1 py-3 bg-[#111827] border border-[#1E293B] text-gray-300 text-[13px] font-semibold rounded-xl hover:border-[#2563EB] hover:text-white transition-all">Coach Login</button>
+                </div>
+              </div>
+            )}
+
+            {currentStep === 4 && <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-8 shadow-xl">{renderOtpStep()}</div>}
+            {currentStep === 5 && <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-8 shadow-xl">{renderSuccess()}</div>}
           </div>
         </div>
       </div>

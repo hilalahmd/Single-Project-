@@ -1,9 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronDown, Check } from 'lucide-react'
-import Button from '../../../shared/components/Button'
-import Card from '../../../shared/components/Card'
-import Badge from '../../../shared/components/Badge'
 
 export default function SubscriptionPlansPage() {
   const navigate = useNavigate()
@@ -27,25 +24,25 @@ export default function SubscriptionPlansPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       
       {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-black text-black mb-4">Choose Your Plan</h1>
-        <p className="text-lg text-gray-500">Transform your life with expert coaching.</p>
+      <div className="text-center mb-16">
+        <h1 className="text-[40px] font-bold text-white mb-4 tracking-tight">Choose Your Plan</h1>
+        <p className="text-[16px] text-gray-400">Transform your life with expert coaching.</p>
       </div>
 
       {/* Toggle */}
       <div className="flex justify-center mb-16">
-        <div className="bg-gray-100 p-1 rounded-full flex items-center relative">
+        <div className="bg-[#111827] p-1.5 rounded-full flex items-center relative border border-[#1E293B]">
           <button 
             onClick={() => setIsAnnual(false)}
-            className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${!isAnnual ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+            className={`px-8 py-2.5 rounded-full text-[14px] font-semibold transition-all ${!isAnnual ? 'bg-[#2563EB] shadow-[0_0_15px_rgba(37,99,235,0.3)] text-white' : 'text-gray-400 hover:text-white'}`}
           >
             Monthly
           </button>
           <button 
             onClick={() => setIsAnnual(true)}
-            className={`px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${isAnnual ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-black'}`}
+            className={`px-8 py-2.5 rounded-full text-[14px] font-semibold transition-all flex items-center gap-2 ${isAnnual ? 'bg-[#2563EB] shadow-[0_0_15px_rgba(37,99,235,0.3)] text-white' : 'text-gray-400 hover:text-white'}`}
           >
-            Annual <Badge label="20% Off" variant="active" className="text-[10px] px-1.5 py-0" />
+            Annual <span className="bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full">20% Off</span>
           </button>
         </div>
       </div>
@@ -54,68 +51,68 @@ export default function SubscriptionPlansPage() {
       <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto mb-24">
         
         {/* Free Plan */}
-        <Card className="flex flex-col">
-          <h3 className="text-2xl font-bold mb-2 text-black">Free</h3>
-          <div className="mb-6"><span className="text-4xl font-black text-black">₹{pricing.free.mo}</span><span className="text-gray-500">/{isAnnual ? 'year' : 'month'}</span></div>
-          <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-8">Basic tools to get you started.</p>
+        <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-8 flex flex-col hover:border-[#2563EB]/50 transition-colors">
+          <h3 className="text-[22px] font-bold mb-2 text-white">Free</h3>
+          <div className="mb-6"><span className="text-[40px] font-bold text-white">₹{pricing.free.mo}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
+          <p className="text-[14px] text-gray-400 mb-8 border-b border-[#1E293B] pb-8">Basic tools to get you started.</p>
           <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />BMI/BMR calculators</li>
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />AI diet plan (3 generations/mo)</li>
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />Browse all trainers</li>
+            <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} className="shrink-0 text-[#2563EB]" />BMI/BMR calculators</li>
+            <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} className="shrink-0 text-[#2563EB]" />AI diet plan (3 generations/mo)</li>
+            <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} className="shrink-0 text-[#2563EB]" />Browse all trainers</li>
           </ul>
-          <Button variant="secondary" fullWidth onClick={() => navigate('/auth/register')}>Get Started</Button>
-        </Card>
+          <button className="w-full py-3.5 border border-[#1E293B] text-white text-[15px] font-semibold rounded-lg hover:bg-[#111827] hover:border-[#2563EB] transition-colors" onClick={() => navigate('/auth/register')}>Get Started</button>
+        </div>
 
         {/* Wellness Plan */}
-        <Card className="flex flex-col border-black shadow-xl relative lg:-translate-y-4">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-widest">
+        <div className="bg-[#111827] border border-[#2563EB] rounded-2xl p-8 flex flex-col shadow-[0_0_30px_rgba(37,99,235,0.1)] relative lg:-translate-y-4">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[#2563EB] to-blue-500 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(37,99,235,0.4)]">
             Most Popular
           </div>
-          <h3 className="text-2xl font-bold mb-2 text-black">Wellness</h3>
-          <div className="mb-6"><span className="text-4xl font-black text-black">₹{Math.round(isAnnual ? pricing.wellness.yr : pricing.wellness.mo)}</span><span className="text-gray-500">/{isAnnual ? 'year' : 'month'}</span></div>
-          <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-8">Complete lifestyle coaching and daily tracking.</p>
+          <h3 className="text-[22px] font-bold mb-2 text-white">Wellness</h3>
+          <div className="mb-6"><span className="text-[40px] font-bold text-white">₹{Math.round(isAnnual ? pricing.wellness.yr : pricing.wellness.mo)}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
+          <p className="text-[14px] text-gray-400 mb-8 border-b border-[#1E293B] pb-8">Complete lifestyle coaching and daily tracking.</p>
           <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-black font-bold"><Check size={18} className="shrink-0" />Dedicated wellness coach</li>
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />Custom Diet + Workout plan</li>
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />Progress tracking dashboard</li>
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />Unlimited AI food photo analysis</li>
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />Chat support with coach</li>
+            <li className="flex items-start gap-3 text-white font-semibold text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Dedicated wellness coach</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Custom Diet + Workout plan</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Progress tracking dashboard</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Unlimited AI food photo analysis</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Chat support with coach</li>
           </ul>
-          <Button variant="primary" fullWidth onClick={() => navigate('/auth/register')}>Choose Wellness</Button>
-        </Card>
+          <button className="w-full py-3.5 bg-gradient-to-r from-[#2563EB] to-blue-600 text-white text-[15px] font-semibold rounded-lg hover:to-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all" onClick={() => navigate('/auth/register')}>Choose Wellness</button>
+        </div>
 
         {/* PT Plan */}
-        <Card className="flex flex-col">
-          <h3 className="text-2xl font-bold mb-2 text-black">Personal Training</h3>
-          <div className="mb-6"><span className="text-4xl font-black text-black">₹{Math.round(isAnnual ? pricing.pt.yr : pricing.pt.mo)}</span><span className="text-gray-500">/{isAnnual ? 'year' : 'month'}</span></div>
-          <p className="text-sm text-gray-500 mb-8 border-b border-gray-100 pb-8">Premium 1-on-1 coaching for guaranteed results.</p>
+        <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-8 flex flex-col hover:border-[#2563EB]/50 transition-colors">
+          <h3 className="text-[22px] font-bold mb-2 text-white">Personal Training</h3>
+          <div className="mb-6"><span className="text-[40px] font-bold text-white">₹{Math.round(isAnnual ? pricing.pt.yr : pricing.pt.mo)}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
+          <p className="text-[14px] text-gray-400 mb-8 border-b border-[#1E293B] pb-8">Premium 1-on-1 coaching for guaranteed results.</p>
           <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-black font-bold"><Check size={18} className="shrink-0" />Everything in Wellness</li>
-            <li className="flex items-start gap-3 text-black font-bold"><Check size={18} className="shrink-0" />Live 1-on-1 video sessions</li>
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />Real-time form correction</li>
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />Priority support</li>
-            <li className="flex items-start gap-3 text-gray-600"><Check size={18} className="shrink-0 text-black" />Weekly check-in calls</li>
+            <li className="flex items-start gap-3 text-white font-semibold text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Everything in Wellness</li>
+            <li className="flex items-start gap-3 text-white font-semibold text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Live 1-on-1 video sessions</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Real-time form correction</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Priority support</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Weekly check-in calls</li>
           </ul>
-          <Button variant="primary" fullWidth onClick={() => navigate('/auth/register')}>Choose PT</Button>
-        </Card>
+          <button className="w-full py-3.5 border border-[#1E293B] bg-[#111827] text-white text-[15px] font-semibold rounded-lg hover:border-[#2563EB] hover:text-[#2563EB] transition-colors" onClick={() => navigate('/auth/register')}>Choose PT</button>
+        </div>
 
       </div>
 
       {/* FAQs */}
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl font-black text-center mb-10 text-black">Frequently Asked Questions</h2>
+        <h2 className="text-[28px] font-bold text-center mb-10 text-white">Frequently Asked Questions</h2>
         <div className="space-y-4">
           {faqs.map((faq, i) => (
-            <div key={i} className="border border-gray-200 rounded-xl overflow-hidden bg-white">
+            <div key={i} className="border border-[#1E293B] rounded-xl overflow-hidden bg-[#111827]">
               <button 
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between p-6 text-left hover:bg-[#0F172A] transition-colors"
               >
-                <span className="font-bold text-black">{faq.q}</span>
-                <ChevronDown size={20} className={`text-black transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`} />
+                <span className="font-semibold text-white text-[15px]">{faq.q}</span>
+                <ChevronDown size={20} className={`text-gray-400 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`} />
               </button>
               {openFaq === i && (
-                <div className="px-6 pb-6 text-gray-600 leading-relaxed border-t border-gray-100 pt-4 bg-gray-50">
+                <div className="px-6 pb-6 text-gray-400 text-[14px] leading-relaxed border-t border-[#1E293B] pt-4 bg-[#0F172A]">
                   {faq.a}
                 </div>
               )}

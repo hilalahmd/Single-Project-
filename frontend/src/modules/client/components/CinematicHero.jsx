@@ -14,15 +14,13 @@ export default function CinematicHero() {
   
   // DOM element refs for direct manipulation (Bypassing React render cycle for 240fps)
   const introRef = useRef(null)
-  const pillsRef = useRef(null)
-  const breakthroughRef = useRef(null)
   const ctaRef = useRef(null)
   const flashRef = useRef(null)
 
   useEffect(() => {
     let ticking = false;
 
-    const updateDOM = () => {
+    const updateDOM = () => { 
       if (!sectionRef.current) {
         ticking = false;
         return;
@@ -36,33 +34,25 @@ export default function CinematicHero() {
 
       // --- GPU-Only Math Calculations ---
       
+      // Compressed timings: intro fades fast, CTA appears quickly
+      // so the hero section resolves in just 20vh of scrolling
       let flashOpacity = 0
-      if (p > 0.60 && p < 0.85) {
-        flashOpacity = Math.sin(mapRange(p, 0.60, 0.85, 0, Math.PI)) * 0.4
+      if (p > 0.40 && p < 0.75) {
+        flashOpacity = Math.sin(mapRange(p, 0.40, 0.75, 0, Math.PI)) * 0.25
       }
 
       // --- Direct DOM Manipulation (Zero React Renders) ---
       
       if (introRef.current) {
-        introRef.current.style.opacity = mapRange(p, 0.05, 0.15, 1, 0)
-        introRef.current.style.transform = `translateY(${mapRange(p, 0.10, 0.20, 0, -30)}px) translateZ(0)`
-      }
-
-      if (pillsRef.current) {
-        // Appears at 0.15 to 0.25, fades out at 0.50 to 0.60 (stays on screen much longer)
-        pillsRef.current.style.opacity = mapRange(p, 0.15, 0.25, 0, 1) * mapRange(p, 0.50, 0.60, 1, 0)
-        pillsRef.current.style.transform = `translateY(${mapRange(p, 0.15, 0.25, 50, 0)}px) translateZ(0)`
-      }
-
-      if (breakthroughRef.current) {
-        // Appears at 0.60 to 0.70, fades out at 0.85 to 0.90
-        breakthroughRef.current.style.opacity = mapRange(p, 0.60, 0.70, 0, 1) * mapRange(p, 0.85, 0.90, 1, 0)
-        breakthroughRef.current.style.transform = `scale(${mapRange(p, 0.60, 0.85, 0.9, 1.1)}) translateZ(0)`
+        // Fades out quickly in the first 25% of scroll
+        introRef.current.style.opacity = mapRange(p, 0.05, 0.30, 1, 0)
+        introRef.current.style.transform = `translateY(${mapRange(p, 0.05, 0.30, 0, -40)}px) translateZ(0)`
       }
 
       if (ctaRef.current) {
-        ctaRef.current.style.opacity = mapRange(p, 0.85, 0.90, 0, 1)
-        ctaRef.current.style.transform = `translateY(${mapRange(p, 0.85, 0.95, 30, 0)}px) translateZ(0)`
+        // Appears right after intro fades, by 50% of scroll
+        ctaRef.current.style.opacity = mapRange(p, 0.35, 0.55, 0, 1)
+        ctaRef.current.style.transform = `translateY(${mapRange(p, 0.35, 0.55, 20, 0)}px) translateZ(0)`
       }
 
       if (flashRef.current) {
@@ -87,7 +77,7 @@ export default function CinematicHero() {
   }, [])
 
   return (
-    <div ref={sectionRef} className="h-[250vh] w-full relative font-['Syne']">
+    <div ref={sectionRef} className="h-[120vh] w-full relative font-['Syne']">
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center justify-center">
         
         {/* Phase 1: Intro Text */}
@@ -103,51 +93,23 @@ export default function CinematicHero() {
           </p>
         </div>
 
-        {/* Phase 2: Free Diet Plan CTA */}
-        <div 
-          ref={pillsRef}
-          className="absolute bottom-[20vh] left-0 w-full flex flex-col items-center gap-6 z-30 opacity-0 will-change-transform"
-        >
-          <div className="text-center">
-            <h3 className="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-white mb-2 font-['Syne'] tracking-wide drop-shadow-lg">Curious how AI fits your diet?</h3>
-            <p className="text-[#00E5FF] text-xs font-bold tracking-[0.2em] uppercase drop-shadow-md">Test it instantly. No credit card required.</p>
-          </div>
-          <button 
-            onClick={() => navigate('/free-diet-plan')}
-            className="pointer-events-auto bg-white/5 backdrop-blur-lg border border-white/20 text-white px-10 py-4 rounded-full font-[800] text-sm uppercase tracking-[0.1em] hover:bg-white/15 hover:scale-105 hover:border-white/40 hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] transition-all duration-300 flex items-center gap-3"
-          >
-            Generate Free Diet Plan <span className="text-xl leading-none">&rarr;</span>
-          </button>
-        </div>
-
-        {/* Phase 4: Breakthrough Text */}
-        <div 
-          ref={breakthroughRef}
-          className="absolute inset-0 flex flex-col items-center justify-center z-40 pointer-events-none opacity-0 will-change-transform"
-        >
-          <h2 
-            className="text-[clamp(2.5rem,7vw,6rem)] font-[800] text-white text-center leading-[0.85] tracking-[-0.03em]"
-            style={{ textShadow: `0 0 40px rgba(37,99,235,0.9)` }}
-          >
-            YOUR TRANSFORMATION<br/>
-            <span className="text-[#2563EB]">STARTS HERE</span>
-          </h2>
-        </div>
-
-        {/* Phase 5: Landing CTA */}
+        {/* Phase 2: Landing CTA */}
         <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div ref={ctaRef} className="absolute right-[5vw] md:right-[15vw] opacity-0 will-change-transform">
+          <div ref={ctaRef} className="flex flex-col items-center gap-4 opacity-0 will-change-transform">
             <button 
               onClick={() => navigate('/auth/register')}
-              className="pointer-events-auto bg-[#2563EB] text-white px-8 py-5 rounded-full font-[800] text-lg uppercase tracking-[0.05em] hover:bg-white hover:text-[#2563EB] transition-colors hover:scale-105"
+              className="pointer-events-auto bg-[#2563EB] text-white px-10 py-5 rounded-full font-[800] text-lg uppercase tracking-[0.05em] hover:bg-white hover:text-[#2563EB] transition-colors hover:scale-105"
               style={{ boxShadow: `0 0 40px rgba(37,99,235,0.6)` }}
             >
-              START TRAINING FREE &rarr;
+              START TRAINING FREE →
             </button>
+            <p className="text-white/40 text-xs font-bold tracking-[0.2em] uppercase">
+              No credit card required
+            </p>
           </div>
         </div>
 
-        {/* Phase 4: White Flash Overlay */}
+        {/* White Flash Overlay */}
         <div ref={flashRef} className="absolute inset-0 bg-white z-[60] pointer-events-none opacity-0 will-change-opacity transform-gpu"></div>
 
       </div>

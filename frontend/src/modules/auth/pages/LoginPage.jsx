@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Phone, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react'
 
 function LoginPage() {
   const [phone, setPhone] = useState('')
@@ -36,122 +37,129 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F4F0] flex flex-col text-[#1A1A1A]">
+    <div className="min-h-screen bg-[#030712] flex flex-col text-white">
 
       {/* Top Bar */}
-      <header className="bg-white border-b border-[#E5E4E0]">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+      <header className="bg-[#0F172A] border-b border-[#1E293B]">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-lg font-bold tracking-tight text-[#1A1A1A]">FitForge</span>
+            <span className="text-xl font-black tracking-tight text-white">FITFORGE</span>
           </Link>
-          <p className="text-sm text-gray-500 font-medium">
+          <p className="text-sm text-gray-400 font-medium">
             New here?{' '}
-            <Link to="/auth/register" className="text-[#1A1A1A] font-semibold hover:underline">Create account</Link>
+            <Link to="/auth/register" className="text-blue-400 font-bold hover:text-blue-300 transition-colors">Create account</Link>
           </p>
         </div>
       </header>
 
       {/* Main */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-4xl">
-          <div className="bg-white rounded-2xl border border-[#E5E4E0] overflow-hidden flex flex-col lg:flex-row min-h-[560px] shadow-sm">
+        <div className="w-full max-w-5xl">
+          <div className="bg-[#0F172A] rounded-2xl border border-[#1E293B] overflow-hidden flex flex-col lg:flex-row min-h-[600px] shadow-2xl relative">
+            
+            {/* Background Glows */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[100px] rounded-full pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/5 blur-[100px] rounded-full pointer-events-none"></div>
 
             {/* Left Info Panel */}
-            <div className="lg:w-5/12 bg-[#F5F4F0] border-r border-[#E5E4E0] p-10 flex flex-col justify-between relative overflow-hidden">
+            <div className="lg:w-5/12 bg-[#030712]/50 border-r border-[#1E293B] p-10 lg:p-12 flex flex-col justify-between relative overflow-hidden backdrop-blur-sm z-10">
               <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 bg-white border border-[#E5E4E0] rounded-full px-3 py-1.5 mb-8 shadow-sm">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-[#1A1A1A] text-xs font-semibold">500+ trainers online</span>
+                <div className="inline-flex items-center gap-2 bg-[#1E293B]/50 border border-white/5 rounded-full px-4 py-2 mb-8 shadow-sm backdrop-blur-md">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(37,99,235,0.8)]" />
+                  <span className="text-blue-100 text-xs font-bold tracking-wide">500+ coaches active now</span>
                 </div>
-                <h2 className="text-3xl font-bold text-[#1A1A1A] leading-snug mb-4">
-                  Your transformation<br />starts today.
+                <h2 className="text-4xl font-bold text-white leading-tight mb-4">
+                  Welcome to the<br />next level.
                 </h2>
-                <p className="text-gray-500 text-sm leading-relaxed font-medium">
-                  India's first platform connecting you with certified personal trainers and wellness coaches in your language.
+                <p className="text-gray-400 text-sm leading-relaxed font-medium">
+                  Log in to connect with your dedicated coach, track your nutrition, and crush your fitness goals.
                 </p>
               </div>
 
               {/* Feature list */}
-              <div className="relative z-10 space-y-4 my-8">
+              <div className="relative z-10 space-y-5 my-8">
                 {[
-                  { icon: '🎯', text: 'Dedicated coach assigned to you' },
-                  { icon: '📸', text: 'AI food photo nutrition analysis' },
-                  { icon: '🗣️', text: 'Coach in your preferred language' },
-                  { icon: '📹', text: 'Live 1-on-1 video PT sessions' },
+                  { icon: '🎯', text: '1-on-1 Personalized Coaching' },
+                  { icon: '📸', text: 'AI-Powered Meal Analysis' },
+                  { icon: '🗣️', text: 'Multilingual Support' },
+                  { icon: '📹', text: 'Live Video Sessions' },
                 ].map(f => (
-                  <div key={f.text} className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white border border-[#E5E4E0] shadow-sm rounded-lg flex items-center justify-center text-sm shrink-0">
+                  <div key={f.text} className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-[#1E293B] border border-white/5 shadow-sm rounded-xl flex items-center justify-center text-lg shrink-0">
                       {f.icon}
                     </div>
-                    <span className="text-gray-600 text-sm font-medium">{f.text}</span>
+                    <span className="text-gray-300 text-sm font-semibold">{f.text}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Right Form Panel */}
-            <div className="lg:w-7/12 p-8 sm:p-12 flex flex-col justify-center bg-white">
+            <div className="lg:w-7/12 p-8 sm:p-14 flex flex-col justify-center bg-transparent z-10">
 
               {step === 1 ? (
-                <>
-                  <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-[#1A1A1A] mb-1">Welcome back</h1>
-                    <p className="text-gray-500 text-sm font-medium">Sign in with your phone number</p>
+                <div className="max-w-md mx-auto w-full animate-in fade-in slide-in-from-right-4 duration-500">
+                  <div className="mb-10 text-center lg:text-left">
+                    <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Welcome back</h1>
+                    <p className="text-gray-400 text-sm font-medium">Sign in with your registered phone number</p>
                   </div>
 
-                  <div className="space-y-5">
+                  <div className="space-y-6">
                     <div>
-                      <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-widest mb-2">
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
                         Phone Number
                       </label>
-                      <div className="flex rounded-lg overflow-hidden border border-[#E5E4E0] focus-within:ring-2 focus-within:ring-[#1A1A1A]/20 focus-within:border-[#1A1A1A] transition-all bg-[#F5F4F0]">
-                        <div className="flex items-center gap-2 px-4 border-r border-[#E5E4E0] shrink-0 bg-white">
+                      <div className="flex rounded-xl overflow-hidden border border-[#1E293B] focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all bg-[#030712] shadow-sm">
+                        <div className="flex items-center gap-2 px-4 border-r border-[#1E293B] shrink-0 bg-[#0F172A]">
                           <span className="text-base">🇮🇳</span>
-                          <span className="text-sm font-semibold text-gray-500">+91</span>
+                          <span className="text-sm font-bold text-gray-400">+91</span>
                         </div>
                         <input
                           type="tel"
                           placeholder="Enter your 10-digit number"
                           value={phone}
                           onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                          className="flex-1 px-4 py-3 text-sm focus:outline-none bg-white text-[#1A1A1A] placeholder-gray-400 font-medium"
+                          className="flex-1 px-4 py-3.5 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium"
                           maxLength={10}
                         />
                       </div>
                       {phone.length > 0 && phone.length < 10 && (
-                        <p className="text-xs text-red-500 mt-1.5 ml-1 font-medium">Enter a valid 10-digit number</p>
+                        <p className="text-xs text-red-400 mt-2 ml-1 font-medium flex items-center gap-1">
+                          Enter a valid 10-digit number
+                        </p>
                       )}
                     </div>
 
                     <button
                       onClick={handleSendOtp}
                       disabled={phone.length < 10 || loading}
-                      className="w-full py-3 bg-[#1A1A1A] text-white font-semibold rounded-lg hover:bg-[#2D2D2D] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2 shadow-sm"
+                      className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 text-sm flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)]"
                     >
                       {loading
-                        ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        : <><span>Send OTP</span><span>→</span></>
+                        ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        : <><span>Continue</span><ArrowRight size={16} /></>
                       }
                     </button>
 
-                    <div className="flex items-center gap-3 py-2">
-                      <div className="flex-1 h-px bg-[#E5E4E0]" />
-                      <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">secure · encrypted</span>
-                      <div className="flex-1 h-px bg-[#E5E4E0]" />
+                    <div className="flex items-center gap-3 py-4">
+                      <div className="flex-1 h-px bg-[#1E293B]" />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                        <ShieldCheck size={12} /> Secure Login
+                      </span>
+                      <div className="flex-1 h-px bg-[#1E293B]" />
                     </div>
 
-                    <div className="bg-[#F5F4F0] rounded-xl p-4 border border-[#E5E4E0]">
-                      <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-widest mb-3">Demo Access</p>
-                      <div className="grid grid-cols-3 gap-2">
+                    <div className="bg-[#030712] rounded-xl p-5 border border-[#1E293B]">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 text-center">Demo Quick Access</p>
+                      <div className="grid grid-cols-2 gap-3">
                         {[
                           { label: 'Client', path: '/dashboard' },
                           { label: 'Trainer', path: '/trainer/dashboard' },
-                          { label: 'Admin', path: '/admin' },
                         ].map(role => (
                           <Link
                             key={role.label}
                             to={role.path}
-                            className="text-center text-xs py-2 bg-white border border-[#E5E4E0] rounded-lg text-gray-600 hover:border-[#1A1A1A] hover:text-[#1A1A1A] transition-all font-semibold shadow-sm"
+                            className="text-center text-sm py-2.5 bg-[#0F172A] border border-[#1E293B] rounded-lg text-gray-300 hover:border-blue-500 hover:text-blue-400 hover:bg-blue-600/10 transition-all font-bold shadow-sm"
                           >
                             {role.label}
                           </Link>
@@ -159,33 +167,30 @@ function LoginPage() {
                       </div>
                     </div>
                   </div>
-                </>
+                </div>
               ) : (
-                <>
+                <div className="max-w-md mx-auto w-full animate-in fade-in slide-in-from-right-4 duration-500">
                   <button
                     onClick={() => { setStep(1); setOtp(['', '', '', '', '', '']) }}
-                    className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-[#1A1A1A] mb-8 transition-colors w-fit"
+                    className="flex items-center gap-1.5 text-sm font-bold text-gray-400 hover:text-white mb-10 transition-colors w-fit"
                   >
                     ← Back
                   </button>
 
-                  <div className="mb-8">
-                    <div className="w-12 h-12 bg-[#F5F4F0] border border-[#E5E4E0] rounded-xl flex items-center justify-center mb-4 shadow-sm">
-                      <span className="text-xl">📱</span>
+                  <div className="mb-10">
+                    <div className="w-14 h-14 bg-blue-600/10 border border-blue-500/20 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(37,99,235,0.1)]">
+                      <Phone size={24} className="text-blue-400" />
                     </div>
-                    <h1 className="text-2xl font-bold text-[#1A1A1A] mb-1">Check your phone</h1>
-                    <p className="text-gray-500 text-sm font-medium">
+                    <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Verify phone</h1>
+                    <p className="text-gray-400 text-sm font-medium">
                       We sent a 6-digit code to{' '}
-                      <span className="font-semibold text-[#1A1A1A]">+91 {phone}</span>
+                      <span className="font-bold text-white">+91 {phone}</span>
                     </p>
                   </div>
 
-                  <div className="space-y-6">
+                  <div className="space-y-8">
                     <div>
-                      <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-widest mb-3">
-                        Enter OTP
-                      </label>
-                      <div className="flex gap-2 sm:gap-3">
+                      <div className="flex gap-2 sm:gap-3 justify-between">
                         {otp.map((digit, i) => (
                           <input
                             key={i}
@@ -196,9 +201,9 @@ function LoginPage() {
                             value={digit}
                             onChange={e => handleOtpChange(e.target.value, i)}
                             onKeyDown={e => handleOtpKeyDown(e, i)}
-                            className={`w-full aspect-square text-center text-xl font-bold border rounded-xl focus:outline-none transition-all bg-white text-[#1A1A1A] shadow-sm
-                              ${digit ? 'border-[#1A1A1A] bg-[#F5F4F0]' : 'border-[#E5E4E0]'}
-                              focus:border-[#1A1A1A] focus:ring-2 focus:ring-[#1A1A1A]/20`}
+                            className={`w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-black border rounded-xl focus:outline-none transition-all bg-[#030712] text-white shadow-sm
+                              ${digit ? 'border-blue-500 bg-blue-600/5 shadow-[0_0_10px_rgba(37,99,235,0.2)]' : 'border-[#1E293B]'}
+                              focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
                           />
                         ))}
                       </div>
@@ -207,11 +212,11 @@ function LoginPage() {
                     <button
                       onClick={handleVerify}
                       disabled={otp.join('').length < 6 || loading}
-                      className="w-full py-3 bg-[#1A1A1A] text-white font-semibold rounded-lg hover:bg-[#2D2D2D] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2 shadow-sm"
+                      className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 text-sm flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)]"
                     >
                       {loading
-                        ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        : <><span>Verify & Sign in</span><span>→</span></>
+                        ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        : <><span>Verify & Sign In</span><CheckCircle2 size={18} /></>
                       }
                     </button>
 
@@ -219,20 +224,20 @@ function LoginPage() {
                       <span className="text-sm text-gray-500 font-medium">Didn't receive the code? </span>
                       <button
                         onClick={() => setOtp(['', '', '', '', '', ''])}
-                        className="text-sm text-[#1A1A1A] font-semibold hover:underline"
+                        className="text-sm text-blue-400 font-bold hover:text-blue-300 transition-colors"
                       >
-                        Resend OTP
+                        Resend Code
                       </button>
                     </div>
                   </div>
-                </>
+                </div>
               )}
 
             </div>
           </div>
 
-          <p className="text-center text-xs font-medium text-gray-400 mt-6">
-            © 2026 FitForge · Made with ❤️ by Hilal · All rights reserved
+          <p className="text-center text-xs font-bold text-gray-600 mt-8 tracking-widest uppercase">
+            © 2026 FitForge · Elevate Your Potential
           </p>
         </div>
       </div>

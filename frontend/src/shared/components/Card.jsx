@@ -1,23 +1,23 @@
 export default function Card({
   children,
   className = '',
-  padding = 'md',
-  hover = false
+  padding = 'md'
 }) {
   const paddings = {
     none: 'p-0',
-    sm: 'p-4',
-    md: 'p-6',
-    lg: 'p-8'
+    sm:   'p-4',
+    md:   'p-6',
+    lg:   'p-6'
   }
 
   return (
-    <div className={`
-      bg-white border border-gray-200 rounded-xl
-      ${paddings[padding]}
-      ${hover ? 'hover:shadow-md hover:border-gray-300 transition-all duration-200' : ''}
-      ${className}
-    `}>
+    <div
+      className={`
+        bg-[#111827] border border-[#1E293B] rounded-xl shadow-sm
+        ${paddings[padding]}
+        ${className}
+      `}
+    >
       {children}
     </div>
   )

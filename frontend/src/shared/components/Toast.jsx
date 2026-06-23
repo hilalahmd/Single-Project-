@@ -1,57 +1,34 @@
-import { useEffect, useState } from 'react'
-import { X, CheckCircle2, AlertCircle, Info } from 'lucide-react'
+import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
-export default function Toast({ message, type = 'info', show, onClose, duration = 3000 }) {
-  const [isVisible, setIsVisible] = useState(false)
+export default function Toast({ message, type = 'success', duration = 3000, onClose }) {
+  const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    if (show) {
-      setIsVisible(true)
-      const timer = setTimeout(() => {
-        setIsVisible(false)
-        setTimeout(onClose, 300) // allow fade out animation
-      }, duration)
-      return () => clearTimeout(timer)
-    } else {
-      setIsVisible(false)
-    }
-  }, [show, duration, onClose])
+    const t = setTimeout(() => { setVisible(false); onClose?.() }, duration)
+    return () => clearTimeout(t)
+  }, [duration, onClose])
 
-  if (!show && !isVisible) return null
+  if (!visible) return null
 
   const types = {
-    success: 'bg-black text-white',
-    error: 'bg-red-600 text-white',
-    info: 'bg-gray-900 text-white'
+    success: { icon: CheckCircle, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
+    error:   { icon: XCircle,     color: 'text-red-400',   bg: 'bg-red-500/10 border-red-500/20' },
+    warning: { icon: AlertCircle, color: 'text-yellow-400',bg: 'bg-yellow-500/10 border-yellow-500/20' },
   }
 
-  const icons = {
-    success: CheckCircle2,
-    error: AlertCircle,
-    info: Info
-  }
-
-  const Icon = icons[type]
+  const { icon: Icon, color, bg } = types[type] || types.success
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
-      <div 
-        className={`
-          flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg min-w-[300px]
-          transition-all duration-300 transform
-          ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
-          ${types[type]}
-        `}
+    <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-xl shadow-2xl ${bg}`}>
+      <Icon size={18} className={color} />
+      <span className="text-sm font-[600] text-white font-['Inter']">{message}</span>
+      <button
+        onClick={() => { setVisible(false); onClose?.() }}
+        className="ml-2 text-gray-500 hover:text-white transition-colors"
       >
-        <Icon size={20} className="shrink-0" />
-        <p className="text-sm font-medium flex-1">{message}</p>
-        <button 
-          onClick={() => setIsVisible(false)}
-          className="text-white/70 hover:text-white transition-colors p-1"
-        >
-          <X size={16} />
-        </button>
-      </div>
+        <X size={14} />
+      </button>
     </div>
   )
 }

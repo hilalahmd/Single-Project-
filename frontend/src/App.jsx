@@ -61,6 +61,7 @@ import WorkoutPlansPage from './modules/workout/pages/WorkoutPlansPage'
 import AdminDashboardPage from './modules/admin/pages/AdminDashboardPage'
 import TrainerApprovalsPage from './modules/admin/pages/TrainerApprovalsPage'
 import UserManagementPage from './modules/admin/pages/UserManagementPage'
+import ManagerManagementPage from './modules/admin/pages/ManagerManagementPage'
 import PayoutManagementPage from './modules/admin/pages/PayoutManagementPage'
 import RevenueReportsPage from './modules/admin/pages/RevenueReportsPage'
 import SubscriptionManagementPage from './modules/admin/pages/SubscriptionManagementPage'
@@ -145,6 +146,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/approvals" element={<TrainerApprovalsPage />} />
         <Route path="/admin/users" element={<UserManagementPage />} />
+        <Route path="/admin/managers" element={<ManagerManagementPage />} />
         <Route path="/admin/payouts" element={<PayoutManagementPage />} />
         <Route path="/admin/revenue" element={<RevenueReportsPage />} />
         <Route path="/admin/subscriptions" element={<SubscriptionManagementPage />} />

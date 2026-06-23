@@ -11,19 +11,43 @@ export default function Button({
   type = 'button',
   className = ''
 }) {
-  const baseStyles = 'inline-flex items-center justify-center rounded-lg font-semibold transition-all focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-1'
-  
+  const base = `
+    inline-flex items-center justify-center font-['Syne'] font-[800]
+    uppercase tracking-[0.05em] transition-all duration-300
+    focus:outline-none disabled:opacity-40 disabled:pointer-events-none
+  `
+
   const variants = {
-    primary: 'bg-black text-white hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-400',
-    secondary: 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300 disabled:bg-gray-50 disabled:text-gray-400',
-    ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:text-gray-300',
-    danger: 'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-200 disabled:text-red-400'
+    // Blue glow — primary CTA (matches hero "START TRAINING FREE" button)
+    primary: `
+      bg-[#2563EB] text-white rounded-full
+      hover:bg-white hover:text-[#2563EB] hover:scale-105
+      shadow-[0_0_30px_rgba(37,99,235,0.4)]
+      hover:shadow-[0_0_40px_rgba(37,99,235,0.6)]
+    `,
+    // Ghost glass — secondary CTA (matches hero "Generate Free Diet Plan" button)
+    secondary: `
+      bg-white/5 backdrop-blur-lg border border-white/20 text-white rounded-full
+      hover:bg-white/15 hover:border-white/40 hover:scale-105
+      hover:shadow-[0_0_30px_rgba(255,255,255,0.15)]
+    `,
+    // Subtle — tertiary / back buttons
+    ghost: `
+      bg-transparent border border-white/10 text-gray-400 rounded-full
+      hover:bg-white/5 hover:text-white hover:border-white/20
+    `,
+    // Danger
+    danger: `
+      bg-red-500/10 border border-red-500/20 text-red-400 rounded-full
+      hover:bg-red-500/20 hover:text-red-300
+    `
   }
 
   const sizes = {
-    sm: 'text-sm px-3 py-1.5',
-    md: 'text-sm px-4 py-2',
-    lg: 'text-base px-6 py-3'
+    sm:  'text-xs px-4 py-2',
+    md:  'text-sm px-6 py-3',
+    lg:  'text-sm px-8 py-4',
+    xl:  'text-base px-10 py-5'
   }
 
   return (
@@ -31,13 +55,7 @@ export default function Button({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`
-        ${baseStyles}
-        ${variants[variant]}
-        ${sizes[size]}
-        ${fullWidth ? 'w-full' : ''}
-        ${className}
-      `}
+      className={`${base} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
     >
       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
       {children}

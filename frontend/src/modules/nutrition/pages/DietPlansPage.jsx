@@ -1,4 +1,5 @@
 import { Plus, Salad, MoreHorizontal } from 'lucide-react'
+import Card from '../../../shared/components/Card'
 
 const PLANS = [
   { title: 'Clean Bulk Diet',      clients: 3, calories: '3,200 kcal', updated: 'Jun 21' },
@@ -9,34 +10,39 @@ const PLANS = [
 
 export default function DietPlansPage() {
   return (
-    <div className="space-y-5">
+    <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-black text-black">Diet Plans</h1>
-        <button className="flex items-center gap-2 px-4 py-2 bg-black text-white text-sm font-semibold hover:bg-gray-900 transition-colors">
-          <Plus size={16} /> New Plan
+        <div>
+          <h1 className="text-[32px] font-bold text-white">Diet Plans</h1>
+          <p className="text-[14px] text-gray-400 mt-1">Manage and assign nutrition protocols.</p>
+        </div>
+        <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#2563EB] to-blue-500 hover:to-blue-400 text-white text-[14px] font-semibold rounded-lg transition-all shadow-sm">
+          <Plus size={18} /> New Plan
         </button>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 gap-6">
         {PLANS.map(p => (
-          <div key={p.title} className="border border-gray-200 p-5 hover:border-black transition-colors">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Salad size={16} className="text-black" />
-                <h2 className="text-sm font-bold text-black">{p.title}</h2>
+          <Card key={p.title} className="hover:border-[#2563EB] group transition-colors">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#0F172A] rounded-lg flex items-center justify-center border border-[#1E293B]">
+                  <Salad size={18} className="text-[#22C55E]" />
+                </div>
+                <h2 className="text-[16px] font-semibold text-white group-hover:text-[#2563EB] transition-colors">{p.title}</h2>
               </div>
-              <button className="text-gray-300 hover:text-black transition-colors"><MoreHorizontal size={16} /></button>
+              <button className="text-gray-500 hover:text-white transition-colors"><MoreHorizontal size={18} /></button>
             </div>
-            <div className="flex gap-4 text-xs text-gray-500 mb-4">
+            <div className="flex gap-4 text-[12px] font-semibold text-gray-400 mb-6 uppercase tracking-wider">
               <span>{p.clients} clients</span>
               <span>{p.calories}/day</span>
               <span>Updated {p.updated}</span>
             </div>
-            <div className="flex gap-2">
-              <button className="flex-1 py-2 border border-gray-200 text-xs font-semibold text-gray-700 hover:border-black hover:text-black transition-colors">Edit</button>
-              <button className="flex-1 py-2 border border-gray-200 text-xs font-semibold text-gray-700 hover:border-black hover:text-black transition-colors">Assign</button>
+            <div className="flex gap-3">
+              <button className="flex-1 py-2.5 border border-[#1E293B] bg-[#0F172A] text-[14px] font-semibold text-gray-300 hover:border-[#2563EB] hover:text-[#2563EB] rounded-lg transition-colors">Edit</button>
+              <button className="flex-1 py-2.5 border border-[#1E293B] bg-[#0F172A] text-[14px] font-semibold text-gray-300 hover:border-[#2563EB] hover:text-[#2563EB] rounded-lg transition-colors">Assign</button>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>
