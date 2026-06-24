@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, ShieldCheck, Star } from 'lucide-react'
+import { Search, ShieldCheck, Star, ChevronDown } from 'lucide-react'
 
 const TRAINERS = [
   { 
@@ -74,6 +75,11 @@ const FILTER_TAGS = ['All', 'HIIT', 'Strength', 'Yoga', 'Boxing', 'CrossFit', 'R
 
 export default function TrainerListingPage() {
   const navigate = useNavigate()
+  const [selectedFilters, setSelectedFilters] = useState({
+    language: 'Any language',
+    price: 'Any price',
+    rating: 'Any rating'
+  })
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#030712] min-h-screen">
@@ -92,11 +98,41 @@ export default function TrainerListingPage() {
             />
           </div>
           
-          <div className="flex gap-4 overflow-x-auto pb-2 lg:pb-0 shrink-0">
-            {['Any language', 'Any price', 'Any rating'].map((label, i) => (
-              <select key={i} className="px-4 py-3 border border-[#1E293B] rounded-xl text-sm bg-[#030712] text-white focus:outline-none focus:border-blue-500 appearance-none pr-10 relative shrink-0">
-                <option>{label}</option>
-              </select>
+          <div className="flex gap-4 flex-wrap shrink-0">
+            {[
+              { keyName: 'language', label: 'Any language', options: ['English', 'Malayalam', 'Any language'] },
+              { keyName: 'price', label: 'Any price', options: ['Low to High', 'High to Low', 'Any price'] },
+              { keyName: 'rating', label: 'Any rating', options: ['4.0+ Stars', '4.5+ Stars', '5.0 Stars', 'Any rating'] }
+            ].map((filter, i) => (
+              <div key={i} className="relative group shrink-0">
+                <button className={`px-4 py-3 border rounded-xl text-sm bg-[#030712] focus:outline-none focus:border-blue-500 flex items-center gap-2 transition-colors ${
+                  selectedFilters[filter.keyName] !== filter.label 
+                  ? 'border-blue-500/50 text-blue-400' 
+                  : 'border-[#1E293B] text-white group-hover:border-white/30'
+                }`}>
+                  {selectedFilters[filter.keyName]}
+                  <ChevronDown size={16} className={`${selectedFilters[filter.keyName] !== filter.label ? 'text-blue-500/50' : 'text-gray-400'} group-hover:rotate-180 transition-transform duration-300`} />
+                </button>
+                
+                {/* Dropdown options (Opens on Hover) */}
+                <div className="absolute top-full left-0 mt-2 w-48 bg-[#0F172A] border border-[#1E293B] rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 transform origin-top group-hover:translate-y-0 -translate-y-2">
+                  <div className="py-2">
+                    {filter.options.map((opt, j) => (
+                      <button 
+                        key={j} 
+                        onClick={() => setSelectedFilters({...selectedFilters, [filter.keyName]: opt})}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors font-medium ${
+                          selectedFilters[filter.keyName] === opt 
+                          ? 'text-blue-400 bg-[#1E293B]/50' 
+                          : 'text-gray-400 hover:text-white hover:bg-[#1E293B]'
+                        }`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>

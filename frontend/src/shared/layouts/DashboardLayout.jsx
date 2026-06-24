@@ -28,6 +28,8 @@ import {
   Shield
 } from 'lucide-react'
 
+import { useAuth } from '../context/AuthContext'
+
 // ── Nav item definitions per role ────────────────────────────────────────────
 
 const clientNav = [
@@ -66,28 +68,21 @@ const adminNav = [
   { label: 'Subscriptions', to: '/admin/subscriptions',      icon: Layers },
 ]
 
-function useRole(pathname) {
-  if (pathname.startsWith('/admin'))   return 'admin'
-  if (pathname.startsWith('/trainer')) return 'trainer'
-  return 'client'
-}
-
 function useNavItems(role) {
   if (role === 'admin')   return adminNav
-  if (role === 'trainer') return trainerNav
+  if (role === 'trainer' || role === 'wellness_coach') return trainerNav
   return clientNav
 }
 
 export default function DashboardLayout() {
-  const { pathname } = useLocation()
-  const role = useRole(pathname)
+  const { role, logout, user } = useAuth()
   const navItems = useNavItems(role)
 
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const sidebarWidth = collapsed ? 'w-16' : 'w-56'
-  const isLightMode = role === 'trainer' || role === 'admin'
+  const isLightMode = role === 'admin'
 
   // Dynamic Theme Classes
   const theme = {
@@ -148,7 +143,7 @@ export default function DashboardLayout() {
 
       {/* Footer / Sign out */}
       <div className={`p-4 mt-auto border-t ${theme.divider}`}>
-        <button className={`flex items-center gap-4 px-2 py-2 w-full text-[14px] font-bold transition-colors ${theme.btnColor}`}>
+        <button onClick={logout} className={`flex items-center gap-4 px-2 py-2 w-full text-[14px] font-bold transition-colors ${theme.btnColor}`}>
           <LogOut size={18} className="shrink-0" />
           {!collapsed && <span>Sign out</span>}
         </button>
@@ -209,7 +204,7 @@ export default function DashboardLayout() {
               <span className={`absolute top-0 right-0 w-2 h-2 rounded-full border-2 ${theme.bellDot}`} />
             </button>
             <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border shadow-sm cursor-pointer transition-colors ${theme.avatarBtn}`}>
-              JL
+              {user?.name?.charAt(0) || 'U'}
             </div>
           </div>
         </header>

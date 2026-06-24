@@ -1,65 +1,113 @@
-import { Search, MessageSquare, Video } from 'lucide-react'
+import { useState } from 'react'
+import { Search, MoreVertical, Activity, Plus, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-const CLIENTS = [
-  { id: 1, name: 'David Kim',   plan: 'Strength Program',  sessions: 18, status: 'Active' },
-  { id: 2, name: 'Anita Rao',   plan: 'Yoga & Flexibility', sessions: 9,  status: 'Active' },
-  { id: 3, name: 'Tom Morris',  plan: 'HIIT & Cardio',      sessions: 24, status: 'Active' },
-  { id: 4, name: 'Lisa Park',   plan: 'Weight Loss',        sessions: 6,  status: 'Paused' },
-  { id: 5, name: 'James Cho',   plan: 'Muscle Gain',        sessions: 12, status: 'Active' },
-]
-
 export default function ClientListPage() {
+  const [search, setSearch] = useState('')
+
+  const clients = [
+    { id: 1, name: 'David Kim', goal: 'Muscle Gain', weight: '76 kg', status: 'Active', planStatus: 'Needs Update' },
+    { id: 2, name: 'Anita Rao', goal: 'Weight Loss', weight: '65 kg', status: 'Active', planStatus: 'Up to date' },
+    { id: 3, name: 'Tom Morris', goal: 'Endurance', weight: '82 kg', status: 'Inactive', planStatus: 'Expired' },
+    { id: 4, name: 'Lisa Park', goal: 'General Fitness', weight: '58 kg', status: 'Active', planStatus: 'Up to date' },
+    { id: 5, name: 'James Chen', goal: 'Weight Loss', weight: '90 kg', status: 'Active', planStatus: 'Needs Update' },
+  ]
+
+  const filtered = clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between">
+    <div className="max-w-6xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-bold text-black tracking-tight">My Clients</h1>
-          <p className="text-[14px] text-gray-500 mt-1">Manage and communicate with your active clients.</p>
+          <h1 className="text-[32px] font-bold text-white tracking-tight">My Clients</h1>
+          <p className="text-sm text-gray-400 mt-1">Manage your active clients and their programs.</p>
         </div>
-        <span className="px-4 py-2 bg-gray-100 border border-gray-200 text-black rounded-lg text-[14px] font-bold shadow-sm">{CLIENTS.length} Total</span>
+        
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+          <input 
+            type="text"
+            placeholder="Search clients..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-64 bg-[#111827] border border-[#1E293B] rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[#2563EB] transition-colors"
+          />
+        </div>
       </div>
 
-      <div className="relative shadow-sm">
-        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input type="text" placeholder="Search clients..." className="w-full pl-12 pr-4 py-3.5 border border-gray-200 bg-white rounded-xl text-[14px] text-black focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors placeholder-gray-400" />
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-        {/* Header */}
-        <div className="grid grid-cols-5 px-6 py-4 bg-gray-50 border-b border-gray-200 text-[12px] font-bold text-gray-500 uppercase tracking-wider">
-          <span className="col-span-2">Client</span>
-          <span>Plan</span>
-          <span>Sessions</span>
-          <span>Actions</span>
-        </div>
-        {/* Rows */}
-        <div>
-          {CLIENTS.map(c => (
-            <div key={c.id} className="grid grid-cols-5 items-center px-6 py-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
-              <div className="col-span-2 flex items-center gap-4">
-                <div className="w-10 h-10 bg-black text-white flex items-center justify-center text-[14px] font-bold rounded-full shadow-sm">
-                  {c.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-[15px] font-bold text-black">{c.name}</p>
-                  <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                    {c.status}
-                  </span>
-                </div>
-              </div>
-              <span className="text-[14px] text-gray-600 font-medium">{c.plan}</span>
-              <span className="text-[15px] font-bold text-black">{c.sessions}</span>
-              <div className="flex gap-2">
-                <Link to={`/trainer/chat/${c.id}`} className="p-2 border border-gray-200 bg-white hover:border-black hover:text-black text-gray-500 rounded-lg transition-colors shadow-sm" title="Message">
-                  <MessageSquare size={16} />
-                </Link>
-                <Link to="/trainer/video" className="p-2 border border-gray-200 bg-white hover:border-black hover:text-black text-gray-500 rounded-lg transition-colors shadow-sm" title="Video">
-                  <Video size={16} />
-                </Link>
-              </div>
-            </div>
-          ))}
+      {/* Clients Table / List */}
+      <div className="bg-[#111827] border border-[#1E293B] rounded-2xl overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-gray-400">
+            <thead className="bg-[#0F172A] border-b border-[#1E293B] text-xs uppercase font-semibold text-gray-500 tracking-wider">
+              <tr>
+                <th className="px-6 py-4">Client</th>
+                <th className="px-6 py-4">Current Goal</th>
+                <th className="px-6 py-4">Latest Weight</th>
+                <th className="px-6 py-4">Plan Status</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#1E293B]">
+              {filtered.map(client => (
+                <tr key={client.id} className="hover:bg-[#0F172A]/50 transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#1E293B] flex items-center justify-center text-white font-bold border border-gray-700">
+                        {client.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white text-[15px]">{client.name}</p>
+                        <p className="text-[12px] flex items-center gap-1 mt-0.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${client.status === 'Active' ? 'bg-[#22C55E]' : 'bg-red-500'}`}></span>
+                          {client.status}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 font-medium text-gray-300">
+                    {client.goal}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp size={14} className="text-gray-500" />
+                      <span className="font-semibold text-white">{client.weight}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${
+                      client.planStatus === 'Up to date' ? 'bg-[#22C55E]/10 text-[#22C55E]' : 
+                      client.planStatus === 'Needs Update' ? 'bg-[#F59E0B]/10 text-[#F59E0B]' : 'bg-red-500/10 text-red-500'
+                    }`}>
+                      {client.planStatus}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link 
+                        to={`/trainer/plans/build/${client.id}`}
+                        className="px-3 py-1.5 bg-[#2563EB]/10 hover:bg-[#2563EB]/20 text-[#2563EB] border border-[#2563EB]/20 rounded-lg text-[12px] font-bold transition-colors flex items-center gap-1.5"
+                      >
+                        <Activity size={14} /> Update Plan
+                      </Link>
+                      <button className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-[#1E293B] transition-colors">
+                        <MoreVertical size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="px-6 py-12 text-center">
+                    <p className="text-gray-500 text-sm">No clients found matching your search.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

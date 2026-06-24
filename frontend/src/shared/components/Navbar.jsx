@@ -1,78 +1,85 @@
-import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 
 const navLinks = [
-  { label: 'Trainers', to: '/trainers' },
-  { label: 'Plans',    to: '/plans' },
-  { label: 'Free Diet', to: '/free-diet-plan' },
+  { label: 'Find Coach', to: '/trainers' },
+  { label: 'Plans',      to: '/plans' },
+  { label: 'Free Diet',  to: '/free-diet-plan' },
+  { label: 'Become a Coach', to: '/auth/trainer-register' },
 ]
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    // Init state
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
-    <header className="sticky top-0 z-30 bg-[#07080C]/80 backdrop-blur-xl border-b border-white/10">
+    <header className={`fixed top-0 w-full z-[100] transition-all duration-300 ${scrolled ? 'bg-[#07080C]/90 backdrop-blur-xl border-b border-white/10' : 'bg-transparent border-transparent'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-16 gap-8">
+        <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-16' : 'h-20'}`}>
 
-          {/* Logo — Syne font matching CinematicHero */}
+          {/* Logo */}
           <Link
             to="/"
-            className="shrink-0 text-xl font-[800] tracking-[-0.02em] text-white font-['Syne']"
+            className="text-2xl font-black tracking-[-0.05em] text-white font-['Syne'] drop-shadow-md"
           >
             FITFORGE
           </Link>
 
-          {/* Nav links */}
-          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
-            {navLinks.map(({ label, to }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  `px-4 py-2 text-sm font-[600] font-['Inter'] rounded-full transition-all duration-200 ${
-                    isActive
-                      ? 'text-white bg-white/10 border border-white/10'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
-                  }`
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
-          </nav>
+          {/* Right side: Nav + Auth */}
+          <div className="hidden md:flex items-center gap-6">
+            
+            <nav className="flex items-center gap-6 mr-2">
+              {navLinks.map(({ label, to }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    `relative py-1 text-[11px] font-bold uppercase tracking-widest transition-colors drop-shadow-md 
+                     after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-white 
+                     after:rounded-full after:origin-center after:transition-transform after:duration-300 
+                     ${isActive ? 'text-white after:scale-x-100' : 'text-white/80 hover:text-white after:scale-x-0 hover:after:scale-x-100 hover:after:bg-white/50'}`
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </nav>
 
-          {/* Right actions */}
-          <div className="hidden md:flex items-center gap-3 shrink-0">
             <Link
               to="/auth/login"
-              className="px-4 py-2 text-sm font-[700] font-['Syne'] text-gray-300 hover:text-white transition-colors tracking-wide uppercase"
+              className="text-xs font-bold text-white/80 hover:text-white transition-colors uppercase tracking-widest drop-shadow-md"
             >
-              Login
+              Log in
             </Link>
-            <Link
-              to="/auth/register"
-              className="
-                px-5 py-2 text-sm font-[800] font-['Syne'] uppercase tracking-[0.05em]
-                bg-[#2563EB] text-white rounded-full
-                hover:bg-white hover:text-[#2563EB]
-                shadow-[0_0_20px_rgba(37,99,235,0.4)]
-                hover:shadow-[0_0_30px_rgba(37,99,235,0.6)]
-                transition-all duration-300 hover:scale-105
-              "
+
+            <button
+              onClick={() => navigate('/auth/register')}
+              className="bg-white text-black px-5 py-2.5 rounded-full font-bold text-xs hover:scale-105 transition-transform uppercase tracking-wider shadow-[0_0_20px_rgba(255,255,255,0.2)]"
             >
-              Get Started
-            </Link>
+              GET STARTED
+            </button>
           </div>
 
           {/* Mobile hamburger */}
           <div className="ml-auto md:hidden">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+              className="text-white p-2"
             >
-              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+              {menuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
@@ -80,42 +87,26 @@ export default function Navbar() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <div className="md:hidden border-t border-white/10 bg-[#07080C]/95 backdrop-blur-xl">
-          <div className="px-4 py-3 space-y-1">
+         <div className="md:hidden bg-[#07080C] border-b border-white/10 absolute top-full left-0 w-full p-4 flex flex-col gap-4">
+            {/* Nav Links */}
             {navLinks.map(({ label, to }) => (
-              <NavLink
-                key={to}
-                to={to}
-                onClick={() => setMenuOpen(false)}
-                className={({ isActive }) =>
-                  `block px-4 py-2.5 text-sm font-[600] rounded-xl transition-all ${
-                    isActive
-                      ? 'bg-white/10 text-white border border-white/10'
-                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                  }`
-                }
-              >
-                {label}
-              </NavLink>
+               <NavLink 
+                 key={to} 
+                 to={to} 
+                 onClick={() => setMenuOpen(false)} 
+                 className={({ isActive }) => `text-sm font-bold uppercase tracking-widest ${isActive ? 'text-white' : 'text-white/80 hover:text-white'}`}
+               >
+                 {label}
+               </NavLink>
             ))}
-          </div>
-          <div className="px-4 pb-5 flex flex-col gap-2">
-            <Link
-              to="/auth/login"
-              onClick={() => setMenuOpen(false)}
-              className="block text-center px-4 py-2.5 text-sm font-[700] font-['Syne'] uppercase tracking-wide text-gray-300 border border-white/10 rounded-full hover:bg-white/5 hover:text-white transition-all"
-            >
-              Login
+            <hr className="border-white/10" />
+            <Link to="/auth/login" onClick={() => setMenuOpen(false)} className="text-sm font-bold uppercase tracking-widest text-white/80 hover:text-white">
+              Log in
             </Link>
-            <Link
-              to="/auth/register"
-              onClick={() => setMenuOpen(false)}
-              className="block text-center px-4 py-2.5 text-sm font-[800] font-['Syne'] uppercase tracking-[0.05em] bg-[#2563EB] text-white rounded-full hover:bg-white hover:text-[#2563EB] transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)]"
-            >
+            <button onClick={() => { setMenuOpen(false); navigate('/auth/register'); }} className="bg-white text-black text-center py-3 rounded-full font-bold text-xs uppercase tracking-wider">
               Get Started
-            </Link>
-          </div>
-        </div>
+            </button>
+         </div>
       )}
     </header>
   )

@@ -272,14 +272,6 @@ export default function FreeDietPlanPage() {
         <div className="absolute inset-0 z-[70] mix-blend-overlay opacity-[0.04]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")" }}></div>
       </div>
 
-      {/* Nav */}
-      <nav className="relative z-10 p-6 flex justify-between items-center">
-        <button onClick={() => navigate('/')} className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
-          <ArrowLeft size={20} className="text-white" />
-        </button>
-        <div className="text-xl font-black tracking-[-0.05em] text-white font-['Syne']">FITFORGE</div>
-        <div className="w-10"></div> {/* Spacer for center alignment */}
-      </nav>
 
       {/* Main Content */}
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12">

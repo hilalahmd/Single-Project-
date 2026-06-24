@@ -1,4 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './shared/context/AuthContext'
+import ProtectedRoute from './shared/components/ProtectedRoute'
 
 // Layouts
 import MainLayout from './shared/layouts/MainLayout'
@@ -6,11 +8,8 @@ import AuthLayout from './shared/layouts/AuthLayout'
 import DashboardLayout from './shared/layouts/DashboardLayout'
 
 // ── Bare routes (self-contained pages with own layout) ──────────────────────
-// LandingPage has its own navbar + footer embedded
 import LandingPage from './modules/client/pages/LandingPage'
-// LoginPage has its own header + full-page layout
 import LoginPage from './modules/auth/pages/LoginPage'
-// FreeDietPlanPage has its own self-contained layout
 import FreeDietPlanPage from './modules/client/pages/FreeDietPlanPage'
 
 // ── Public pages (use MainLayout: Navbar + Footer) ──────────────────────────
@@ -56,6 +55,7 @@ import EarningsPage from './modules/trainer/pages/EarningsPage'
 import TrainerProfileEditPage from './modules/trainer/pages/TrainerProfileEditPage'
 import CertificatesPage from './modules/trainer/pages/CertificatesPage'
 import WorkoutPlansPage from './modules/workout/pages/WorkoutPlansPage'
+import TrainerPlanBuilderPage from './modules/trainer/pages/TrainerPlanBuilderPage'
 
 // ── Admin pages ──────────────────────────────────────────────────────────────
 import AdminDashboardPage from './modules/admin/pages/AdminDashboardPage'
@@ -85,77 +85,86 @@ function NotFoundPage() {
 
 function App() {
   return (
-    <Routes>
+    <AuthProvider>
+      <Routes>
 
-      {/* ── Bare routes — self-contained pages (own navbar/footer) ── */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/free-diet-plan" element={<FreeDietPlanPage />} />
-      <Route path="/auth/login" element={<LoginPage />} />
-
-      {/* ── Public routes — wrapped in MainLayout (Navbar + Footer) ── */}
-      <Route element={<MainLayout />}>
-        <Route path="/trainers" element={<TrainerListingPage />} />
-        <Route path="/trainers/:id" element={<TrainerPublicProfilePage />} />
-        <Route path="/plans" element={<SubscriptionPlansPage />} />
-      </Route>
-
-      {/* ── Auth routes — wrapped in AuthLayout (centered card) ── */}
-      <Route element={<AuthLayout />}>
-        <Route path="/auth/register" element={<RegisterPage />} />
-        <Route path="/auth/trainer-register" element={<TrainerRegisterPage />} />
+        {/* ── Bare routes — self-contained pages (own navbar/footer) ── */}
+        <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/trainer-login" element={<TrainerLoginPage />} />
-        <Route path="/auth/admin-login" element={<AdminLoginPage />} />
-        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/auth/verify-email" element={<EmailVerifyPage />} />
-      </Route>
 
-      {/* ── Client Dashboard ── */}
-      <Route element={<DashboardLayout />}>
-        <Route path="/dashboard" element={<ClientDashboardPage />} />
-        <Route path="/dashboard/plans" element={<MyPlansPage />} />
-        <Route path="/dashboard/progress" element={<ProgressTrackerPage />} />
-        <Route path="/dashboard/nutrition" element={<NutritionTrackerPage />} />
-        <Route path="/dashboard/food-ai" element={<FoodAIPage />} />
-        <Route path="/dashboard/chat" element={<ChatListPage />} />
-        <Route path="/dashboard/chat/:id" element={<ChatWindowPage />} />
-        <Route path="/dashboard/ai" element={<AIAssistantPage />} />
-        <Route path="/dashboard/video" element={<VideoSessionPage />} />
-        <Route path="/dashboard/schedule" element={<SchedulePage />} />
-        <Route path="/dashboard/subscription" element={<CheckoutPage />} />
-        <Route path="/dashboard/settings" element={<ClientSettingsPage />} />
-      </Route>
+        {/* ── Public routes — wrapped in MainLayout (Navbar + Footer) ── */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/free-diet-plan" element={<FreeDietPlanPage />} />
+          <Route path="/trainers" element={<TrainerListingPage />} />
+          <Route path="/trainers/:id" element={<TrainerPublicProfilePage />} />
+          <Route path="/plans" element={<SubscriptionPlansPage />} />
+        </Route>
 
-      {/* ── Trainer Dashboard ── */}
-      <Route element={<DashboardLayout />}>
-        <Route path="/trainer/dashboard" element={<TrainerDashboardPage />} />
-        <Route path="/trainer/clients" element={<ClientListPage />} />
-        <Route path="/trainer/plans/workout" element={<WorkoutPlansPage />} />
-        <Route path="/trainer/plans/diet" element={<DietPlansPage />} />
-        <Route path="/trainer/schedule" element={<TrainerSchedulePage />} />
-        <Route path="/trainer/earnings" element={<EarningsPage />} />
-        <Route path="/trainer/chat" element={<ChatListPage />} />
-        <Route path="/trainer/chat/:id" element={<ChatWindowPage />} />
-        <Route path="/trainer/video" element={<VideoSessionPage />} />
-        <Route path="/trainer/profile" element={<TrainerProfileEditPage />} />
-        <Route path="/trainer/certificates" element={<CertificatesPage />} />
-      </Route>
+        {/* ── Auth routes — wrapped in AuthLayout (centered card) ── */}
+        <Route element={<AuthLayout />}>
+          <Route path="/auth/register" element={<RegisterPage />} />
+          <Route path="/auth/trainer-register" element={<TrainerRegisterPage />} />
+          <Route path="/auth/admin-login" element={<AdminLoginPage />} />
+          <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/auth/verify-email" element={<EmailVerifyPage />} />
+        </Route>
 
-      {/* ── Admin Dashboard ── */}
-      <Route element={<DashboardLayout />}>
-        <Route path="/admin" element={<AdminDashboardPage />} />
-        <Route path="/admin/approvals" element={<TrainerApprovalsPage />} />
-        <Route path="/admin/users" element={<UserManagementPage />} />
-        <Route path="/admin/managers" element={<ManagerManagementPage />} />
-        <Route path="/admin/payouts" element={<PayoutManagementPage />} />
-        <Route path="/admin/revenue" element={<RevenueReportsPage />} />
-        <Route path="/admin/subscriptions" element={<SubscriptionManagementPage />} />
-      </Route>
+        {/* ── Client Dashboard (Protected) ── */}
+        <Route element={<ProtectedRoute allowedRoles={['user']} />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<ClientDashboardPage />} />
+            <Route path="/dashboard/plans" element={<MyPlansPage />} />
+            <Route path="/dashboard/progress" element={<ProgressTrackerPage />} />
+            <Route path="/dashboard/nutrition" element={<NutritionTrackerPage />} />
+            <Route path="/dashboard/food-ai" element={<FoodAIPage />} />
+            <Route path="/dashboard/chat" element={<ChatListPage />} />
+            <Route path="/dashboard/chat/:id" element={<ChatWindowPage />} />
+            <Route path="/dashboard/ai" element={<AIAssistantPage />} />
+            <Route path="/dashboard/video" element={<VideoSessionPage />} />
+            <Route path="/dashboard/schedule" element={<SchedulePage />} />
+            <Route path="/dashboard/subscription" element={<CheckoutPage />} />
+            <Route path="/dashboard/settings" element={<ClientSettingsPage />} />
+          </Route>
+        </Route>
 
-      {/* ── 404 ── */}
-      <Route path="*" element={<NotFoundPage />} />
+        {/* ── Trainer Dashboard (Protected) ── */}
+        <Route element={<ProtectedRoute allowedRoles={['trainer', 'wellness_coach']} />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/trainer/dashboard" element={<TrainerDashboardPage />} />
+            <Route path="/trainer/clients" element={<ClientListPage />} />
+            <Route path="/trainer/plans/build/:id" element={<TrainerPlanBuilderPage />} />
+            <Route path="/trainer/plans/workout" element={<WorkoutPlansPage />} />
+            <Route path="/trainer/plans/diet" element={<DietPlansPage />} />
+            <Route path="/trainer/schedule" element={<TrainerSchedulePage />} />
+            <Route path="/trainer/earnings" element={<EarningsPage />} />
+            <Route path="/trainer/chat" element={<ChatListPage />} />
+            <Route path="/trainer/chat/:id" element={<ChatWindowPage />} />
+            <Route path="/trainer/video" element={<VideoSessionPage />} />
+            <Route path="/trainer/profile" element={<TrainerProfileEditPage />} />
+            <Route path="/trainer/certificates" element={<CertificatesPage />} />
+          </Route>
+        </Route>
 
-    </Routes>
+        {/* ── Admin Dashboard (Protected) ── */}
+        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/approvals" element={<TrainerApprovalsPage />} />
+            <Route path="/admin/users" element={<UserManagementPage />} />
+            <Route path="/admin/managers" element={<ManagerManagementPage />} />
+            <Route path="/admin/payouts" element={<PayoutManagementPage />} />
+            <Route path="/admin/revenue" element={<RevenueReportsPage />} />
+            <Route path="/admin/subscriptions" element={<SubscriptionManagementPage />} />
+          </Route>
+        </Route>
+
+        {/* ── 404 ── */}
+        <Route path="*" element={<NotFoundPage />} />
+
+      </Routes>
+    </AuthProvider>
   )
 }
 

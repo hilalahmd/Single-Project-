@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 // High-performance clamp & map functions
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val))
@@ -8,13 +7,10 @@ const mapRange = (val, inMin, inMax, outMin, outMax) => {
 }
 
 export default function CinematicHero() {
-  const navigate = useNavigate()
-  
   const sectionRef = useRef(null)
   
   // DOM element refs for direct manipulation (Bypassing React render cycle for 240fps)
   const introRef = useRef(null)
-  const ctaRef = useRef(null)
   const flashRef = useRef(null)
 
   useEffect(() => {
@@ -46,13 +42,7 @@ export default function CinematicHero() {
       if (introRef.current) {
         // Fades out quickly in the first 25% of scroll
         introRef.current.style.opacity = mapRange(p, 0.05, 0.30, 1, 0)
-        introRef.current.style.transform = `translateY(${mapRange(p, 0.05, 0.30, 0, -40)}px) translateZ(0)`
-      }
-
-      if (ctaRef.current) {
-        // Appears right after intro fades, by 50% of scroll
-        ctaRef.current.style.opacity = mapRange(p, 0.35, 0.55, 0, 1)
-        ctaRef.current.style.transform = `translateY(${mapRange(p, 0.35, 0.55, 20, 0)}px) translateZ(0)`
+        introRef.current.style.transform = `translate3d(0, ${mapRange(p, 0.05, 0.30, 0, -40)}px, 0)`
       }
 
       if (flashRef.current) {
@@ -83,7 +73,7 @@ export default function CinematicHero() {
         {/* Phase 1: Intro Text */}
         <div 
           ref={introRef}
-          className="absolute inset-0 flex flex-col items-center justify-center z-30 pointer-events-none will-change-transform"
+          className="absolute inset-0 flex flex-col items-center justify-center z-30 pointer-events-none will-change-transform transform-gpu"
         >
           <h1 className="text-[clamp(2rem,7vw,6rem)] font-[800] text-white tracking-[-0.03em] leading-tight text-center drop-shadow-2xl">
             CONNECT. TRAIN. TRANSFORM.
@@ -93,21 +83,7 @@ export default function CinematicHero() {
           </p>
         </div>
 
-        {/* Phase 2: Landing CTA */}
-        <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-          <div ref={ctaRef} className="flex flex-col items-center gap-4 opacity-0 will-change-transform">
-            <button 
-              onClick={() => navigate('/auth/register')}
-              className="pointer-events-auto bg-[#2563EB] text-white px-10 py-5 rounded-full font-[800] text-lg uppercase tracking-[0.05em] hover:bg-white hover:text-[#2563EB] transition-colors hover:scale-105"
-              style={{ boxShadow: `0 0 40px rgba(37,99,235,0.6)` }}
-            >
-              START TRAINING FREE →
-            </button>
-            <p className="text-white/40 text-xs font-bold tracking-[0.2em] uppercase">
-              No credit card required
-            </p>
-          </div>
-        </div>
+
 
         {/* White Flash Overlay */}
         <div ref={flashRef} className="absolute inset-0 bg-white z-[60] pointer-events-none opacity-0 will-change-opacity transform-gpu"></div>

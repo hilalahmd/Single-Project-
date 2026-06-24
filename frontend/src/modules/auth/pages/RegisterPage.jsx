@@ -144,12 +144,25 @@ export default function RegisterPage() {
             Continue to Preferences
           </button>
 
-          <p className="text-center text-sm text-gray-400 font-medium pt-2">
-            Already have an account?{' '}
-            <Link to="/auth/login" className="font-bold text-blue-400 hover:text-blue-300 transition-colors">
-              Sign in
-            </Link>
-          </p>
+          <div className="text-center space-y-3 pt-2">
+            <p className="text-sm text-gray-400 font-medium">
+              Already have an account?{' '}
+              <Link to="/auth/login" className="font-bold text-blue-400 hover:text-blue-300 transition-colors">
+                Sign in
+              </Link>
+            </p>
+            <div className="flex items-center gap-3 py-2">
+              <div className="flex-1 h-px bg-[#1E293B]" />
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">or</span>
+              <div className="flex-1 h-px bg-[#1E293B]" />
+            </div>
+            <p className="text-sm text-gray-400 font-medium">
+              Are you a fitness professional?{' '}
+              <Link to="/auth/trainer-register" className="text-white font-bold hover:text-blue-400 transition-colors border-b border-white/30 hover:border-blue-400 pb-0.5">
+                Apply as a Trainer
+              </Link>
+            </p>
+          </div>
         </div>
       )}
 

@@ -33,7 +33,7 @@ export default function LandingPage() {
       // Global Track Animation (Spreads out as you scroll down the entire page)
       if (trackRef.current) {
         const trackSpread = mapRange(p, 0.0, 1.0, 1, 6.0)
-        trackRef.current.style.transform = `scaleX(${trackSpread}) translateY(${p * 40}vh)`
+        trackRef.current.style.transform = `translate3d(0, ${p * 40}vh, 0) scaleX(${trackSpread})`
       }
 
       ticking = false;
@@ -65,7 +65,7 @@ export default function LandingPage() {
       {/* GLOBAL FIXED BACKGROUND (Replaces Hero-only background) */}
       <div className="fixed inset-0 z-0 pointer-events-none will-change-transform transform-gpu">
         {/* Track */}
-        <svg ref={trackRef} width="100%" height="100%" preserveAspectRatio="none" className="absolute bottom-0 h-[60%] origin-top">
+        <svg ref={trackRef} width="100%" height="100%" preserveAspectRatio="none" className="absolute bottom-0 h-[60%] origin-top will-change-transform transform-gpu">
           <g>
             <line x1="50%" y1="0" x2="50%" y2="100%" stroke="white" strokeWidth="2" opacity="0.40" />
             <line x1="50%" y1="0" x2="20%" y2="100%" stroke="white" strokeWidth="2" strokeDasharray="10 10" opacity="0.40" />
@@ -80,11 +80,11 @@ export default function LandingPage() {
           </g>
         </svg>
         {/* Vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse,_transparent_25%,_rgba(7,8,12,0.95)_100%)] z-10"></div>
-        {/* Film Grain */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse,_transparent_25%,_rgba(7,8,12,0.95)_100%)] z-10 pointer-events-none"></div>
+        {/* Film Grain - Removing mix-blend-mode for silk smooth FPS */}
         <div 
           ref={grainRef}
-          className="absolute inset-0 z-[70] mix-blend-overlay opacity-[0.04]"
+          className="absolute inset-0 z-[70] opacity-[0.03] pointer-events-none transform-gpu"
           style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")" }}
         ></div>
       </div>
@@ -92,50 +92,8 @@ export default function LandingPage() {
       {/* ALL CONTENT GOES IN Z-10 OR HIGHER TO SIT ABOVE BACKGROUND */}
       <div className="relative z-10 flex flex-col min-h-screen">
         
-        {/* Navbar */}
-        <nav className="absolute top-0 w-full z-[100] bg-transparent">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <Link to="/" className="text-2xl font-black tracking-[-0.05em] text-white font-['Syne'] drop-shadow-md">FITFORGE</Link>
-            <div className="flex items-center gap-6">
-              <Link to="/auth/login" className="text-sm font-bold text-white/80 hover:text-white transition-colors uppercase tracking-widest drop-shadow-md">Log in</Link>
-              <button 
-                className="bg-white text-black px-5 py-2.5 rounded-full font-bold text-sm hover:scale-105 transition-transform" 
-                onClick={() => navigate('/auth/register')}
-              >
-                GET STARTED
-              </button>
-            </div>
-          </div>
-        </nav>
-
         {/* HERO SECTION */}
         <CinematicHero />
-
-        {/* STATS BRIDGE BAR */}
-        <ScrollReveal direction="none" duration={1000}>
-          <div className="bg-[#111318]/50 backdrop-blur-md py-8 border-y border-white/10 mt-[-1px]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-wrap items-center justify-between gap-8 text-center" style={{ fontFamily: "'Syne', sans-serif" }}>
-                <div className="flex-1 min-w-[150px]">
-                  <div className="text-3xl font-[800] text-white">500+</div>
-                  <div className="text-xs font-bold text-[#6B7494] uppercase tracking-widest mt-1">Trainers</div>
-                </div>
-                <div className="flex-1 min-w-[150px]">
-                  <div className="text-3xl font-[800] text-white">10,000+</div>
-                  <div className="text-xs font-bold text-[#6B7494] uppercase tracking-widest mt-1">Clients</div>
-                </div>
-                <div className="flex-1 min-w-[150px]">
-                  <div className="text-3xl font-[800] text-white">4.9★</div>
-                  <div className="text-xs font-bold text-[#6B7494] uppercase tracking-widest mt-1">Average Rating</div>
-                </div>
-                <div className="flex-1 min-w-[150px]">
-                  <div className="text-3xl font-[800] text-white">6</div>
-                  <div className="text-xs font-bold text-[#6B7494] uppercase tracking-widest mt-1">Languages</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </ScrollReveal>
 
         {/* PROBLEMS SECTION */}
         <section className="py-32 overflow-hidden relative">
@@ -235,7 +193,7 @@ export default function LandingPage() {
 
         {/* FREE DIET GENERATOR TEASER SECTION */}
         <section className="py-32 overflow-hidden relative border-t border-white/5 bg-[#0F172A]/30">
-          <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none"></div>
+          <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none transform-gpu"></div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <ScrollReveal direction="right">
@@ -274,11 +232,13 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <div className="space-y-4">
-                      <div className="h-4 bg-[#1E293B] rounded-full w-3/4 animate-pulse"></div>
-                      <div className="h-4 bg-[#1E293B] rounded-full w-1/2 animate-pulse"></div>
-                      <div className="grid grid-cols-2 gap-4 mt-6">
-                        <div className="h-24 bg-[#1E293B]/50 rounded-2xl border border-white/5 animate-pulse"></div>
-                        <div className="h-24 bg-[#1E293B]/50 rounded-2xl border border-white/5 animate-pulse"></div>
+                      <input type="text" placeholder="e.g. I want to lose 5kg in 2 months..." className="w-full bg-[#0F172A] border border-[#1E293B] rounded-xl px-4 py-3 text-sm text-white focus:outline-none pointer-events-none" readOnly />
+                      <button className="w-full bg-[#2563EB] text-white font-bold py-3 rounded-xl flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.4)] pointer-events-none">
+                        Analyzing Goals... <span className="flex gap-1 ml-1"><span className="w-1 h-1 bg-white rounded-full animate-bounce"></span><span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span><span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span></span>
+                      </button>
+                      <div className="grid grid-cols-2 gap-4 mt-4 opacity-50">
+                        <div className="h-16 bg-[#1E293B]/50 rounded-2xl border border-white/5 animate-pulse"></div>
+                        <div className="h-16 bg-[#1E293B]/50 rounded-2xl border border-white/5 animate-pulse"></div>
                       </div>
                     </div>
                   </div>
@@ -305,18 +265,16 @@ export default function LandingPage() {
             
             <div className="flex overflow-x-auto pb-12 -mx-4 px-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-4 gap-8 snap-x">
               {[
-                { name: 'Arjun Menon', spec: 'Weight Loss', lang: 'Malayalam/English' },
-                { name: 'Priya Nair', spec: 'Yoga/Nutrition', lang: 'Malayalam/Tamil' },
-                { name: 'Rahul Sharma', spec: 'Muscle Building', lang: 'Hindi/English' },
-                { name: 'Divya Thomas', spec: 'HIIT/Cardio', lang: 'Malayalam/English' },
+                { name: 'Arjun Menon', spec: 'Weight Loss', lang: 'Malayalam/English', img: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80' },
+                { name: 'Priya Nair', spec: 'Yoga/Nutrition', lang: 'Malayalam/Tamil', img: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400&q=80' },
+                { name: 'Rahul Sharma', spec: 'Muscle Building', lang: 'Hindi/English', img: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=400&q=80' },
+                { name: 'Divya Thomas', spec: 'HIIT/Cardio', lang: 'Malayalam/English', img: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&q=80' },
               ].map((t, i) => (
                 <ScrollReveal key={i} delay={i * 150} direction="up" className="min-w-[280px] snap-center shrink-0">
                   <div className="p-8 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl hover:scale-105 transition-all duration-300 shadow-2xl hover:bg-white/10 cursor-pointer">
                     <div className="text-center">
-                      {/* Placeholder for Avatar */}
-                      <div className="w-24 h-24 rounded-full bg-[#2563EB]/20 border-2 border-[#2563EB]/50 mx-auto mb-5 flex items-center justify-center text-2xl font-bold text-white">
-                        {t.name.charAt(0)}
-                      </div>
+                      {/* Avatar Image */}
+                      <img src={t.img} alt={t.name} className="w-24 h-24 rounded-full mx-auto mb-5 object-cover border-2 border-[#2563EB]/50 shadow-[0_0_15px_rgba(37,99,235,0.3)]" />
                       <h3 className="text-xl font-bold text-white">{t.name}</h3>
                       <div className="flex items-center justify-center gap-1.5 text-sm font-medium mt-2 mb-5 text-[#A0AABF]">
                         <Star size={16} className="fill-[#2563EB] text-[#2563EB]" /> 4.9
@@ -402,6 +360,69 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* FAQ SECTION */}
+        <section className="py-32 overflow-hidden relative">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ScrollReveal>
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-white mb-4 font-['Syne'] tracking-tight">Frequently Asked Questions</h2>
+                <p className="text-gray-400 text-lg font-medium">Everything you need to know about FitForge.</p>
+              </div>
+            </ScrollReveal>
+            <div className="space-y-4">
+              {[
+                { q: "Can I switch trainers if it's not a good fit?", a: "Absolutely. We want you to succeed. You can request a trainer switch at any time through your dashboard, no questions asked." },
+                { q: "Do I need gym equipment?", a: "Not at all. Your trainer will build a custom plan based on whatever equipment you have available—even if that's just your bodyweight." },
+                { q: "Is the AI diet plan accurate for Indian meals?", a: "Yes! Our AI is specifically trained on regional Indian cuisines, from North Indian thalis to South Indian breakfasts, ensuring highly accurate macro tracking." },
+                { q: "Are the Live Video Sessions 1-on-1?", a: "Yes, if you select the Personal Training plan, all video sessions are private 1-on-1 calls with your dedicated coach." }
+              ].map((faq, i) => (
+                <ScrollReveal key={i} delay={i * 100} direction="up">
+                  <details className="group bg-white/5 border border-white/10 rounded-2xl cursor-pointer [&_summary::-webkit-details-marker]:hidden">
+                    <summary className="flex items-center justify-between p-6 text-white font-bold text-lg select-none outline-none">
+                      {faq.q}
+                      <span className="transition group-open:rotate-180">
+                        <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                      </span>
+                    </summary>
+                    <div className="px-6 pb-6 text-gray-400 font-medium leading-relaxed">
+                      {faq.a}
+                    </div>
+                  </details>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* STATS BRIDGE BAR */}
+        <ScrollReveal direction="none" duration={1000}>
+          <div className="bg-[#111318]/50 backdrop-blur-md py-8 border-y border-white/10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-wrap items-center justify-between gap-8 text-center" style={{ fontFamily: "'Syne', sans-serif" }}>
+                <div className="flex-1 min-w-[150px]">
+                  <div className="text-3xl font-[800] text-white">500+</div>
+                  <div className="text-xs font-bold text-[#6B7494] uppercase tracking-widest mt-1">Trainers</div>
+                </div>
+                <div className="flex-1 min-w-[150px]">
+                  <div className="text-3xl font-[800] text-white">10,000+</div>
+                  <div className="text-xs font-bold text-[#6B7494] uppercase tracking-widest mt-1">Active Clients</div>
+                </div>
+                <div className="flex-1 min-w-[150px]">
+                  <div className="text-3xl font-[800] text-white">4.9★</div>
+                  <div className="text-xs font-bold text-[#6B7494] uppercase tracking-widest mt-1">Average Rating</div>
+                </div>
+                <div className="flex-1 min-w-[150px]">
+                  <div className="text-3xl font-[800] text-white">6</div>
+                  <div className="text-xs font-bold text-[#6B7494] uppercase tracking-widest mt-1">Languages</div>
+                </div>
+              </div>
+              <div className="text-center mt-8 text-sm text-gray-400 font-medium">
+                Join 10,000+ happy clients globally who have transformed their lives with FitForge.
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
 
         {/* FOOTER CTA */}
         <section className="py-32 text-center overflow-hidden relative border-t border-white/5 bg-[radial-gradient(ellipse_at_top,_rgba(37,99,235,0.1)_0%,_transparent_50%)]">
