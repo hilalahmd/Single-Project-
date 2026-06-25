@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Search, ShieldCheck, Star, ChevronDown } from 'lucide-react'
+import { Search, ShieldCheck, Star, ChevronDown, Activity, Users } from 'lucide-react'
 
 const TRAINERS = [
   { 
@@ -106,66 +106,43 @@ export default function TrainerListingPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-[#030712] min-h-screen">
-      {/* Wellness Coaches Toggle Banner */}
-      <div
-        onClick={() => {
-          const next = activeTag === 'Wellness' ? 'All' : 'Wellness'
-          setActiveTag(next)
-          if (next === 'Wellness') {
-            setTimeout(() => gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
-          }
-        }}
-        className={`relative mb-8 rounded-2xl overflow-hidden border cursor-pointer transition-all duration-300 select-none
-          ${activeTag === 'Wellness'
-            ? 'border-blue-500/70 bg-gradient-to-r from-blue-600/20 via-[#0d1f3c] to-blue-600/20 shadow-[0_0_50px_rgba(37,99,235,0.3)]'
-            : 'border-blue-500/20 bg-gradient-to-r from-[#0F172A] via-[#0d1f3c] to-[#0F172A] shadow-[0_0_20px_rgba(37,99,235,0.08)] hover:border-blue-500/40 hover:shadow-[0_0_30px_rgba(37,99,235,0.2)]'
-          }`}
-      >
-        {/* Decorative glow blobs */}
-        <div className="absolute top-0 left-1/4 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Professional Segmented Control */}
+      <div className="flex flex-col items-center mb-10 mt-4">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-8 tracking-tight">Find Your Coach</h1>
+        
+        <div className="bg-[#0F172A] p-1.5 rounded-full border border-[#1E293B] inline-flex shadow-lg relative">
+          {/* Animated Background */}
+          <div 
+            className={`absolute top-1.5 bottom-1.5 w-48 sm:w-56 bg-blue-600 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)] transition-transform duration-300 ease-in-out ${
+              activeTag === 'Wellness' ? 'translate-x-full' : 'translate-x-0'
+            }`}
+          />
 
-        <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6 px-8 py-7">
-          <div className="flex items-center gap-5">
-            {/* Icon */}
-            <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shrink-0 transition-all duration-300
-              ${activeTag === 'Wellness'
-                ? 'bg-blue-600/40 border-blue-400/60 shadow-[0_0_25px_rgba(37,99,235,0.5)]'
-                : 'bg-blue-600/20 border-blue-500/40 shadow-[0_0_20px_rgba(37,99,235,0.2)]'
-              }`}>
-              <svg xmlns="http://www.w3.org/2000/svg" className={`w-7 h-7 transition-colors duration-300 ${activeTag === 'Wellness' ? 'text-blue-300' : 'text-blue-400'}`} fill={activeTag === 'Wellness' ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                {activeTag === 'Wellness'
-                  ? <span className="text-[10px] font-bold uppercase tracking-widest text-white bg-blue-600 px-2.5 py-0.5 rounded-full">Active</span>
-                  : <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/30 px-2.5 py-0.5 rounded-full">Featured</span>
-                }
-              </div>
-              <h3 className="text-lg font-bold text-white">Find Wellness Coaches</h3>
-              <p className="text-sm text-gray-400 font-medium mt-0.5">
-                {activeTag === 'Wellness' ? 'Showing wellness coaches only — click to show all' : 'Expert coaches for nutrition, recovery & holistic well-being'}
-              </p>
-            </div>
-          </div>
-
-          {/* Toggle Switch */}
-          <div className="shrink-0 flex items-center gap-3">
-            {activeTag === 'Wellness' && (
-              <span className="text-xs text-blue-300 font-semibold">Filter Active</span>
-            )}
-            <div className={`relative w-14 h-7 rounded-full border transition-all duration-300 flex items-center px-1
-              ${activeTag === 'Wellness'
-                ? 'bg-blue-600 border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.6)]'
-                : 'bg-[#1E293B] border-[#2A364D]'
-              }`}>
-              <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-all duration-300
-                ${activeTag === 'Wellness' ? 'translate-x-7' : 'translate-x-0'}`}
-              />
-            </div>
-          </div>
+          <button
+            onClick={() => {
+              setActiveTag('All')
+              setTimeout(() => gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+            }}
+            className={`relative z-10 flex items-center justify-center gap-2 w-48 sm:w-56 py-3.5 text-sm font-bold rounded-full transition-all duration-300 ${
+              activeTag !== 'Wellness' ? 'text-white' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Users size={18} className={activeTag !== 'Wellness' ? 'text-blue-200' : 'text-gray-500'} />
+            Personal Trainers
+          </button>
+          
+          <button
+            onClick={() => {
+              setActiveTag('Wellness')
+              setTimeout(() => gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+            }}
+            className={`relative z-10 flex items-center justify-center gap-2 w-48 sm:w-56 py-3.5 text-sm font-bold rounded-full transition-all duration-300 ${
+              activeTag === 'Wellness' ? 'text-white' : 'text-gray-400 hover:text-white'
+            }`}
+          >
+            <Activity size={18} className={activeTag === 'Wellness' ? 'text-blue-200' : 'text-gray-500'} />
+            Wellness Coaches
+          </button>
         </div>
       </div>
 

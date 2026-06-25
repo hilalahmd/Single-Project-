@@ -95,52 +95,9 @@ export default function LandingPage() {
         {/* HERO SECTION */}
         <CinematicHero />
 
-        {/* PROBLEMS SECTION */}
-        <section className="py-32 overflow-hidden relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ScrollReveal>
-              <h2 className="text-4xl font-bold text-center text-white mb-20 font-['Syne'] tracking-tight">Why FitForge?</h2>
-            </ScrollReveal>
-            <div className="grid md:grid-cols-3 gap-8">
-              <ScrollReveal delay={0}>
-                <div className="p-8 text-center bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl h-full hover:scale-105 hover:bg-white/10 transition-all duration-300 cursor-pointer shadow-2xl">
-                  <div className="w-14 h-14 bg-[#2563EB]/20 border border-[#2563EB]/50 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <Clock className="w-6 h-6 text-[#2563EB]" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">Schedules Don't Match?</h3>
-                  <p className="text-gray-400 leading-relaxed font-medium">
-                    Train at home, anytime. No need to commute to the gym or fit into their limited hours.
-                  </p>
-                </div>
-              </ScrollReveal>
-              <ScrollReveal delay={150}>
-                <div className="p-8 text-center bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl h-full hover:scale-105 hover:bg-white/10 transition-all duration-300 cursor-pointer shadow-2xl">
-                  <div className="w-14 h-14 bg-[#2563EB]/20 border border-[#2563EB]/50 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <UtensilsCrossed className="w-6 h-6 text-[#2563EB]" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">Diet is 75% of Results</h3>
-                  <p className="text-gray-400 leading-relaxed font-medium">
-                    AI food photo analysis for Indian meals — dosa, puttu, biryani and more.
-                  </p>
-                </div>
-              </ScrollReveal>
-              <ScrollReveal delay={300}>
-                <div className="p-8 text-center bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl h-full hover:scale-105 hover:bg-white/10 transition-all duration-300 cursor-pointer shadow-2xl">
-                  <div className="w-14 h-14 bg-[#2563EB]/20 border border-[#2563EB]/50 rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <Users className="w-6 h-6 text-[#2563EB]" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-3">Gym Trainers Are Shared</h3>
-                  <p className="text-gray-400 leading-relaxed font-medium">
-                    Every FitForge client gets a dedicated certified coach, not a shared floor trainer.
-                  </p>
-                </div>
-              </ScrollReveal>
-            </div>
-          </div>
-        </section>
 
         {/* HOW IT WORKS */}
-        <section className="py-32 overflow-hidden relative">
+        <section className="pt-12 pb-32 overflow-hidden relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal>
               <h2 className="text-4xl font-bold text-center text-white mb-24 font-['Syne'] tracking-tight">How It Works</h2>
@@ -163,33 +120,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* FEATURES SECTION */}
-        <section className="py-32 overflow-hidden relative border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ScrollReveal>
-              <h2 className="text-4xl font-bold text-center text-white mb-20 font-['Syne'] tracking-tight">Everything You Need</h2>
-            </ScrollReveal>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[
-                { icon: Video, title: 'Live Video Sessions' },
-                { icon: Camera, title: 'AI Food Analysis' },
-                { icon: TrendingUp, title: 'Progress Tracker' },
-                { icon: MessageCircle, title: 'Real-time Chat' },
-                { icon: Utensils, title: 'Diet Plans' },
-                { icon: BarChart2, title: 'Progress Charts' },
-              ].map((Feature, i) => (
-                <ScrollReveal key={i} delay={i * 100} direction="up">
-                  <div className="flex items-center gap-5 p-6 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:bg-white/10 hover:border-white/20 hover:shadow-2xl transition-all duration-300">
-                    <div className="w-12 h-12 bg-[#2563EB]/20 border border-[#2563EB]/50 shadow-sm flex items-center justify-center rounded-xl shrink-0">
-                      <Feature.icon className="w-6 h-6 text-[#2563EB]" />
-                    </div>
-                    <span className="font-bold text-white text-lg">{Feature.title}</span>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* FREE DIET GENERATOR TEASER SECTION */}
         <section className="py-32 overflow-hidden relative border-t border-white/5 bg-[#0F172A]/30">
@@ -339,7 +269,7 @@ export default function LandingPage() {
                     <li className="flex items-start gap-3 text-gray-300 font-medium"><div className="w-1.5 h-1.5 rounded-full bg-white/50 mt-2 shrink-0"/>AI food analysis</li>
                     <li className="flex items-start gap-3 text-gray-300 font-medium"><div className="w-1.5 h-1.5 rounded-full bg-white/50 mt-2 shrink-0"/>Chat</li>
                   </ul>
-                  <button className="w-full py-4 rounded-full bg-[#2563EB] text-white font-bold hover:bg-white hover:text-[#2563EB] shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-colors" onClick={() => navigate('/plans')}>Choose Wellness</button>
+                  <button className="w-full py-4 rounded-full bg-[#2563EB] text-white font-bold hover:bg-white hover:text-[#2563EB] shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-colors" onClick={() => navigate('/trainers?type=wellness')}>Choose Wellness</button>
                 </div>
               </ScrollReveal>
 
@@ -353,7 +283,7 @@ export default function LandingPage() {
                     <li className="flex items-start gap-3 text-gray-300 font-medium"><div className="w-1.5 h-1.5 rounded-full bg-white/50 mt-2 shrink-0"/>Real-time form correction</li>
                     <li className="flex items-start gap-3 text-gray-300 font-medium"><div className="w-1.5 h-1.5 rounded-full bg-white/50 mt-2 shrink-0"/>Priority support</li>
                   </ul>
-                  <button className="w-full py-4 rounded-full bg-white/10 text-white font-bold hover:bg-white/20 transition-colors" onClick={() => navigate('/plans')}>Choose PT</button>
+                  <button className="w-full py-4 rounded-full bg-white/10 text-white font-bold hover:bg-white/20 transition-colors" onClick={() => navigate('/trainers')}>Choose PT</button>
                 </div>
               </ScrollReveal>
 
@@ -361,38 +291,21 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* FAQ SECTION */}
-        <section className="py-32 overflow-hidden relative">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ScrollReveal>
-              <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-white mb-4 font-['Syne'] tracking-tight">Frequently Asked Questions</h2>
-                <p className="text-gray-400 text-lg font-medium">Everything you need to know about FitForge.</p>
-              </div>
-            </ScrollReveal>
-            <div className="space-y-4">
-              {[
-                { q: "Can I switch trainers if it's not a good fit?", a: "Absolutely. We want you to succeed. You can request a trainer switch at any time through your dashboard, no questions asked." },
-                { q: "Do I need gym equipment?", a: "Not at all. Your trainer will build a custom plan based on whatever equipment you have available—even if that's just your bodyweight." },
-                { q: "Is the AI diet plan accurate for Indian meals?", a: "Yes! Our AI is specifically trained on regional Indian cuisines, from North Indian thalis to South Indian breakfasts, ensuring highly accurate macro tracking." },
-                { q: "Are the Live Video Sessions 1-on-1?", a: "Yes, if you select the Personal Training plan, all video sessions are private 1-on-1 calls with your dedicated coach." }
-              ].map((faq, i) => (
-                <ScrollReveal key={i} delay={i * 100} direction="up">
-                  <details className="group bg-white/5 border border-white/10 rounded-2xl cursor-pointer [&_summary::-webkit-details-marker]:hidden">
-                    <summary className="flex items-center justify-between p-6 text-white font-bold text-lg select-none outline-none">
-                      {faq.q}
-                      <span className="transition group-open:rotate-180">
-                        <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                      </span>
-                    </summary>
-                    <div className="px-6 pb-6 text-gray-400 font-medium leading-relaxed">
-                      {faq.a}
-                    </div>
-                  </details>
-                </ScrollReveal>
-              ))}
+
+        {/* FOOTER CTA */}
+        <section className="py-32 text-center overflow-hidden relative border-t border-white/5 bg-[radial-gradient(ellipse_at_top,_rgba(37,99,235,0.1)_0%,_transparent_50%)]">
+          <ScrollReveal direction="up" duration={1000}>
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+              <h2 className="text-5xl font-black text-white mb-6 tracking-tight font-['Syne']">Ready to Transform?</h2>
+              <p className="text-xl text-gray-400 font-medium mb-12">Start your journey today and achieve your goals with expert guidance.</p>
+              <button 
+                className="bg-[#2563EB] text-white px-12 py-5 text-lg font-bold rounded-full hover:scale-105 hover:bg-white hover:text-[#2563EB] shadow-[0_0_30px_rgba(37,99,235,0.4)] hover:shadow-[0_0_50px_rgba(255,255,255,0.8)] transition-all duration-300" 
+                onClick={() => navigate('/auth/register')}
+              >
+                Get Started Free
+              </button>
             </div>
-          </div>
+          </ScrollReveal>
         </section>
 
         {/* STATS BRIDGE BAR */}
@@ -423,22 +336,6 @@ export default function LandingPage() {
             </div>
           </div>
         </ScrollReveal>
-
-        {/* FOOTER CTA */}
-        <section className="py-32 text-center overflow-hidden relative border-t border-white/5 bg-[radial-gradient(ellipse_at_top,_rgba(37,99,235,0.1)_0%,_transparent_50%)]">
-          <ScrollReveal direction="up" duration={1000}>
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-              <h2 className="text-5xl font-black text-white mb-6 tracking-tight font-['Syne']">Ready to Transform?</h2>
-              <p className="text-xl text-gray-400 font-medium mb-12">Start your journey today and achieve your goals with expert guidance.</p>
-              <button 
-                className="bg-[#2563EB] text-white px-12 py-5 text-lg font-bold rounded-full hover:scale-105 hover:bg-white hover:text-[#2563EB] shadow-[0_0_30px_rgba(37,99,235,0.4)] hover:shadow-[0_0_50px_rgba(255,255,255,0.8)] transition-all duration-300" 
-                onClick={() => navigate('/auth/register')}
-              >
-                Get Started Free
-              </button>
-            </div>
-          </ScrollReveal>
-        </section>
         
       </div>
     </div>

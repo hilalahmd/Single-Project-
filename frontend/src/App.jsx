@@ -7,64 +7,61 @@ import MainLayout from './shared/layouts/MainLayout'
 import AuthLayout from './shared/layouts/AuthLayout'
 import DashboardLayout from './shared/layouts/DashboardLayout'
 
-// ── Bare routes (self-contained pages with own layout) ──────────────────────
-import LandingPage from './modules/client/pages/LandingPage'
-import LoginPage from './modules/auth/pages/LoginPage'
-import FreeDietPlanPage from './modules/client/pages/FreeDietPlanPage'
+// ── Auth pages ───────────────────────────────────────────────────────────────
+import LoginPage from './features/auth/pages/LoginPage'
+import RegisterPage from './features/auth/pages/RegisterPage'
+import TrainerLoginPage from './features/auth/pages/TrainerLoginPage'
+import TrainerRegisterPage from './features/auth/pages/TrainerRegisterPage'
 
-// ── Public pages (use MainLayout: Navbar + Footer) ──────────────────────────
-import TrainerListingPage from './modules/trainer/pages/TrainerListingPage'
-import TrainerPublicProfilePage from './modules/trainer/pages/TrainerPublicProfilePage'
-import SubscriptionPlansPage from './modules/client/pages/SubscriptionPlansPage'
+import AdminLoginPage from './features/auth/pages/AdminLoginPage'
+import ForgotPasswordPage from './features/auth/pages/ForgotPasswordPage'
+import ResetPasswordPage from './features/auth/pages/ResetPasswordPage'
+import EmailVerifyPage from './features/auth/pages/EmailVerifyPage'
 
-// ── Auth pages (use AuthLayout: centered card) ───────────────────────────────
-import RegisterPage from './modules/auth/pages/RegisterPage'
-import TrainerRegisterPage from './modules/auth/pages/TrainerRegisterPage'
-import TrainerLoginPage from './modules/auth/pages/TrainerLoginPage'
-import AdminLoginPage from './modules/auth/pages/AdminLoginPage'
-import ForgotPasswordPage from './modules/auth/pages/ForgotPasswordPage'
-import ResetPasswordPage from './modules/auth/pages/ResetPasswordPage'
-import EmailVerifyPage from './modules/auth/pages/EmailVerifyPage'
+// ── Client — Public pages ────────────────────────────────────────────────────
+import LandingPage from './features/client/pages/LandingPage'
+import FreeDietPlanPage from './features/client/pages/FreeDietPlanPage'
+import SubscriptionPlansPage from './features/client/pages/SubscriptionPlansPage'
 
-// ── Client dashboard pages ───────────────────────────────────────────────────
-import ClientDashboardPage from './modules/dashboard/pages/ClientDashboardPage'
-import MyPlansPage from './modules/client/pages/MyPlansPage'
-import ProgressTrackerPage from './modules/client/pages/ProgressTrackerPage'
-import SchedulePage from './modules/client/pages/SchedulePage'
-import CheckoutPage from './modules/client/pages/CheckoutPage'
-import ClientSettingsPage from './modules/client/pages/ClientSettingsPage'
+// ── Client — Dashboard pages ─────────────────────────────────────────────────
+import ClientDashboardPage from './features/client/pages/ClientDashboardPage'
+import MyPlansPage from './features/client/pages/MyPlansPage'
+import ProgressTrackerPage from './features/client/pages/ProgressTrackerPage'
+import SchedulePage from './features/client/pages/SchedulePage'
+import CheckoutPage from './features/client/pages/CheckoutPage'
+import ClientSettingsPage from './features/client/pages/ClientSettingsPage'
+import NutritionTrackerPage from './features/client/pages/NutritionTrackerPage'
+import FoodAIPage from './features/client/pages/FoodAIPage'
+import AIAssistantPage from './features/client/pages/AIAssistantPage'
 
-// ── Nutrition pages ──────────────────────────────────────────────────────────
-import NutritionTrackerPage from './modules/nutrition/pages/NutritionTrackerPage'
-import FoodAIPage from './modules/nutrition/pages/FoodAIPage'
-import DietPlansPage from './modules/nutrition/pages/DietPlansPage'
+// ── Shared — Chat & Video (used by both client and trainer) ──────────────────
+import ChatListPage from './features/client/pages/ChatListPage'
+import ChatWindowPage from './features/client/pages/ChatWindowPage'
+import VideoSessionPage from './features/client/pages/VideoSessionPage'
 
-// ── Chat pages ───────────────────────────────────────────────────────────────
-import ChatListPage from './modules/chat/pages/ChatListPage'
-import ChatWindowPage from './modules/chat/pages/ChatWindowPage'
+// ── Trainer — Public pages ───────────────────────────────────────────────────
+import TrainerListingPage from './features/trainer/pages/TrainerListingPage'
+import TrainerPublicProfilePage from './features/trainer/pages/TrainerPublicProfilePage'
 
-// ── AI & Video ───────────────────────────────────────────────────────────────
-import AIAssistantPage from './modules/ai/pages/AIAssistantPage'
-import VideoSessionPage from './modules/video/pages/VideoSessionPage'
+// ── Trainer — Dashboard pages ────────────────────────────────────────────────
+import TrainerDashboardPage from './features/trainer/pages/TrainerDashboardPage'
+import ClientListPage from './features/trainer/pages/ClientListPage'
+import TrainerSchedulePage from './features/trainer/pages/TrainerSchedulePage'
+import EarningsPage from './features/trainer/pages/EarningsPage'
+import TrainerProfileEditPage from './features/trainer/pages/TrainerProfileEditPage'
+import CertificatesPage from './features/trainer/pages/CertificatesPage'
+import WorkoutPlansPage from './features/trainer/pages/WorkoutPlansPage'
+import TrainerPlanBuilderPage from './features/trainer/pages/TrainerPlanBuilderPage'
+import DietPlansPage from './features/trainer/pages/DietPlansPage'
 
-// ── Trainer dashboard pages ──────────────────────────────────────────────────
-import TrainerDashboardPage from './modules/trainer/pages/TrainerDashboardPage'
-import ClientListPage from './modules/trainer/pages/ClientListPage'
-import TrainerSchedulePage from './modules/trainer/pages/TrainerSchedulePage'
-import EarningsPage from './modules/trainer/pages/EarningsPage'
-import TrainerProfileEditPage from './modules/trainer/pages/TrainerProfileEditPage'
-import CertificatesPage from './modules/trainer/pages/CertificatesPage'
-import WorkoutPlansPage from './modules/workout/pages/WorkoutPlansPage'
-import TrainerPlanBuilderPage from './modules/trainer/pages/TrainerPlanBuilderPage'
-
-// ── Admin pages ──────────────────────────────────────────────────────────────
-import AdminDashboardPage from './modules/admin/pages/AdminDashboardPage'
-import TrainerApprovalsPage from './modules/admin/pages/TrainerApprovalsPage'
-import UserManagementPage from './modules/admin/pages/UserManagementPage'
-import ManagerManagementPage from './modules/admin/pages/ManagerManagementPage'
-import PayoutManagementPage from './modules/admin/pages/PayoutManagementPage'
-import RevenueReportsPage from './modules/admin/pages/RevenueReportsPage'
-import SubscriptionManagementPage from './modules/admin/pages/SubscriptionManagementPage'
+// ── Admin — Dashboard pages ──────────────────────────────────────────────────
+import AdminDashboardPage from './features/admin/pages/AdminDashboardPage'
+import TrainerApprovalsPage from './features/admin/pages/TrainerApprovalsPage'
+import UserManagementPage from './features/admin/pages/UserManagementPage'
+import ManagerManagementPage from './features/admin/pages/ManagerManagementPage'
+import PayoutManagementPage from './features/admin/pages/PayoutManagementPage'
+import RevenueReportsPage from './features/admin/pages/RevenueReportsPage'
+import SubscriptionManagementPage from './features/admin/pages/SubscriptionManagementPage'
 
 // ── 404 ──────────────────────────────────────────────────────────────────────
 function NotFoundPage() {
@@ -88,11 +85,13 @@ function App() {
     <AuthProvider>
       <Routes>
 
-        {/* ── Bare routes — self-contained pages (own navbar/footer) ── */}
+        {/* ── Auth — self-contained pages (own layout) ── */}
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/trainer-login" element={<TrainerLoginPage />} />
+        <Route path="/auth/trainer-register" element={<TrainerRegisterPage />} />
+        <Route path="/auth/admin/login" element={<AdminLoginPage />} />
 
-        {/* ── Public routes — wrapped in MainLayout (Navbar + Footer) ── */}
+        {/* ── Public routes — MainLayout (Navbar + Footer) ── */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/free-diet-plan" element={<FreeDietPlanPage />} />
@@ -101,11 +100,9 @@ function App() {
           <Route path="/plans" element={<SubscriptionPlansPage />} />
         </Route>
 
-        {/* ── Auth routes — wrapped in AuthLayout (centered card) ── */}
+        {/* ── Auth routes — AuthLayout (centered card) ── */}
         <Route element={<AuthLayout />}>
           <Route path="/auth/register" element={<RegisterPage />} />
-          <Route path="/auth/trainer-register" element={<TrainerRegisterPage />} />
-          <Route path="/auth/admin-login" element={<AdminLoginPage />} />
           <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
           <Route path="/auth/verify-email" element={<EmailVerifyPage />} />

@@ -35,12 +35,12 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem('fitforge_user', JSON.stringify(userData));
+    localStorage.setItem('fitforge_session', JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('fitforge_user');
+    localStorage.removeItem('fitforge_session');
   };
 
   const value = {

@@ -1,4 +1,7 @@
 import { useEffect, useRef } from 'react'
+import LottieReact from 'lottie-react'
+const Lottie = LottieReact.default || LottieReact
+import runningAthleteAnimation from '../../../assets/running_athlete.json'
 
 // High-performance clamp & map functions
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val))
@@ -12,6 +15,7 @@ export default function CinematicHero() {
   // DOM element refs for direct manipulation (Bypassing React render cycle for 240fps)
   const introRef = useRef(null)
   const flashRef = useRef(null)
+  const runnerRef = useRef(null)
 
   useEffect(() => {
     let ticking = false;
@@ -49,6 +53,16 @@ export default function CinematicHero() {
         flashRef.current.style.opacity = flashOpacity
       }
 
+      if (runnerRef.current) {
+        // Runner runs away: shrinks and moves up as you scroll down
+        const scale = mapRange(p, 0, 1, 1.2, 0.2) // Starts slightly large, gets small
+        const translateY = mapRange(p, 0, 1, 100, -200) // Starts low, moves high up
+        const opacity = mapRange(p, 0.6, 1, 0.8, 0) // Fades out at the very end
+        
+        runnerRef.current.style.transform = `translate3d(0, ${translateY}px, 0) scale(${scale})`
+        runnerRef.current.style.opacity = opacity
+      }
+
       ticking = false;
     };
 
@@ -67,9 +81,22 @@ export default function CinematicHero() {
   }, [])
 
   return (
-    <div ref={sectionRef} className="h-[120vh] w-full relative font-['Syne']">
+    <div ref={sectionRef} className="h-screen w-full relative font-['Syne']">
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center justify-center">
         
+        {/* Sportsman Running Effect */}
+        <div 
+          className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
+          style={{ perspective: '1000px' }}
+        >
+          <div 
+            ref={runnerRef}
+            className="w-[30vw] min-w-[300px] will-change-transform transform-gpu origin-bottom opacity-80 mix-blend-screen drop-shadow-[0_0_50px_rgba(37,99,235,0.3)]"
+          >
+            <Lottie animationData={runningAthleteAnimation} loop={true} />
+          </div>
+        </div>
+
         {/* Phase 1: Intro Text */}
         <div 
           ref={introRef}
@@ -82,8 +109,6 @@ export default function CinematicHero() {
             India's #1 Live Coaching Platform
           </p>
         </div>
-
-
 
         {/* White Flash Overlay */}
         <div ref={flashRef} className="absolute inset-0 bg-white z-[60] pointer-events-none opacity-0 will-change-opacity transform-gpu"></div>
