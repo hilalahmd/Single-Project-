@@ -24,12 +24,12 @@ export default function FreeDietSection() {
 
         {/* Left */}
         <div>
-          <div className="inline-flex items-center gap-2 bg-[#00E5FF]/10 border border-[#00E5FF]/30 text-[#00E5FF] text-xs font-bold px-4 py-2 rounded-full tracking-[0.15em] uppercase mb-5">
+          <div className="inline-flex items-center gap-2 bg-[#F97316]/10 border border-[#F97316]/30 text-[#F97316] text-xs font-bold px-4 py-2 rounded-full tracking-[0.15em] uppercase mb-5">
             <Camera size={13} /> AI Diet Analysis
           </div>
           <h2 className="text-[clamp(2rem,4.5vw,4rem)] font-black text-white font-['Syne'] tracking-tight leading-[0.9] mb-5">
             Explore Your<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00E5FF] to-[#2563EB]">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F97316] to-[#EA580C]">
               Free Diet Plan
             </span>
           </h2>
@@ -39,8 +39,8 @@ export default function FreeDietSection() {
           <div className="space-y-3 mb-7">
             {FEATURES.map((f, i) => (
               <div key={i} className="flex items-center gap-3 text-gray-300">
-                <div className="w-8 h-8 rounded-lg bg-[#00E5FF]/10 border border-[#00E5FF]/25 flex items-center justify-center shrink-0">
-                  <f.icon size={14} className="text-[#00E5FF]" />
+                <div className="w-8 h-8 rounded-lg bg-[#F97316]/10 border border-[#F97316]/25 flex items-center justify-center shrink-0">
+                  <f.icon size={14} className="text-[#F97316]" />
                 </div>
                 <span className="font-medium text-sm">{f.label}</span>
               </div>
@@ -49,7 +49,7 @@ export default function FreeDietSection() {
           <button
             onClick={() => navigate('/free-diet-plan')}
             className="inline-flex items-center gap-3 text-white px-8 py-4 rounded-full font-[800] text-sm uppercase tracking-widest hover:opacity-90 hover:scale-105 transition-all"
-            style={{ background: 'linear-gradient(135deg,#00E5FF,#2563EB)', boxShadow: '0 0 30px rgba(0,229,255,0.25)' }}
+            style={{ background: 'linear-gradient(135deg,#F97316,#EA580C)', boxShadow: '0 0 30px rgba(249,115,22,0.25)' }}
           >
             Generate Free Diet Plan <ChevronRight size={17} />
           </button>
@@ -57,7 +57,7 @@ export default function FreeDietSection() {
 
         {/* Right: preview card */}
         <div className="relative hidden lg:block">
-          <div className="absolute -inset-4 bg-gradient-to-br from-[#00E5FF]/15 to-[#2563EB]/15 rounded-3xl blur-2xl" />
+          <div className="absolute -inset-4 bg-gradient-to-br from-[#F97316]/15 to-[#EA580C]/15 rounded-3xl blur-2xl" />
           <div className="relative bg-[#0D0F18]/90 border border-white/10 rounded-3xl p-6 backdrop-blur-xl shadow-2xl">
             <div className="flex items-center gap-1.5 mb-5 pb-4 border-b border-white/10">
               <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
@@ -69,7 +69,7 @@ export default function FreeDietSection() {
               <div key={i} className="flex items-start gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors">
                 <span className="text-2xl leading-none mt-0.5">{m.emoji}</span>
                 <div>
-                  <div className="text-[10px] font-bold text-[#00E5FF] uppercase tracking-widest mb-0.5">{m.time}</div>
+                  <div className="text-[10px] font-bold text-[#F97316] uppercase tracking-widest mb-0.5">{m.time}</div>
                   <div className="font-bold text-white text-sm">{m.meal}</div>
                   <div className="text-xs text-gray-500 mt-0.5">{m.kcal}</div>
                 </div>
@@ -77,7 +77,7 @@ export default function FreeDietSection() {
             ))}
             <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
               <span className="text-xs text-gray-500 font-bold uppercase tracking-wider">Daily Total</span>
-              <span className="text-[#00E5FF] font-black">~1,850 kcal</span>
+              <span className="text-[#F97316] font-black">~1,850 kcal</span>
             </div>
           </div>
         </div>

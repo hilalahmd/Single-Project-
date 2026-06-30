@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Mail } from 'lucide-react'
 import Button from '../../../shared/components/Button'
 import Input from '../../../shared/components/Input'
+import API from '../../../shared/utils/api'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -58,9 +59,20 @@ export default function ForgotPasswordPage() {
       />
 
       <Button
-        variant="primary"
-        fullWidth
-        onClick={() => email && setSent(true)}
+       onClick={async () => {
+  if (!email) return
+  const res = await fetch(`${API}/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  const data = await res.json()
+  if (data.message === 'Password reset link sent to your email') {
+    setSent(true)
+  } else {
+    alert(data.message)
+  }
+}}
       >
         Send Reset Link
       </Button>

@@ -58,6 +58,7 @@ export default function TrainerPublicProfilePage() {
             <img 
               src={t.heroImage} 
               alt="Gym Equipment" 
+              loading="lazy"
               className="w-full h-full object-cover opacity-50 mix-blend-overlay"
             />
           </div>
@@ -69,6 +70,7 @@ export default function TrainerPublicProfilePage() {
                 <img 
                   src={t.avatar} 
                   alt={t.name}
+                  loading="lazy"
                   className="w-32 h-32 rounded-3xl object-cover border-4 border-[#0F172A] shadow-xl bg-[#111827]"
                 />
               </div>

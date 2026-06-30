@@ -30,70 +30,75 @@ export default function SubscriptionPlansPage() {
       </div>
 
       {/* Toggle */}
-      <div className="flex justify-center mb-16">
-        <div className="bg-[#111827] p-1.5 rounded-full flex items-center relative border border-[#1E293B]">
+      <div className="flex justify-center mb-20 relative z-10">
+        <div className="bg-[#0f1117] p-1.5 rounded-full flex items-center relative border border-[rgba(255,255,255,0.08)] shadow-lg">
           <button 
             onClick={() => setIsAnnual(false)}
-            className={`px-8 py-2.5 rounded-full text-[14px] font-semibold transition-all ${!isAnnual ? 'bg-[#2563EB] shadow-[0_0_15px_rgba(37,99,235,0.3)] text-white' : 'text-gray-400 hover:text-white'}`}
+            className={`px-8 py-2.5 rounded-full text-[14px] font-bold transition-all duration-300 ${!isAnnual ? 'bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] shadow-[0_0_15px_rgba(255,107,26,0.3)] text-white' : 'text-gray-400 hover:text-white'}`}
           >
             Monthly
           </button>
           <button 
             onClick={() => setIsAnnual(true)}
-            className={`px-8 py-2.5 rounded-full text-[14px] font-semibold transition-all flex items-center gap-2 ${isAnnual ? 'bg-[#2563EB] shadow-[0_0_15px_rgba(37,99,235,0.3)] text-white' : 'text-gray-400 hover:text-white'}`}
+            className={`px-8 py-2.5 rounded-full text-[14px] font-bold transition-all duration-300 flex items-center gap-2 ${isAnnual ? 'bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] shadow-[0_0_15px_rgba(255,107,26,0.3)] text-white' : 'text-gray-400 hover:text-white'}`}
           >
-            Annual <span className="bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full">20% Off</span>
+            Annual <span className="bg-[#22C55E]/20 border border-[#22C55E]/40 text-[#22C55E] text-[10px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full">20% Off</span>
           </button>
         </div>
       </div>
 
       {/* Grid */}
-      <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto mb-24">
+      <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto mb-24 relative">
         
+        {/* Ambient glow behind Wellness card */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[#ff6b1a]/10 blur-[100px] rounded-full pointer-events-none z-0 hidden lg:block"></div>
+
         {/* Free Plan */}
-        <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-8 flex flex-col hover:border-[#2563EB]/50 transition-colors">
+        <div className="bg-[#0f1117] border border-[rgba(255,255,255,0.08)] rounded-[20px] p-8 flex flex-col hover:border-[#ff6b1a]/40 transition-colors relative z-10 shadow-lg">
           <h3 className="text-[22px] font-bold mb-2 text-white">Free</h3>
-          <div className="mb-6"><span className="text-[40px] font-bold text-white">₹{pricing.free.mo}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
-          <p className="text-[14px] text-gray-400 mb-8 border-b border-[#1E293B] pb-8">Basic tools to get you started.</p>
+          <div className="mb-6"><span className="text-[40px] font-black text-white font-['Syne']">₹{pricing.free.mo}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
+          <p className="text-[14px] text-gray-400 mb-8 border-b border-[rgba(255,255,255,0.08)] pb-8">Basic tools to get you started.</p>
           <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} className="shrink-0 text-[#2563EB]" />BMI/BMR calculators</li>
-            <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} className="shrink-0 text-[#2563EB]" />AI diet plan (3 generations/mo)</li>
-            <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} className="shrink-0 text-[#2563EB]" />Browse all trainers</li>
+            <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />BMI/BMR calculators</li>
+            <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />AI diet plan (3 generations/mo)</li>
+            <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Browse all trainers</li>
           </ul>
-          <button className="w-full py-3.5 border border-[#1E293B] text-white text-[15px] font-semibold rounded-lg hover:bg-[#111827] hover:border-[#2563EB] transition-colors" onClick={() => navigate('/auth/register')}>Get Started</button>
+          <button className="w-full py-3.5 border border-[rgba(255,255,255,0.1)] text-white text-[15px] font-bold rounded-full hover:bg-white/5 hover:text-[#ff6b1a] transition-colors" onClick={() => navigate('/auth/register')}>Get Started</button>
         </div>
 
         {/* Wellness Plan */}
-        <div className="bg-[#111827] border border-[#2563EB] rounded-2xl p-8 flex flex-col shadow-[0_0_30px_rgba(37,99,235,0.1)] relative lg:-translate-y-4">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[#2563EB] to-blue-500 text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+        <div className="bg-[#0f1117] border border-[#ff6b1a] rounded-[20px] p-8 flex flex-col shadow-[0_0_30px_rgba(255,107,26,0.15)] relative z-20 lg:-translate-y-4">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white text-[11px] font-bold px-5 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(255,107,26,0.4)] border border-[#ff6b1a]/50">
             Most Popular
           </div>
           <h3 className="text-[22px] font-bold mb-2 text-white">Wellness</h3>
-          <div className="mb-6"><span className="text-[40px] font-bold text-white">₹{Math.round(isAnnual ? pricing.wellness.yr : pricing.wellness.mo)}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
-          <p className="text-[14px] text-gray-400 mb-8 border-b border-[#1E293B] pb-8">Complete lifestyle coaching and daily tracking.</p>
+          <div className="mb-6"><span className="text-[40px] font-black text-white font-['Syne']">₹{Math.round(isAnnual ? pricing.wellness.yr : pricing.wellness.mo)}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
+          <p className="text-[14px] text-gray-400 mb-8 border-b border-[rgba(255,255,255,0.08)] pb-8">Complete lifestyle coaching and daily tracking.</p>
           <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-white font-semibold text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Dedicated wellness coach</li>
-            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Custom Diet + Workout plan</li>
-            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Progress tracking dashboard</li>
-            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Unlimited AI food photo analysis</li>
-            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Chat support with coach</li>
+            <li className="flex items-start gap-3 text-white font-bold text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Dedicated wellness coach</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Custom Diet + Workout plan</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Progress tracking dashboard</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Unlimited AI food photo analysis</li>
+            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Chat support with coach</li>
           </ul>
-          <button className="w-full py-3.5 bg-gradient-to-r from-[#2563EB] to-blue-600 text-white text-[15px] font-semibold rounded-lg hover:to-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all" onClick={() => navigate('/auth/register')}>Choose Wellness</button>
+          <button className="w-full py-4 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white text-[15px] font-bold rounded-full hover:shadow-[0_0_25px_rgba(255,107,26,0.5)] transition-all duration-300 uppercase tracking-wide" onClick={() => navigate('/auth/register')}>Choose Wellness</button>
         </div>
 
         {/* PT Plan */}
-        <div className="bg-[#0F172A] border border-[#1E293B] rounded-2xl p-8 flex flex-col hover:border-[#2563EB]/50 transition-colors">
-          <h3 className="text-[22px] font-bold mb-2 text-white">Personal Training</h3>
-          <div className="mb-6"><span className="text-[40px] font-bold text-white">₹{Math.round(isAnnual ? pricing.pt.yr : pricing.pt.mo)}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
-          <p className="text-[14px] text-gray-400 mb-8 border-b border-[#1E293B] pb-8">Premium 1-on-1 coaching for guaranteed results.</p>
-          <ul className="space-y-4 mb-8 flex-1">
-            <li className="flex items-start gap-3 text-white font-semibold text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Everything in Wellness</li>
-            <li className="flex items-start gap-3 text-white font-semibold text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Live 1-on-1 video sessions</li>
-            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Real-time form correction</li>
-            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Priority support</li>
-            <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} className="shrink-0 text-[#2563EB]" />Weekly check-in calls</li>
-          </ul>
-          <button className="w-full py-3.5 border border-[#1E293B] bg-[#111827] text-white text-[15px] font-semibold rounded-lg hover:border-[#2563EB] hover:text-[#2563EB] transition-colors" onClick={() => navigate('/auth/register')}>Choose PT</button>
+        <div className="bg-[#0f1117] rounded-[20px] p-[1px] flex flex-col relative z-10 shadow-xl group hover:shadow-[0_0_30px_rgba(255,107,26,0.1)] transition-all bg-gradient-to-br from-[rgba(255,255,255,0.15)] via-transparent to-[rgba(255,107,26,0.2)]">
+          <div className="bg-[#0f1117] rounded-[19px] p-8 flex flex-col h-full border border-[rgba(255,255,255,0.02)]">
+            <h3 className="text-[22px] font-bold mb-2 text-white">Personal Training</h3>
+            <div className="mb-6"><span className="text-[40px] font-black text-white font-['Syne']">₹{Math.round(isAnnual ? pricing.pt.yr : pricing.pt.mo)}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
+            <p className="text-[14px] text-gray-400 mb-8 border-b border-[rgba(255,255,255,0.08)] pb-8">Premium 1-on-1 coaching for guaranteed results.</p>
+            <ul className="space-y-4 mb-8 flex-1">
+              <li className="flex items-start gap-3 text-white font-bold text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Everything in Wellness</li>
+              <li className="flex items-start gap-3 text-white font-bold text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Live 1-on-1 video sessions</li>
+              <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Real-time form correction</li>
+              <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Priority support</li>
+              <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Weekly check-in calls</li>
+            </ul>
+            <button className="w-full py-4 border-2 border-[rgba(255,255,255,0.1)] bg-white/5 text-white text-[15px] font-bold rounded-full group-hover:border-[#ff6b1a]/50 transition-colors uppercase tracking-wide" onClick={() => navigate('/auth/register')}>Choose PT</button>
+          </div>
         </div>
 
       </div>

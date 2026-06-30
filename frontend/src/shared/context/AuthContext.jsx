@@ -1,60 +1,79 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react'
+import API from '../utils/api'
 
-// Create Context
-const AuthContext = createContext();
+const AuthContext = createContext()
+export const useAuth = () => useContext(AuthContext)
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Initialize from local storage on mount (Mocking backend JWT behavior)
   useEffect(() => {
-    const storedUser = localStorage.getItem('fitforge_session');
+    const storedUser = localStorage.getItem('fitforge_user')
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      // For testing, let's auto-login a dummy CLIENT user
-      // Change role to 'trainer' or 'admin' here to test other dashboards
-      const mockUser = {
-        _id: 't_456',
-        name: 'Alex Coach',
-        email: 'alex@fitforge.com',
-        role: 'trainer', // Switched to trainer to preview Step 3
-        subscriptionTier: 'personal_training',
-        avatar: null
-      };
-      setUser(mockUser);
-      localStorage.setItem('fitforge_session', JSON.stringify(mockUser));
+      setUser(JSON.parse(storedUser))
     }
-    setLoading(false);
-  }, []);
+    setLoading(false)
+  }, [])
 
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('fitforge_session', JSON.stringify(userData));
-  };
+  const register = async (name, email, password, role) => {
+    const res = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, role })
+    })
+    return res.json()
+  }
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('fitforge_session');
-  };
+  const verifyOTP = async (userId, otp) => {
+    const res = await fetch(`${API}/auth/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, otp })
+    })
+    return res.json()
+  }
 
-  const value = {
+  const login = async (email, password) => {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password })
+    })
+    const data = await res.json()
+    if (data.user) {
+      setUser(data.user)
+      localStorage.setItem('fitforge_user', JSON.stringify(data.user))
+    }
+    return data
+  }
+
+  const logout = async () => {
+    await fetch(`${API}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    })
+    setUser(null)
+    localStorage.removeItem('fitforge_user')
+  }
+
+  const value = useMemo(() => ({
     user,
     role: user?.role || null,
     subscriptionTier: user?.subscriptionTier || 'free',
+    register,
+    verifyOTP,
     login,
     logout,
     loading
-  };
+  }), [user, loading])
 
   return (
     <AuthContext.Provider value={value}>
       {!loading && children}
     </AuthContext.Provider>
-  );
-};
+  )
+}

@@ -1,173 +1,239 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { User, Lock, ArrowRight, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, Target, Dumbbell, Activity, Heart, ShieldCheck } from 'lucide-react'
+import { useAuth } from '../../../shared/context/AuthContext'
 
-function LoginPage() {
-  const [username, setUsername] = useState('')
+export default function LoginPage() {
+  const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const [showPw, setShowPw]     = useState(false)
+  const [loading, setLoading]   = useState(false)
+  const { login }  = useAuth()
+  const navigate   = useNavigate()
+  const trackRef   = useRef(null)
 
-  const handleLogin = (e) => {
-    e.preventDefault()
-    if (!username || !password) return
+  useEffect(() => {
+    let ticking = false
+    const onMove = (e) => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (trackRef.current) {
+            const x = (e.clientX / window.innerWidth  - 0.5) * 30
+            const y = (e.clientY / window.innerHeight - 0.5) * 30
+            trackRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`
+          }
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+    window.addEventListener('mousemove', onMove, { passive: true })
+    return () => window.removeEventListener('mousemove', onMove)
+  }, [])
+
+  const handleLogin = async (e) => {
+    e?.preventDefault()
+    if (!email || !password) return
     setLoading(true)
-    setTimeout(() => { setLoading(false); navigate('/dashboard') }, 1200)
+    try {
+      const data = await login(email, password)
+      if (data.user) {
+        const role = data.user.role
+        if (role === 'trainer' || role === 'wellness_coach') navigate('/trainer/dashboard')
+        else if (role === 'admin') navigate('/admin')
+        else navigate('/dashboard')
+      } else {
+        alert(data.message)
+      }
+    } catch {
+      alert('Login failed. Try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen bg-[#07080C] flex flex-col text-white font-['Inter'] selection:bg-[#2563EB] selection:text-white relative overflow-hidden">
-      
-      {/* GLOBAL FIXED BACKGROUND */}
-      <div className="fixed inset-0 z-0 pointer-events-none transform-gpu bg-[#030712]">
-        {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)', backgroundSize: '50px 50px' }}></div>
-        {/* Radial vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse,_transparent_10%,_rgba(3,7,18,1)_100%)]"></div>
+    <div className="min-h-screen bg-[#07080C] flex flex-col text-white font-['Inter'] selection:bg-[#2563EB] selection:text-white relative overflow-x-hidden">
+
+      {/* ── Cinematic Background ── */}
+      <div className="fixed inset-0 z-0 pointer-events-none will-change-transform transform-gpu">
+        <svg
+          ref={trackRef}
+          width="100%" height="100%"
+          preserveAspectRatio="none"
+          className="absolute top-0 h-full origin-center will-change-transform transform-gpu opacity-40 transition-transform duration-1000 ease-out"
+        >
+          <g>
+            <line x1="50%" y1="0" x2="50%"  y2="100%" stroke="white" strokeWidth="2"  opacity="0.30" />
+            <line x1="50%" y1="0" x2="20%"  y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.30" />
+            <line x1="50%" y1="0" x2="-10%" y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.30" />
+            <line x1="50%" y1="0" x2="80%"  y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.30" />
+            <line x1="50%" y1="0" x2="110%" y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.30" />
+            <line x1="0" y1="30%" x2="100%" y2="30%" stroke="white" strokeWidth="1" opacity="0.15" />
+            <line x1="0" y1="60%" x2="100%" y2="60%" stroke="white" strokeWidth="2" opacity="0.15" />
+            <line x1="0" y1="90%" x2="100%" y2="90%" stroke="white" strokeWidth="4" opacity="0.15" />
+          </g>
+        </svg>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse,_transparent_10%,_rgba(7,8,12,0.95)_100%)] z-10 pointer-events-none" />
+        {/* Film Grain */}
+        <div
+          className="absolute inset-0 z-[70] opacity-[0.03] pointer-events-none transform-gpu"
+          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")" }}
+        />
+        {/* Blue Orbs */}
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-600/15 blur-[150px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
       </div>
 
-      {/* Top Bar - Transparent */}
-      <header className="relative z-50 w-full pt-8 px-6 sm:px-12">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-[900] tracking-tight text-white font-['Syne']">FITFORGE</span>
-          </Link>
-          <p className="text-sm text-gray-300 font-bold tracking-wide">
-            New here?{' '}
-            <Link to="/auth/register" className="text-white hover:text-gray-300 transition-colors ml-2 border-b border-white/30 hover:border-white">Create account</Link>
-          </p>
-        </div>
+      {/* ── Top Bar ── */}
+      <header className="relative z-50 w-full pt-8 px-6 sm:px-12 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 group">
+          <span className="text-2xl font-[900] tracking-tight text-white font-['Syne'] group-hover:text-blue-400 transition-colors">FITFORGE</span>
+          <span className="text-blue-400 font-bold text-[10px] tracking-widest uppercase ml-2 border border-blue-500/30 px-2 py-0.5 rounded-md bg-blue-500/10 hidden sm:block shadow-[0_0_10px_rgba(37,99,235,0.2)]">Member Login</span>
+        </Link>
+        <Link to="/auth/register" className="text-sm font-bold text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">
+          Create account &rarr;
+        </Link>
       </header>
 
-      {/* Main */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12 z-10 relative">
-        <div className="w-full max-w-5xl">
-          {/* 100% Transparent Login Container */}
-          <div className="bg-transparent overflow-hidden flex flex-col lg:flex-row min-h-[600px] relative">
-            
-            {/* Background Glows inside the container */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[120px] rounded-full pointer-events-none transform-gpu"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-600/5 blur-[120px] rounded-full pointer-events-none transform-gpu"></div>
+      {/* ── Main Content ── */}
+      <div className="flex-1 flex flex-col lg:flex-row items-center justify-center px-4 sm:px-8 py-12 z-10 relative max-w-7xl mx-auto w-full gap-16">
 
-            {/* Left Info Panel */}
-            <div className="lg:w-5/12 bg-transparent p-10 lg:p-12 flex flex-col justify-between relative z-10">
-              <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 bg-[#1E293B]/50 border border-white/5 rounded-full px-4 py-2 mb-8 shadow-sm backdrop-blur-md">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(37,99,235,0.8)]" />
-                  <span className="text-blue-100 text-xs font-bold tracking-wide">500+ coaches active now</span>
-                </div>
-                <h2 className="text-4xl font-bold text-white font-['Syne'] leading-tight mb-4">
-                  Welcome to the<br />next level.
-                </h2>
-                <p className="text-gray-400 text-sm leading-relaxed font-medium">
-                  Log in to connect with your dedicated coach, track your nutrition, and crush your fitness goals.
-                </p>
-              </div>
-
-              {/* Feature list */}
-              <div className="relative z-10 space-y-5 my-8">
-                {[
-                  { icon: '🎯', text: '1-on-1 Personalized Coaching' },
-                  { icon: '📸', text: 'AI-Powered Meal Analysis' },
-                  { icon: '🗣️', text: 'Multilingual Support' },
-                  { icon: '📹', text: 'Live Video Sessions' },
-                ].map(f => (
-                  <div key={f.text} className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-[#1E293B] border border-white/5 shadow-sm rounded-xl flex items-center justify-center text-lg shrink-0">
-                      {f.icon}
-                    </div>
-                    <span className="text-gray-300 text-sm font-semibold">{f.text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right Form Panel */}
-            <div className="lg:w-7/12 p-8 sm:p-14 flex flex-col justify-center bg-transparent z-10">
-              <div className="max-w-md mx-auto w-full animate-in fade-in slide-in-from-right-4 duration-500">
-                <div className="mb-10 text-center lg:text-left">
-                  <h1 className="text-3xl font-bold text-white font-['Syne'] mb-2 tracking-tight">Welcome back</h1>
-                  <p className="text-gray-400 text-sm font-medium">Sign in with your username and password</p>
-                </div>
-
-                <form onSubmit={handleLogin} className="space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                      Username
-                    </label>
-                    <div className="flex rounded-xl overflow-hidden border border-[#1E293B] focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all bg-[#030712] shadow-sm">
-                      <div className="flex items-center justify-center px-4 border-r border-[#1E293B] shrink-0 bg-[#0F172A] text-gray-400">
-                        <User size={18} />
-                      </div>
-                      <input
-                        type="text"
-                        placeholder="Enter your username"
-                        value={username}
-                        onChange={e => setUsername(e.target.value)}
-                        className="flex-1 px-4 py-3.5 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                      Password
-                    </label>
-                    <div className="flex rounded-xl overflow-hidden border border-[#1E293B] focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 transition-all bg-[#030712] shadow-sm">
-                      <div className="flex items-center justify-center px-4 border-r border-[#1E293B] shrink-0 bg-[#0F172A] text-gray-400">
-                        <Lock size={18} />
-                      </div>
-                      <input
-                        type="password"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={e => setPassword(e.target.value)}
-                        className="flex-1 px-4 py-3.5 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={!username || !password || loading}
-                    className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 text-sm flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)]"
-                  >
-                    {loading
-                      ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      : <><span>Sign In</span><ArrowRight size={16} /></>
-                    }
-                  </button>
-
-                  <div className="flex items-center gap-3 py-4">
-                    <div className="flex-1 h-px bg-[#1E293B]" />
-                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
-                      <ShieldCheck size={12} /> Secure Login
-                    </span>
-                    <div className="flex-1 h-px bg-[#1E293B]" />
-                  </div>
-
-                  <div className="text-center pt-2">
-                    <p className="text-sm text-gray-400 font-medium">
-                      Are you a trainer?{' '}
-                      <Link to="/auth/trainer-login" className="text-white font-bold hover:text-blue-400 transition-colors ml-1 border-b border-white/30 hover:border-blue-400 pb-0.5">
-                        Login here
-                      </Link>
-                    </p>
-                  </div>
-                </form>
-              </div>
-            </div>
+        {/* Left: Cinematic Copy */}
+        <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left relative z-10">
+          {/* Live badge */}
+          <div className="inline-flex items-center gap-2 bg-[#1E293B]/40 border border-[#2563EB]/30 rounded-full px-4 py-2 mb-8 shadow-[0_0_20px_rgba(37,99,235,0.15)] backdrop-blur-md">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+            </span>
+            <span className="text-blue-300 text-xs font-bold tracking-widest uppercase">500+ coaches active</span>
           </div>
 
-          <p className="text-center text-xs font-bold text-gray-600 mt-8 tracking-widest uppercase">
-            © 2026 FitForge · Elevate Your Potential
+          <h1 className="text-5xl sm:text-6xl font-black text-white font-['Syne'] leading-[1.1] mb-6 tracking-tight drop-shadow-2xl">
+            Welcome to the{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">next level.</span>
+          </h1>
+          <p className="text-gray-400 text-lg font-medium max-w-lg mb-12 leading-relaxed">
+            Log in to connect with your dedicated coach, track your nutrition, and crush your fitness goals.
           </p>
+
+          {/* Feature grid */}
+          <div className="grid grid-cols-2 gap-6 w-full max-w-lg">
+            {[
+              { icon: <Target size={20} className="text-blue-400"/>,    text: '1-on-1 Coaching' },
+              { icon: <Activity size={20} className="text-indigo-400"/>, text: 'AI Meal Analysis' },
+              { icon: <Dumbbell size={20} className="text-blue-400"/>,  text: 'Live Sessions' },
+              { icon: <Heart size={20} className="text-blue-400"/>,     text: 'Progress Tracking' },
+            ].map((f, i) => (
+              <div key={i} className="flex items-center gap-3 bg-[#0F172A]/40 border border-[#1E293B] p-3.5 rounded-2xl backdrop-blur-sm shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-[#030712] border border-[#1E293B] flex items-center justify-center shadow-inner shrink-0">
+                  {f.icon}
+                </div>
+                <span className="text-sm font-semibold text-gray-300">{f.text}</span>
+              </div>
+            ))}
+          </div>
         </div>
+
+        {/* Right: Glass Login Card */}
+        <div className="w-full lg:w-5/12 max-w-md relative z-10">
+          {/* Card glow */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 via-transparent to-indigo-600/20 rounded-3xl blur-2xl transform rotate-3 scale-105 -z-10 pointer-events-none" />
+
+          <div className="bg-[#0F172A]/60 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 sm:p-12 shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden relative">
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-white font-['Syne'] tracking-tight">Welcome back</h2>
+              <p className="text-gray-400 text-sm font-medium mt-2">Sign in with your email and password.</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-6">
+              {/* Email */}
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Email Address</label>
+                <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors">
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <div className="flex items-center justify-between mb-2 ml-1">
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">Password</label>
+                  <Link to="/auth/forgot-password" className="text-[11px] text-blue-400 font-bold hover:text-blue-300 transition-colors">
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors">
+                  <input
+                    type={showPw ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw(!showPw)}
+                    className="px-4 text-gray-500 hover:text-gray-300 transition-colors bg-transparent focus:outline-none"
+                  >
+                    {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={!email || !password || loading}
+                className="w-full py-4 mt-2 bg-[#2563EB] text-white font-bold rounded-2xl hover:bg-blue-500 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] group"
+              >
+                {loading
+                  ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  : <>
+                      <span>Sign In</span>
+                      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    </>
+                }
+              </button>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 py-1">
+                <div className="flex-1 h-px bg-[#1E293B]" />
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                  <ShieldCheck size={12} /> Secure Login
+                </span>
+                <div className="flex-1 h-px bg-[#1E293B]" />
+              </div>
+
+              {/* Footer links */}
+              <div className="text-center space-y-2 pt-1">
+                <p className="text-xs text-gray-500 font-medium">
+                  New here?{' '}
+                  <Link to="/auth/register" className="text-gray-300 font-bold hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5 ml-1">
+                    Create account
+                  </Link>
+                </p>
+                <p className="text-xs text-gray-500 font-medium">
+                  Are you a trainer?{' '}
+                  <Link to="/auth/trainer-login" className="text-blue-400 font-bold hover:text-blue-300 transition-colors ml-1">
+                    Coach Login
+                  </Link>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+
       </div>
     </div>
   )
 }
-
-export default LoginPage

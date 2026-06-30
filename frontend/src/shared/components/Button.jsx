@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 export default function Button({
   variant = 'primary',
@@ -11,34 +12,46 @@ export default function Button({
   type = 'button',
   className = ''
 }) {
+  const { role } = useAuth()
+  const isClient = role !== 'trainer' && role !== 'admin'
+
   const base = `
     inline-flex items-center justify-center font-['Syne'] font-[800]
     uppercase tracking-[0.05em] transition-all duration-300
     focus:outline-none disabled:opacity-40 disabled:pointer-events-none
+    ${isClient ? 'rounded-[10px]' : 'rounded-full'}
   `
 
   const variants = {
-    // Blue glow — primary CTA (matches hero "START TRAINING FREE" button)
-    primary: `
-      bg-[#2563EB] text-white rounded-full
-      hover:bg-white hover:text-[#2563EB] hover:scale-105
+    primary: isClient ? `
+      bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)]
+      hover:bg-[#1D4ED8] hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)] hover:-translate-y-0.5
+    ` : `
+      bg-[#F97316] text-white
+      hover:bg-white hover:text-[#F97316] hover:scale-105
       shadow-[0_0_30px_rgba(37,99,235,0.4)]
       hover:shadow-[0_0_40px_rgba(37,99,235,0.6)]
     `,
-    // Ghost glass — secondary CTA (matches hero "Generate Free Diet Plan" button)
-    secondary: `
-      bg-white/5 backdrop-blur-lg border border-white/20 text-white rounded-full
+    secondary: isClient ? `
+      bg-transparent border border-[#E2E8F0] text-[#0F172A] shadow-sm
+      hover:bg-[#F97316]/5 hover:border-[#F97316] hover:-translate-y-0.5
+    ` : `
+      bg-white/5 backdrop-blur-lg border border-white/20 text-white
       hover:bg-white/15 hover:border-white/40 hover:scale-105
       hover:shadow-[0_0_30px_rgba(255,255,255,0.15)]
     `,
-    // Subtle — tertiary / back buttons
-    ghost: `
-      bg-transparent border border-white/10 text-gray-400 rounded-full
+    ghost: isClient ? `
+      bg-transparent text-[#64748B]
+      hover:bg-[#F97316]/10 hover:text-[#F97316]
+    ` : `
+      bg-transparent border border-white/10 text-gray-400
       hover:bg-white/5 hover:text-white hover:border-white/20
     `,
-    // Danger
-    danger: `
-      bg-red-500/10 border border-red-500/20 text-red-400 rounded-full
+    danger: isClient ? `
+      bg-red-50/50 backdrop-blur-sm text-red-600 border border-red-100
+      hover:bg-red-100 hover:text-red-700
+    ` : `
+      bg-red-500/10 border border-red-500/20 text-red-400
       hover:bg-red-500/20 hover:text-red-300
     `
   }

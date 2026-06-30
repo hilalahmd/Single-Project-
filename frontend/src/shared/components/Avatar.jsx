@@ -17,7 +17,8 @@ export default function Avatar({ src, name = '', size = 'md', className = '' }) 
   return src ? (
     <img
       src={src}
-      alt={name}
+      alt={name || 'Avatar'}
+      loading="lazy"
       className={`${sizes[size]} rounded-full object-cover border border-white/10 ${className}`}
     />
   ) : (

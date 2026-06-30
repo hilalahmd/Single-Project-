@@ -82,26 +82,34 @@ export default function DashboardLayout() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const sidebarWidth = collapsed ? 'w-16' : 'w-56'
-  const isLightMode = role === 'admin'
+  const isAdminMode = role === 'admin'
+  const isClientMode = role === 'user'
+
+  const BackgroundOrbs = () => isClientMode ? (
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#07080C]">
+      <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full bg-[#F97316]/10 blur-[150px]" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full bg-[#F97316]/10 blur-[150px]" />
+    </div>
+  ) : null;
 
   // Dynamic Theme Classes
   const theme = {
-    layout: isLightMode ? 'bg-[#F9FAFB] text-black' : 'bg-[#07080C] text-white',
-    sidebar: isLightMode ? 'bg-white border-gray-200' : 'bg-[#07080C] border-white/10',
-    header: isLightMode ? 'bg-white border-gray-200' : 'bg-[#07080C] border-white/10',
-    logo: isLightMode ? 'text-black' : 'text-white',
-    btnColor: isLightMode ? 'text-gray-500 hover:text-black' : 'text-gray-400 hover:text-white',
-    searchContainer: isLightMode ? 'bg-gray-50 border-gray-200 text-black placeholder-gray-400 focus:border-black' : 'bg-[#111318] border-white/10 text-white placeholder-gray-500 focus:border-[#2563EB]',
-    searchIcon: isLightMode ? 'text-gray-400' : 'text-gray-500',
-    navActive: isLightMode ? 'bg-gray-100 text-black border-r-4 border-black' : 'bg-[#2563EB]/10 text-[#2563EB] border-r-4 border-[#2563EB]',
-    navInactive: isLightMode ? 'text-gray-500 hover:text-black hover:bg-gray-50' : 'text-gray-400 hover:text-white hover:bg-white/5',
-    divider: isLightMode ? 'border-gray-200' : 'border-white/10',
-    avatarBtn: isLightMode ? 'bg-black text-white hover:bg-gray-800' : 'bg-[#2563EB]/20 text-[#2563EB] border-[#2563EB]/50 hover:bg-[#2563EB]/30',
-    bellDot: isLightMode ? 'bg-black border-white' : 'bg-[#2563EB] border-[#07080C]',
+    layout: isClientMode ? 'bg-[#07080C] text-white' : (isAdminMode ? 'bg-[#F9FAFB] text-black' : 'bg-[#07080C] text-white'),
+    sidebar: isClientMode ? 'bg-[#07080C] border-r border-white/10' : (isAdminMode ? 'bg-white border-gray-200' : 'bg-[#07080C] border-white/10'),
+    header: isClientMode ? 'bg-[#07080C] border-b border-white/10' : (isAdminMode ? 'bg-white border-gray-200' : 'bg-[#07080C] border-white/10'),
+    logo: isClientMode ? 'text-white' : (isAdminMode ? 'text-black' : 'text-white'),
+    btnColor: isClientMode ? 'text-gray-400 hover:text-white' : (isAdminMode ? 'text-gray-500 hover:text-black' : 'text-gray-400 hover:text-white'),
+    searchContainer: isClientMode ? 'bg-[#111318] border-white/10 text-white placeholder-gray-500 focus:border-[#F97316]' : (isAdminMode ? 'bg-gray-50 border-gray-200 text-black placeholder-gray-400 focus:border-black' : 'bg-[#111318] border-white/10 text-white placeholder-gray-500 focus:border-[#F97316]'),
+    searchIcon: isClientMode ? 'text-gray-500' : (isAdminMode ? 'text-gray-400' : 'text-gray-500'),
+    navActive: isClientMode ? 'bg-[#F97316]/10 text-white border-r-4 border-[#F97316]' : (isAdminMode ? 'bg-gray-100 text-black border-r-4 border-black' : 'bg-[#F97316]/10 text-white border-r-4 border-[#F97316]'),
+    navInactive: isClientMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : (isAdminMode ? 'text-gray-500 hover:text-black hover:bg-gray-50' : 'text-gray-400 hover:text-white hover:bg-white/5'),
+    divider: isClientMode ? 'border-white/10' : (isAdminMode ? 'border-gray-200' : 'border-white/10'),
+    avatarBtn: isClientMode ? 'bg-[#F97316]/20 text-white border-[#F97316]/50 hover:bg-[#F97316]/30' : (isAdminMode ? 'bg-black text-white hover:bg-gray-800' : 'bg-[#F97316]/20 text-white border-[#F97316]/50 hover:bg-[#F97316]/30'),
+    bellDot: isClientMode ? 'bg-[#F97316] border-[#07080C]' : (isAdminMode ? 'bg-black border-white' : 'bg-[#F97316] border-[#07080C]'),
   }
 
   const SidebarContent = () => (
-    <div className={`flex flex-col h-full ${isLightMode ? 'bg-white' : 'bg-[#07080C]'}`}>
+    <div className={`flex flex-col h-full relative z-10 ${isClientMode ? 'bg-[#07080C]' : isAdminMode ? 'bg-white' : 'bg-[#07080C]'}`}>
       {/* Logo */}
       <div className="flex items-center justify-between px-6 py-5">
         {!collapsed && (
@@ -152,7 +160,8 @@ export default function DashboardLayout() {
   )
 
   return (
-    <div className={`flex h-screen overflow-hidden font-['Inter'] ${theme.layout}`}>
+    <div className={`flex h-screen overflow-hidden font-['Inter'] relative ${theme.layout}`}>
+      <BackgroundOrbs />
       {/* ── Desktop Sidebar ── */}
       <aside
         className={`hidden md:flex flex-col ${sidebarWidth} border-r shrink-0 transition-all duration-200 ease-in-out ${theme.sidebar}`}
@@ -160,32 +169,15 @@ export default function DashboardLayout() {
         <SidebarContent />
       </aside>
 
-      {/* ── Mobile Sidebar Overlay ── */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 flex md:hidden">
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className={`relative z-50 flex flex-col w-60 h-full border-r ${theme.sidebar}`}>
-            <div className="absolute top-4 right-4">
-              <button onClick={() => setMobileOpen(false)} className={theme.btnColor}>
-                <X size={20} />
-              </button>
-            </div>
-            <SidebarContent />
-          </aside>
-        </div>
-      )}
 
       {/* ── Content area ── */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-transparent">
         
         {/* Top navbar */}
         <header className={`flex items-center gap-4 h-16 px-4 md:px-8 border-b shrink-0 ${theme.header}`}>
-          <button
-            className={`md:hidden flex items-center justify-center w-8 h-8 rounded-lg ${theme.btnColor} ${isLightMode ? 'hover:bg-gray-100' : 'hover:bg-white/10'}`}
-            onClick={() => setMobileOpen(true)}
-          >
-            <Menu size={18} />
-          </button>
+          <Link to="/" className={`md:hidden text-xl font-black tracking-tight font-['Syne'] ${theme.logo}`}>
+            FITFORGE
+          </Link>
 
           {/* Search Bar */}
           <div className="flex-1 max-w-md relative hidden md:block">
@@ -210,10 +202,41 @@ export default function DashboardLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-transparent relative">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 bg-transparent relative">
           <Outlet />
         </main>
       </div>
+
+      {/* ── Mobile Bottom Navigation ── */}
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center gap-6 overflow-x-auto px-6 py-3 border-t ${theme.sidebar} ${isClientMode ? 'bg-[#07080C]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]' : 'backdrop-blur-xl bg-opacity-95 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]'}`}>
+        {navItems.map(({ to, icon: Icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/dashboard' || to === '/trainer/dashboard' || to === '/admin'}
+            className={({ isActive }) =>
+              `flex flex-col items-center gap-1 shrink-0 min-w-[3.5rem] transition-colors ${
+                isActive ? (isClientMode ? 'text-[#F97316]' : (isAdminMode ? 'text-black' : 'text-[#F97316]')) : (isClientMode ? 'text-gray-400 hover:text-white' : (isAdminMode ? 'text-gray-500 hover:text-black' : 'text-gray-500 hover:text-gray-300'))
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span className={`text-[10px] font-bold ${isActive ? 'opacity-100' : 'opacity-80'}`}>{label}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+        {/* Mobile Logout Button */}
+        <button 
+          onClick={logout} 
+          className={`flex flex-col items-center gap-1 shrink-0 min-w-[3.5rem] transition-colors ${isClientMode ? 'text-red-400 hover:text-red-300' : (isAdminMode ? 'text-red-500 hover:text-red-600' : 'text-red-400 hover:text-red-300')}`}
+        >
+          <LogOut size={20} strokeWidth={2} />
+          <span className="text-[10px] font-bold opacity-80">Logout</span>
+        </button>
+      </nav>
     </div>
   )
 }

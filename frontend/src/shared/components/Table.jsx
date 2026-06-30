@@ -1,6 +1,12 @@
+import { useCallback } from 'react';
+
 export default function Table({ columns = [], rows = [], data = [], onRowClick }) {
   // Support both `rows` and `data` prop names for compatibility
   const tableData = rows.length > 0 ? rows : data
+
+  const handleRowClick = useCallback((row) => {
+    if (onRowClick) onRowClick(row);
+  }, [onRowClick]);
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
@@ -28,8 +34,8 @@ export default function Table({ columns = [], rows = [], data = [], onRowClick }
             ) : (
               tableData.map((row, i) => (
                 <tr
-                  key={i}
-                  onClick={() => onRowClick?.(row)}
+                  key={row.id || row._id || i}
+                  onClick={() => handleRowClick(row)}
                   className={`transition-colors ${onRowClick ? 'cursor-pointer hover:bg-white/5' : ''}`}
                 >
                   {columns.map((col) => (

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Check } from 'lucide-react'
 import Button from '../../../shared/components/Button'
+import API from '../../../shared/utils/api'
 
 // ── Password strength ─────────────────────────────────────────────────────────
 function getStrength(pw) {
@@ -120,7 +121,21 @@ export default function ResetPasswordPage() {
       <Button
         variant="primary"
         fullWidth
-        onClick={() => pw && pw === confirm && setDone(true)}
+        onClick={async () => {
+  if (!pw || pw !== confirm) return
+  const token = new URLSearchParams(window.location.search).get('token')
+  const res = await fetch(`${API}/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token, password: pw })
+  })
+  const data = await res.json()
+  if (data.message === 'Password reset successful') {
+    setDone(true)
+  } else {
+    alert(data.message)
+  }
+}}
       >
         Reset Password
       </Button>

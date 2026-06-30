@@ -11,18 +11,20 @@ export default function AdminLoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
 
-  const handleLogin = (e) => {
-    e.preventDefault()
-    // Mock admin login
-    const adminUser = {
-      _id: 'admin_123',
-      name: 'System Admin',
-      email: email,
-      role: 'admin',
+ const handleLogin = async (e) => {
+  e.preventDefault()
+  try {
+    const data = await login(email, password)
+    if (data.user && data.user.role === 'admin') {
+      navigate('/admin')
+    } else if (data.user) {
+      alert('This account is not an admin account')
+    } else {
+      alert(data.message)
     }
-    login(adminUser)
-    // Force a hard reload so AuthContext mounts with the correct admin session from local storage
-    window.location.href = '/admin'
+  } catch (err) {
+    alert('Login failed. Try again.')
+  }
   }
 
   return (

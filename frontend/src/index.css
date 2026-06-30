@@ -37,7 +37,7 @@ html {
 }
 
 body {
-  @apply bg-[#07080C] text-white font-['Inter'] selection:bg-[#2563EB] selection:text-white;
+  @apply bg-[#07080C] text-white font-['Inter'] selection:bg-[#F97316] selection:text-white;
   margin: 0;
   padding: 0;
 }

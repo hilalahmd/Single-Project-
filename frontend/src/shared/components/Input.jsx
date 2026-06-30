@@ -20,7 +20,7 @@ export default function Input({
           htmlFor={id || name}
           className="block text-[0.65rem] font-[800] text-gray-400 uppercase tracking-[0.2em] mb-2 font-['Syne']"
         >
-          {label}{required && <span className="text-[#2563EB] ml-1">*</span>}
+          {label}{required && <span className="text-[#F97316] ml-1">*</span>}
         </label>
       )}
       <div className="relative flex items-center">
@@ -42,8 +42,8 @@ export default function Input({
             w-full bg-white/5 border rounded-xl px-4 py-3
             text-sm text-white placeholder-gray-600
             font-['Inter'] transition-all duration-200
-            focus:outline-none focus:border-[#2563EB] focus:bg-white/8
-            focus:shadow-[0_0_0_3px_rgba(37,99,235,0.15)]
+            focus:outline-none focus:border-[#F97316] focus:bg-white/8
+            focus:shadow-[0_0_0_3px_rgba(249,115,22,0.15)]
             disabled:opacity-40
             ${Icon ? 'pl-10' : ''}
             ${suffix ? 'pr-12' : ''}

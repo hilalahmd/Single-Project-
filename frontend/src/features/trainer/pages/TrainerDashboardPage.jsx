@@ -3,7 +3,7 @@ import { Users, DollarSign, CalendarDays, MessageSquare, Video, ArrowRight, Tren
 
 export default function TrainerDashboardPage() {
   const stats = [
-    { label: 'Active Clients', value: '24', icon: Users, color: 'text-blue-500' },
+    { label: 'Active Clients', value: '24', icon: Users, color: 'text-orange-500' },
     { label: 'Unread Messages', value: '12', icon: MessageSquare, color: 'text-amber-500' },
     { label: 'Upcoming Sessions', value: '4', icon: Video, color: 'text-green-500' },
     { label: 'Earnings Balance', value: '$3,840', icon: DollarSign, color: 'text-emerald-400' },
@@ -32,7 +32,7 @@ export default function TrainerDashboardPage() {
         {stats.map((s, i) => {
           const Icon = s.icon
           return (
-            <div key={i} className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 shadow-sm hover:border-[#2563EB] transition-colors">
+            <div key={i} className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 shadow-sm hover:border-[#F97316] transition-colors">
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-[#0F172A] border border-[#1E293B] flex items-center justify-center shrink-0">
                   <Icon size={20} className={s.color} />
@@ -52,13 +52,18 @@ export default function TrainerDashboardPage() {
         <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-[20px] font-semibold text-white">Today's Video Sessions</h2>
-            <Link to="/trainer/schedule" className="text-sm font-semibold text-[#2563EB] hover:text-blue-400 flex items-center gap-1 transition-colors">
+            <Link to="/trainer/schedule" className="text-sm font-semibold text-[#F97316] hover:text-orange-400 flex items-center gap-1 transition-colors">
               View Schedule <ArrowRight size={16} />
             </Link>
           </div>
           
           <div className="space-y-4 flex-1">
-            {upcomingSessions.map((session, i) => (
+            {upcomingSessions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-500 py-12">
+                <CalendarDays size={40} className="mb-3 opacity-50" />
+                <p className="font-medium">No upcoming sessions</p>
+              </div>
+            ) : upcomingSessions.map((session, i) => (
               <div key={i} className="flex items-center justify-between p-4 bg-[#0F172A] border border-[#1E293B] rounded-xl hover:border-gray-700 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-[#111827] border border-[#1E293B] flex items-center justify-center text-white font-bold shrink-0">
@@ -70,14 +75,14 @@ export default function TrainerDashboardPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-[#2563EB] text-[15px]">{session.time}</p>
+                  <p className="font-bold text-[#F97316] text-[15px]">{session.time}</p>
                   <p className="text-[12px] text-gray-500 font-medium">{session.duration}</p>
                 </div>
               </div>
             ))}
           </div>
           
-          <Link to="/trainer/video" className="mt-6 w-full py-3 bg-[#2563EB] hover:bg-blue-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+          <Link to="/trainer/video" className="mt-6 w-full py-3 bg-[#F97316] hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
             <Video size={18} /> Join Next Session
           </Link>
         </div>
@@ -86,13 +91,18 @@ export default function TrainerDashboardPage() {
         <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-[20px] font-semibold text-white">Unread Messages</h2>
-            <Link to="/trainer/chat" className="text-sm font-semibold text-[#2563EB] hover:text-blue-400 flex items-center gap-1 transition-colors">
+            <Link to="/trainer/chat" className="text-sm font-semibold text-[#F97316] hover:text-orange-400 flex items-center gap-1 transition-colors">
               Go to Inbox <ArrowRight size={16} />
             </Link>
           </div>
           
           <div className="space-y-4 flex-1">
-            {unreadMessages.map((msg, i) => (
+            {unreadMessages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-500 py-12">
+                <MessageSquare size={40} className="mb-3 opacity-50" />
+                <p className="font-medium">No new messages</p>
+              </div>
+            ) : unreadMessages.map((msg, i) => (
               <div key={i} className="p-4 bg-[#0F172A] border border-[#1E293B] rounded-xl hover:border-gray-700 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
