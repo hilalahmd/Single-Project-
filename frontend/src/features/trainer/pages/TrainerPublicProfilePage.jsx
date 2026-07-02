@@ -1,35 +1,72 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Check, ShieldCheck } from 'lucide-react'
+import API from '../../../shared/utils/api'
 
 export default function TrainerPublicProfilePage() {
-  const { id } = useParams()
+
+const { id } = useParams()
   const navigate = useNavigate()
 
-  // MOCK DATA matching screenshot
-  const t = {
-    id,
-    name: 'Alex Chen',
-    role: 'Strength & Conditioning Coach',
-    rating: 4.9,
-    clients: 342,
-    experience: '8 years',
-    response: '< 2 hours',
-    languages: ['English', 'Mandarin'],
-    specialties: ['HIIT', 'Strength', 'Weight Loss'],
-    bio: 'Former competitive powerlifter turned coach with 8+ years helping clients achieve sustainable transformation. My approach combines evidence-based programming with habit coaching for lasting results.',
-    heroImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    avatar: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
-    availability: [
-      { day: 'Mon', times: ['11:00'] },
-      { day: 'Tue', times: ['9:00', '11:00'] },
-      { day: 'Wed', times: ['9:00', '11:00'] },
-      { day: 'Thu', times: ['11:00'] },
-      { day: 'Fri', times: ['9:00'] },
-      { day: 'Sat', times: ['9:00', '11:00'] },
-      { day: 'Sun', times: ['11:00'] },
-    ]
+  const [t, setT] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchTrainer = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch(`${API}/trainers/${id}`, {
+          credentials: 'include'
+        })
+        if (!res.ok) throw new Error('Failed to load trainer')
+        const data = await res.json()
+
+        setT({
+          id: data._id,
+          name: data.userId?.name || 'Unknown',
+          role: data.role === 'wellness_coach' ? 'Wellness Coach' : 'Personal Trainer',
+          rating: data.rating || 0,
+          clients: 0,
+          experience: 'N/A',
+          response: 'N/A',
+          languages: data.languagesSpoken || [],
+          specialties: data.specialties || [],
+          bio: data.bio || 'No bio added yet.',
+          heroImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+          avatar: data.userId?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.userId?.name || 'Trainer') + '&size=200&background=1a1a1a&color=ff6b1a',
+          wellnessPrice: data.pricing?.wellnessMonthly || 0,
+          personalPrice: data.pricing?.personalTrainingMonthly || 0,
+          availability: []
+        })
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTrainer()
+  }, [id])
+
+
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#030712] flex items-center justify-center">
+        <p className="text-gray-400 text-lg">Loading trainer...</p>
+      </div>
+    )
   }
+
+  if (error || !t) {
+    return (
+      <div className="min-h-screen bg-[#030712] flex items-center justify-center">
+        <p className="text-red-400 text-lg">{error || 'Trainer not found'}</p>
+      </div>
+    )
+  }
+
 
   return (
     <div className="min-h-screen bg-[#030712]">

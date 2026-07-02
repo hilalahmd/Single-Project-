@@ -33,6 +33,7 @@ const ProgressTrackerPage = lazy(() => import('./features/client/pages/ProgressT
 const SchedulePage = lazy(() => import('./features/client/pages/SchedulePage'))
 const CheckoutPage = lazy(() => import('./features/client/pages/CheckoutPage'))
 const ClientSettingsPage = lazy(() => import('./features/client/pages/ClientSettingsPage'))
+const ClientProfilePage = lazy(() => import('./features/client/pages/ClientProfilePage'))
 const NutritionTrackerPage = lazy(() => import('./features/client/pages/NutritionTrackerPage'))
 const FoodAIPage = lazy(() => import('./features/client/pages/FoodAIPage'))
 const AIAssistantPage = lazy(() => import('./features/client/pages/AIAssistantPage'))
@@ -128,6 +129,7 @@ function App() {
               <Route path="/dashboard/schedule" element={<SchedulePage />} />
               <Route path="/dashboard/subscription" element={<CheckoutPage />} />
               <Route path="/dashboard/settings" element={<ClientSettingsPage />} />
+              <Route path="/dashboard/profile" element={<ClientProfilePage />} />
             </Route>
           </Route>
 

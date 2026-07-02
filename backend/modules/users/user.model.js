@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+  import mongoose from 'mongoose'
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema({
   avatar: { type: String, default: '' },
   preferredLanguage: { type: String, default: 'English' },
   languagesSpoken: [String],
+  
+  // ── BODY METRICS (from registration + diet form) ──
   bodyMetrics: {
     height: Number,
     weight: Number,
@@ -26,6 +28,21 @@ const userSchema = new mongoose.Schema({
     goal: String,
     calorieTarget: Number
   },
+
+  // ── NEW: Country for regional diet plans ──
+  country: { type: String, default: '' },
+
+  // ── NEW: Optional body measurements for accurate body fat % ──
+  measurements: {
+    neck: { type: Number },        // cm
+    waist: { type: Number },       // cm
+    navel: { type: Number },       // cm
+    arm: { type: Number },         // cm
+    wrist: { type: Number },       // cm
+    hip: { type: Number },         // cm
+    thigh: { type: Number }        // cm
+  },
+
   dietGenerationCount: { type: Number, default: 0 },
   dietGenerationResetDate: { type: Date, default: Date.now },
   isVerified: { type: Boolean, default: false },

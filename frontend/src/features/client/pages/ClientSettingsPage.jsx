@@ -4,7 +4,7 @@ import Button from '../../../shared/components/Button'
 import Badge from '../../../shared/components/Badge'
 
 export default function ClientSettingsPage() {
-  const [activeTab, setActiveTab] = useState('profile')
+  const [activeTab, setActiveTab] = useState('notifications')
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -14,7 +14,7 @@ export default function ClientSettingsPage() {
       </div>
 
       <div className="border-b border-[#1E293B] flex gap-8 overflow-x-auto">
-        {['profile', 'notifications', 'security', 'subscription'].map(tab => (
+        {['notifications', 'security', 'subscription'].map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`pb-4 text-[14px] font-semibold capitalize transition-colors relative whitespace-nowrap ${activeTab === tab ? 'text-white' : 'text-gray-400 hover:text-white'}`}>
             {tab}
@@ -24,70 +24,7 @@ export default function ClientSettingsPage() {
       </div>
 
       <div>
-        {activeTab === 'profile' && (
-          <div className="space-y-6">
-            <Card>
-              <h2 className="text-[20px] font-semibold text-white mb-6">Personal Details</h2>
-              <div className="flex items-center gap-6 mb-8">
-                <div className="w-24 h-24 bg-[#0F172A] rounded-full flex items-center justify-center text-[32px] font-bold text-gray-400 border border-[#1E293B]">H</div>
-                <div className="space-y-2">
-                  <button className="px-4 py-2 border border-[#1E293B] text-white hover:bg-[#0F172A] rounded-lg text-[14px] font-semibold transition-colors">Change Avatar</button>
-                  <p className="text-[14px] text-gray-400">JPG, GIF or PNG. Max size of 2MB.</p>
-                </div>
-              </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                {[
-                  { l: 'Full Name', v: 'Hilal', t: 'text' },
-                  { l: 'Email Address', v: 'hilal@example.com', t: 'email', ro: true },
-                  { l: 'Phone Number', v: '+91 9876543210', t: 'tel' },
-                ].map((f, i) => (
-                  <div key={i}>
-                    <label className="block text-[14px] font-semibold text-gray-300 mb-2">{f.l}</label>
-                    <input type={f.t} defaultValue={f.v} readOnly={f.ro} className={`w-full px-4 py-3 border border-[#1E293B] rounded-lg text-[14px] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] bg-[#0F172A] text-white ${f.ro ? 'opacity-60' : ''}`} />
-                  </div>
-                ))}
-                <div>
-                  <label className="block text-[14px] font-semibold text-gray-300 mb-2">Language Preference</label>
-                  <select className="w-full px-4 py-3 border border-[#1E293B] rounded-lg text-[14px] bg-[#0F172A] text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] appearance-none">
-                    <option>English</option><option>Malayalam</option><option>Hindi</option>
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-[14px] font-semibold text-gray-300 mb-2">Bio</label>
-                  <textarea rows="3" placeholder="Tell us a bit about yourself..." className="w-full px-4 py-3 border border-[#1E293B] rounded-lg text-[14px] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none bg-[#0F172A] text-white placeholder-gray-500"></textarea>
-                </div>
-              </div>
-            </Card>
-            <Card>
-              <h2 className="text-[20px] font-semibold text-white mb-6">Body Metrics & Goals</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                {[
-                  { l: 'Height (cm)', v: 175 }, { l: 'Weight (kg)', v: 74.5 }, { l: 'Age', v: 28 }
-                ].map((f, i) => (
-                  <div key={i}>
-                    <label className="block text-[14px] font-semibold text-gray-300 mb-2">{f.l}</label>
-                    <input type="number" defaultValue={f.v} className="w-full px-4 py-3 border border-[#1E293B] rounded-lg text-[14px] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] bg-[#0F172A] text-white" />
-                  </div>
-                ))}
-                {[
-                  { l: 'Gender', opts: ['Male', 'Female', 'Other'] },
-                  { l: 'Activity Level', opts: ['Sedentary', 'Lightly Active', 'Moderately Active', 'Very Active'] },
-                  { l: 'Primary Goal', opts: ['Weight Loss', 'Muscle Gain', 'Maintenance'] },
-                ].map((f, i) => (
-                  <div key={i}>
-                    <label className="block text-[14px] font-semibold text-gray-300 mb-2">{f.l}</label>
-                    <select className="w-full px-4 py-3 border border-[#1E293B] rounded-lg text-[14px] bg-[#0F172A] text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] appearance-none">
-                      {f.opts.map(o => <option key={o}>{o}</option>)}
-                    </select>
-                  </div>
-                ))}
-              </div>
-            </Card>
-            <div className="flex justify-end">
-              <button className="px-6 py-3 bg-gradient-to-r from-[#2563EB] to-blue-500 hover:to-blue-400 text-white rounded-lg text-[14px] font-semibold transition-all">Save Changes</button>
-            </div>
-          </div>
-        )}
+
 
         {activeTab === 'notifications' && (
           <Card>

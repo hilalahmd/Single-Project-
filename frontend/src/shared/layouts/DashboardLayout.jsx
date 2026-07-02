@@ -25,7 +25,8 @@ import {
   X,
   Search,
   LogOut,
-  Shield
+  Shield,
+  User
 } from 'lucide-react'
 
 import { useAuth } from '../context/AuthContext'
@@ -42,6 +43,7 @@ const clientNav = [
   { label: 'AI Assistant', to: '/dashboard/ai',          icon: Bot },
   { label: 'Chat',         to: '/dashboard/chat',        icon: MessageSquare },
   { label: 'Schedule',     to: '/dashboard/schedule',    icon: CalendarDays },
+  { label: 'Profile',      to: '/dashboard/profile',     icon: User },
   { label: 'Settings',     to: '/dashboard/settings',    icon: Settings },
 ]
 

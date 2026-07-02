@@ -1,75 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Search, ShieldCheck, Star, ChevronDown, Activity, Users } from 'lucide-react'
-
-const TRAINERS = [
-  { 
-    id: 1, 
-    name: 'Alex Chen',  
-    role: 'Strength & Conditioning Coach',
-    languages: ['English', 'Mandarin'],
-    rating: 4.9, 
-    reviews: 128,
-    price: 129,
-    tags: ['HIIT', 'Strength', 'Weight Loss'],
-    image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-  },
-  { 
-    id: 2, 
-    name: 'Sofia Martinez', 
-    role: 'Yoga & Pilates Specialist',
-    languages: ['English', 'Spanish'],
-    rating: 4.8, 
-    reviews: 89,
-    price: 89,
-    tags: ['Yoga', 'Pilates', 'Flexibility'],
-    image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-  },
-  { 
-    id: 3, 
-    name: 'Marcus Thompson',  
-    role: 'Boxing & Cardio Coach',
-    languages: ['English'],
-    rating: 4.7, 
-    reviews: 210,
-    price: 109,
-    tags: ['Boxing', 'Cardio', 'Endurance'],
-    image: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-  },
-  { 
-    id: 4, 
-    name: 'Emma Wilson',    
-    role: 'Wellness & Nutrition Coach',
-    languages: ['English', 'French'],
-    rating: 5.0, 
-    reviews: 432,
-    price: 149,
-    tags: ['Nutrition', 'Wellness', 'Recovery'],
-    image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-  },
-  { 
-    id: 5, 
-    name: 'David Kim', 
-    role: 'CrossFit Trainer',               
-    languages: ['English', 'Korean'],
-    rating: 4.6, 
-    reviews: 76,
-    price: 119,
-    tags: ['CrossFit', 'Strength', 'HIIT'],
-    image: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-  },
-  { 
-    id: 6, 
-    name: 'Sarah Jones', 
-    role: 'Running & Endurance Coach',         
-    languages: ['English'],
-    rating: 4.8, 
-    reviews: 154,
-    price: 99,
-    tags: ['Running', 'Marathon', 'Cardio'],
-    image: 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-  },
-]
+import API from '../../../shared/utils/api'
 
 const FILTER_TAGS = ['All', 'Wellness', 'HIIT', 'Strength', 'Yoga', 'Boxing', 'CrossFit', 'Running']
 
@@ -85,6 +17,9 @@ export default function TrainerListingPage() {
     price: 'Any price',
     rating: 'Any rating'
   })
+  const [trainers, setTrainers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)  
 
   // Auto-filter to Wellness if arriving from ?type=wellness
   useEffect(() => {
@@ -97,8 +32,46 @@ export default function TrainerListingPage() {
     }
   }, [location.search])
 
+
+
+
+  useEffect(() => {
+    const fetchTrainers = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch(`${API}/trainers`, {
+          credentials: 'include'
+        })
+        if (!res.ok) throw new Error('Failed to load trainers')
+        const data = await res.json()
+
+        const mapped = data.map(t => ({
+          id: t._id,
+          name: t.userId?.name || 'Unknown',
+          role: t.role === 'wellness_coach' ? 'Wellness Coach' : 'Personal Trainer',
+          languages: t.languagesSpoken || [],
+          rating: t.rating || 0,
+          reviews: t.reviewCount || 0,
+          price: t.role === 'wellness_coach'
+            ? t.pricing?.wellnessMonthly || 0
+            : t.pricing?.personalTrainingMonthly || 0,
+          tags: t.specialties || [],
+          image: t.userId?.avatar || 'https://via.placeholder.com/400x500'
+        }))
+
+        setTrainers(mapped)
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTrainers()
+  }, [])
+
   // Filter trainers by active tag and search query
-  const filteredTrainers = TRAINERS.filter(t => {
+  const filteredTrainers = trainers.filter(t => {
     const matchesTag = activeTag === 'All' || t.tags.includes(activeTag) || t.role.toLowerCase().includes(activeTag.toLowerCase())
     const matchesSearch = searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.role.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesTag && matchesSearch

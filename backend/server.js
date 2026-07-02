@@ -4,6 +4,17 @@ import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import connectDB from './config/db.js'
 import authRoutes from './modules/auth/auth.routes.js'
+import userRoutes from './modules/users/user.routes.js'
+import trainerRoutes from './modules/trainers/trainer.routes.js'
+import adminRoutes from './modules/admin/admin.routes.js'
+
+
+
+
+
+
+
+
 
 dotenv.config()
 connectDB()
@@ -14,10 +25,39 @@ app.use(cors({
   origin: ["http://localhost:5173", "http://localhost:5174"],
   credentials: true
 }))
+
+
+
+
+
+
+
 app.use(express.json())
 app.use(cookieParser())
 
+
+
+
+
+
+
 app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/trainers', trainerRoutes)
+app.use('/api/admin', adminRoutes)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.get('/', (req, res) => {
   res.json({ message: 'FitForge API running 🔥' })
