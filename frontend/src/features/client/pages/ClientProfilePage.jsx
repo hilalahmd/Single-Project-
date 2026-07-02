@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowRight, Dumbbell } from 'lucide-react'
 import Card from '../../../shared/components/Card'
 import Button from '../../../shared/components/Button'
 import Badge from '../../../shared/components/Badge'
@@ -192,6 +194,23 @@ export default function ClientProfilePage() {
           <button onClick={saveMetrics} disabled={saving} className="px-6 py-3 border border-[#1E293B] text-white hover:bg-[#0F172A] rounded-lg text-[14px] font-semibold transition-colors disabled:opacity-50">
             {saving ? 'Saving...' : 'Save Metrics'}
           </button>
+        </div>
+
+        {/* Are you a trainer? */}
+        <div className="mt-10 bg-[#0F172A]/50 border border-[#1E293B] rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-5">
+          <div className="w-12 h-12 rounded-xl bg-[#F97316]/10 border border-[#F97316]/20 flex items-center justify-center shrink-0">
+            <Dumbbell size={22} className="text-[#F97316]" />
+          </div>
+          <div className="flex-1 text-center sm:text-left">
+            <h3 className="text-white font-bold text-[16px] mb-1">Are you a trainer?</h3>
+            <p className="text-gray-400 text-[13px]">Join FitForge as a coach and start getting matched with clients today.</p>
+          </div>
+          <Link
+            to="/auth/trainer-register"
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#F97316] to-[#ff8c3a] text-white rounded-full font-bold text-xs uppercase tracking-wider shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-200 shrink-0"
+          >
+            Register as Coach <ArrowRight size={14} />
+          </Link>
         </div>
       </div>
     </div>

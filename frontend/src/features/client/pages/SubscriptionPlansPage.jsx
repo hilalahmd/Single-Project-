@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ChevronDown, Check } from 'lucide-react'
+import { useAuth } from '../../../shared/context/AuthContext'
 
 export default function SubscriptionPlansPage() {
   const navigate = useNavigate()
+  const { user, updateSubscription } = useAuth()
   const [isAnnual, setIsAnnual] = useState(false)
   const [openFaq, setOpenFaq] = useState(null)
 
@@ -20,12 +22,29 @@ export default function SubscriptionPlansPage() {
     pt: { mo: 2499, yr: 2499 * 12 * 0.8 }
   }
 
+  const handleSelectPlan = (planName) => {
+    if (planName === 'free') {
+      if (user) {
+        updateSubscription('free')
+        navigate('/dashboard')
+      } else {
+        navigate('/auth/register')
+      }
+    } else {
+      if (user) {
+        navigate('/dashboard/subscription', { state: { plan: planName } })
+      } else {
+        navigate('/auth/register')
+      }
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       
       {/* Header */}
       <div className="text-center mb-16">
-        <h1 className="text-[40px] font-bold text-white mb-4 tracking-tight">Choose Your Plan</h1>
+        <h1 className="text-[40px] font-bold text-white mb-4 tracking-tight font-['Syne']">Choose Your Plan</h1>
         <p className="text-[16px] text-gray-400">Transform your life with expert coaching.</p>
       </div>
 
@@ -63,7 +82,12 @@ export default function SubscriptionPlansPage() {
             <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />AI diet plan (3 generations/mo)</li>
             <li className="flex items-start gap-3 text-gray-300 text-[14px] font-medium"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Browse all trainers</li>
           </ul>
-          <button className="w-full py-3.5 border border-[rgba(255,255,255,0.1)] text-white text-[15px] font-bold rounded-full hover:bg-white/5 hover:text-[#ff6b1a] transition-colors" onClick={() => navigate('/auth/register')}>Get Started</button>
+          <button 
+            className="w-full py-3.5 border border-[rgba(255,255,255,0.1)] text-white text-[15px] font-bold rounded-full hover:bg-white/5 hover:text-[#ff6b1a] transition-colors cursor-pointer" 
+            onClick={() => handleSelectPlan('free')}
+          >
+            {user ? 'Select Free' : 'Get Started'}
+          </button>
         </div>
 
         {/* Wellness Plan */}
@@ -81,7 +105,12 @@ export default function SubscriptionPlansPage() {
             <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Unlimited AI food photo analysis</li>
             <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Chat support with coach</li>
           </ul>
-          <button className="w-full py-4 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white text-[15px] font-bold rounded-full hover:shadow-[0_0_25px_rgba(255,107,26,0.5)] transition-all duration-300 uppercase tracking-wide" onClick={() => navigate('/auth/register')}>Choose Wellness</button>
+          <button 
+            className="w-full py-4 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white text-[15px] font-bold rounded-full hover:shadow-[0_0_25px_rgba(255,107,26,0.5)] transition-all duration-300 uppercase tracking-wide cursor-pointer" 
+            onClick={() => handleSelectPlan('wellness')}
+          >
+            Choose Wellness
+          </button>
         </div>
 
         {/* PT Plan */}
@@ -97,7 +126,12 @@ export default function SubscriptionPlansPage() {
               <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Priority support</li>
               <li className="flex items-start gap-3 text-gray-300 font-medium text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Weekly check-in calls</li>
             </ul>
-            <button className="w-full py-4 border-2 border-[rgba(255,255,255,0.1)] bg-white/5 text-white text-[15px] font-bold rounded-full group-hover:border-[#ff6b1a]/50 transition-colors uppercase tracking-wide" onClick={() => navigate('/auth/register')}>Choose PT</button>
+            <button 
+              className="w-full py-4 border-2 border-[rgba(255,255,255,0.1)] bg-white/5 text-white text-[15px] font-bold rounded-full group-hover:border-[#ff6b1a]/50 transition-colors uppercase tracking-wide cursor-pointer" 
+              onClick={() => handleSelectPlan('pt')}
+            >
+              Choose PT
+            </button>
           </div>
         </div>
 
@@ -105,7 +139,7 @@ export default function SubscriptionPlansPage() {
 
       {/* FAQs */}
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-[28px] font-bold text-center mb-10 text-white">Frequently Asked Questions</h2>
+        <h2 className="text-[28px] font-bold text-center mb-10 text-white font-['Syne']">Frequently Asked Questions</h2>
         <div className="space-y-4">
           {faqs.map((faq, i) => (
             <div key={i} className="border border-[#1E293B] rounded-xl overflow-hidden bg-[#111827]">

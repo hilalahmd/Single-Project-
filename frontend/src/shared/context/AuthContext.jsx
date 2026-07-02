@@ -60,6 +60,14 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('fitforge_user')
   }
 
+  const updateSubscription = (tier) => {
+    if (user) {
+      const updatedUser = { ...user, subscriptionTier: tier }
+      setUser(updatedUser)
+      localStorage.setItem('fitforge_user', JSON.stringify(updatedUser))
+    }
+  }
+
   const value = useMemo(() => ({
     user,
     role: user?.role || null,
@@ -68,6 +76,7 @@ export const AuthProvider = ({ children }) => {
     verifyOTP,
     login,
     logout,
+    updateSubscription,
     loading
   }), [user, loading])
 

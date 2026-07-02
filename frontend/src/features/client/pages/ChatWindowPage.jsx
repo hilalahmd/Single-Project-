@@ -1,25 +1,20 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowLeft, Video, Info, Smile, Paperclip, Send, CheckCheck, Phone } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-
-const INITIAL_MESSAGES = [
-  { id: 1, text: "Hey Hilal! How are you feeling after yesterday's leg day?",                                            sender: 'trainer', time: '10:00 AM' },
-  { id: 2, text: "A bit sore to be honest, especially the quads.",                                                      sender: 'client',  time: '10:05 AM' },
-  { id: 3, text: "That's completely normal. Make sure you're getting enough protein today and do some light stretching.", sender: 'trainer', time: '10:06 AM' },
-  { id: 4, text: "Will do. Should I still do the cardio session today?",                                                 sender: 'client',  time: '10:10 AM' },
-  { id: 5, text: "Yes, but keep it low intensity. A 20-minute walk will actually help with the soreness.",               sender: 'trainer', time: '10:12 AM' },
-  { id: 6, text: "Got it. Also, I logged my breakfast. Could you check if the macros look okay?",                        sender: 'client',  time: '10:15 AM' },
-  { id: 7, text: "Just checked. The oats and eggs are perfect. You hit the 35g protein target. 💪",                      sender: 'trainer', time: '10:20 AM' },
-  { id: 8, text: "Awesome. I'll stick to the plan for lunch.",                                                           sender: 'client',  time: '10:22 AM' },
-  { id: 9, text: "Great. Let's touch base during our live session tomorrow at 6 PM.",                                    sender: 'trainer', time: '10:25 AM' },
-  { id: 10, text: "See you then! 🙌",                                                                                    sender: 'client',  time: '10:30 AM' },
-]
+import { ArrowLeft, Video, Info, Smile, Paperclip, Send, CheckCheck, Phone, MessageCircle, Lock } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../../../shared/context/AuthContext'
 
 export default function ChatWindowPage() {
   const navigate = useNavigate()
-  const [input, setInput]       = useState('')
-  const [messages, setMessages] = useState(INITIAL_MESSAGES)
+  const { id } = useParams()
+  const { role, subscriptionTier } = useAuth()
+  const [input, setInput] = useState('')
+  const [messages, setMessages] = useState([])
   const bottomRef = useRef(null)
+
+  // TODO: Fetch contact info and messages from API using `id`
+  const contactName = 'Coach'
+  const contactInitials = 'C'
+  const isFree = role === 'user' && subscriptionTier === 'free'
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -39,7 +34,28 @@ export default function ChatWindowPage() {
   }
 
   return (
-    <div className="w-full h-[calc(100vh-10rem)] md:h-[calc(100vh-8.5rem)] flex flex-col border border-[#1E293B] rounded-2xl overflow-hidden bg-[#111827] shadow-sm">
+    <div className="relative w-full h-[calc(100vh-10rem)] md:h-[calc(100vh-8.5rem)]">
+      {/* Free Tier Lock Overlay */}
+      {isFree && (
+        <div className="absolute inset-0 z-50 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 rounded-2xl border border-white/5 animate-fade-in">
+          <div className="w-16 h-16 rounded-full bg-[#F97316]/10 border border-[#F97316]/20 flex items-center justify-center mb-4 text-[#F97316] shadow-[0_0_20px_rgba(249,115,22,0.2)] animate-pulse">
+            <Lock size={28} />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2 font-['Syne']">Coach Chat Locked</h3>
+          <p className="text-sm text-gray-400 max-w-sm mb-6 leading-relaxed">
+            Get 24/7 direct chat messaging with your certified coach. Upgrade to a premium plan to unlock.
+          </p>
+          <button
+            onClick={() => navigate('/plans')}
+            className="px-6 py-3 bg-gradient-to-r from-[#F97316] to-[#ff8c3a] text-white rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:shadow-[0_0_25px_rgba(249,115,22,0.5)] transition-all cursor-pointer"
+          >
+            Upgrade Plan
+          </button>
+        </div>
+      )}
+
+      {/* Actual Chat Layout */}
+      <div className={`w-full h-full flex flex-col border border-[#1E293B] rounded-2xl overflow-hidden bg-[#111827] shadow-sm ${isFree ? 'blur-sm pointer-events-none select-none' : ''}`}>
 
       {/* ── Header ── */}
       <div className="px-5 py-3.5 border-b border-[#1E293B] flex justify-between items-center bg-[#0F172A] shrink-0">
@@ -54,14 +70,13 @@ export default function ChatWindowPage() {
           {/* Avatar */}
           <div className="relative">
             <div className="w-10 h-10 bg-[#2563EB] rounded-full flex items-center justify-center text-[14px] font-bold text-white shadow-[0_0_12px_rgba(37,99,235,0.4)]">
-              AM
+              {contactInitials}
             </div>
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0F172A]" />
           </div>
 
           <div>
-            <h2 className="font-bold text-white text-[15px] leading-tight">Arjun Menon</h2>
-            <p className="text-[12px] text-green-400 font-medium">Online · Personal Trainer</p>
+            <h2 className="font-bold text-white text-[15px] leading-tight">{contactName}</h2>
+            <p className="text-[12px] text-gray-500 font-medium">Conversation #{id}</p>
           </div>
         </div>
 
@@ -81,33 +96,46 @@ export default function ChatWindowPage() {
 
       {/* ── Messages ── */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-5 bg-[#030712]">
-        {/* Date divider */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-[#1E293B]" />
-          <span className="text-[11px] font-bold text-gray-500 bg-[#0F172A] border border-[#1E293B] px-3 py-1 rounded-full uppercase tracking-wider">Today</span>
-          <div className="flex-1 h-px bg-[#1E293B]" />
-        </div>
-
-        {messages.map((m) => {
-          const isMe = m.sender === 'client'
-          return (
-            <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-              {/* Bubble */}
-              <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed ${
-                isMe
-                  ? 'bg-[#2563EB] text-white rounded-br-sm shadow-[0_2px_8px_rgba(37,99,235,0.25)]'
-                  : 'bg-[#111827] border border-[#1E293B] text-gray-200 rounded-bl-sm shadow-sm'
-              }`}>
-                {m.text}
-              </div>
-              {/* Meta */}
-              <div className={`flex items-center gap-1 mt-1 text-[11px] font-medium text-gray-500 ${isMe ? 'flex-row-reverse' : ''}`}>
-                <span>{m.time}</span>
-                {isMe && <CheckCheck size={13} className="text-blue-400" />}
-              </div>
+        {messages.length > 0 ? (
+          <>
+            {/* Date divider */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-[#1E293B]" />
+              <span className="text-[11px] font-bold text-gray-500 bg-[#0F172A] border border-[#1E293B] px-3 py-1 rounded-full uppercase tracking-wider">Today</span>
+              <div className="flex-1 h-px bg-[#1E293B]" />
             </div>
-          )
-        })}
+
+            {messages.map((m) => {
+              const isMe = m.sender === 'client'
+              return (
+                <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                  {/* Bubble */}
+                  <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed ${
+                    isMe
+                      ? 'bg-[#2563EB] text-white rounded-br-sm shadow-[0_2px_8px_rgba(37,99,235,0.25)]'
+                      : 'bg-[#111827] border border-[#1E293B] text-gray-200 rounded-bl-sm shadow-sm'
+                  }`}>
+                    {m.text}
+                  </div>
+                  {/* Meta */}
+                  <div className={`flex items-center gap-1 mt-1 text-[11px] font-medium text-gray-500 ${isMe ? 'flex-row-reverse' : ''}`}>
+                    <span>{m.time}</span>
+                    {isMe && <CheckCheck size={13} className="text-blue-400" />}
+                  </div>
+                </div>
+              )
+            })}
+          </>
+        ) : (
+          /* Empty state — no messages yet */
+          <div className="flex-1 flex flex-col items-center justify-center py-16">
+            <div className="w-14 h-14 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center mb-4">
+              <MessageCircle size={24} className="text-[#2563EB]" />
+            </div>
+            <p className="font-bold text-[16px] text-white mb-1">No messages yet</p>
+            <p className="text-[13px] text-gray-400 text-center">Start the conversation by sending a message below.</p>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
@@ -141,7 +169,7 @@ export default function ChatWindowPage() {
           </button>
         </div>
       </div>
-
+      </div>
     </div>
   )
 }

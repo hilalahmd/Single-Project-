@@ -1,7 +1,26 @@
-import { Calendar as CalendarIcon, Check } from 'lucide-react'
+import { Calendar as CalendarIcon, Check, Sparkles, ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../../../shared/context/AuthContext'
 
 export default function ClientDashboardPage() {
-  const today = "Thursday, December 12"
+  const { user } = useAuth()
+  
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour >= 5 && hour < 12) return 'Good morning'
+    if (hour >= 12 && hour < 17) return 'Good afternoon'
+    if (hour >= 17 && hour < 22) return 'Good evening'
+    return 'Good night'
+  }
+
+  const greeting = getGreeting()
+  const firstName = user?.name ? user.name.split(' ')[0] : 'User'
+  
+  const today = new Date().toLocaleDateString([], {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric'
+  })
 
   const glassCard = "bg-white/5 border border-white/10 rounded-[16px] p-6 transition-all hover:border-white/20"
   const blueCard = "bg-[#F97316]/10 border border-[#F97316]/30 rounded-[16px] p-6 transition-all"
@@ -11,7 +30,7 @@ export default function ClientDashboardPage() {
       
       {/* Header */}
       <div>
-        <h1 className="text-[32px] font-bold text-white tracking-tight">Good morning, Jordan</h1>
+        <h1 className="text-[32px] font-bold text-white tracking-tight">{greeting}, {firstName}</h1>
         <p className="text-gray-400 font-medium text-[14px] mt-1">{today} — here's your overview</p>
       </div>
 
@@ -186,6 +205,34 @@ export default function ClientDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* AI Transform Preview Banner */}
+      <Link
+        to="/transform-preview"
+        className="block group relative overflow-hidden rounded-[20px] border border-[#F97316]/30 bg-gradient-to-r from-[#F97316]/10 via-[#F97316]/5 to-transparent hover:from-[#F97316]/20 hover:border-[#F97316]/50 transition-all duration-300 p-7"
+      >
+        {/* Glow orb */}
+        <div className="absolute right-0 top-0 w-64 h-64 bg-[#F97316]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 group-hover:bg-[#F97316]/20 transition-all duration-500" />
+        
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 rounded-2xl bg-[#F97316]/20 border border-[#F97316]/30 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-[0_0_24px_rgba(249,115,22,0.4)] transition-all duration-300">
+              <Sparkles size={26} className="text-[#F97316]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#F97316] bg-[#F97316]/10 border border-[#F97316]/20 px-2 py-0.5 rounded-full">AI Preview</span>
+              </div>
+              <h2 className="text-[20px] font-bold text-white leading-tight">See Your Transformation Before You Start</h2>
+              <p className="text-[13px] text-gray-400 mt-1">Upload 4 quick photos, pick your goal, and let AI generate a hyper-realistic physique preview.</p>
+            </div>
+          </div>
+          <div className="shrink-0 ml-6 flex items-center gap-2 text-[#F97316] font-bold text-[14px] group-hover:translate-x-1 transition-transform duration-300">
+            <span className="hidden sm:block">Try Now</span>
+            <ArrowRight size={20} />
+          </div>
+        </div>
+      </Link>
 
     </div>
   )

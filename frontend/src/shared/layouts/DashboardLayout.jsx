@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Outlet, NavLink, useLocation, Link } from 'react-router-dom'
+import { Outlet, NavLink, useLocation, Link, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard,
   Users,
@@ -26,10 +26,14 @@ import {
   Search,
   LogOut,
   Shield,
-  User
+  User,
+  Sun,
+  Moon,
+  Sparkles
 } from 'lucide-react'
 
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 
 // ── Nav item definitions per role ────────────────────────────────────────────
 
@@ -38,8 +42,9 @@ const clientNav = [
   { label: 'Nutrition',    to: '/dashboard/nutrition',   icon: Salad },
   { label: 'Workout',      to: '/dashboard/plans',       icon: Dumbbell },
   { label: 'Progress',     to: '/dashboard/progress',    icon: TrendingUp },
-  { label: 'My Coach',     to: '/dashboard/video',       icon: UserCheck },
+  { label: 'My Coach',     to: '/dashboard/coach',       icon: UserCheck },
   { label: 'Food AI',      to: '/dashboard/food-ai',     icon: Cpu },
+  { label: 'AI Preview',   to: '/transform-preview',     icon: Sparkles },
   { label: 'AI Assistant', to: '/dashboard/ai',          icon: Bot },
   { label: 'Chat',         to: '/dashboard/chat',        icon: MessageSquare },
   { label: 'Schedule',     to: '/dashboard/schedule',    icon: CalendarDays },
@@ -70,18 +75,32 @@ const adminNav = [
   { label: 'Subscriptions', to: '/admin/subscriptions',      icon: Layers },
 ]
 
-function useNavItems(role) {
+function useNavItems(role, subscriptionTier = 'free') {
   if (role === 'admin')   return adminNav
   if (role === 'trainer' || role === 'wellness_coach') return trainerNav
   return clientNav
 }
 
 export default function DashboardLayout() {
-  const { role, logout, user } = useAuth()
-  const navItems = useNavItems(role)
+  const { role, logout, user, subscriptionTier } = useAuth()
+  const { theme: themeMode, toggleTheme } = useTheme()
+  const navItems = useNavItems(role, subscriptionTier)
+  const navigate = useNavigate()
 
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const searchResults = searchQuery
+    ? navItems.filter(item => item.label.toLowerCase().includes(searchQuery.toLowerCase()))
+    : []
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter' && searchResults.length > 0) {
+      navigate(searchResults[0].to)
+      setSearchQuery('')
+    }
+  }
 
   const sidebarWidth = collapsed ? 'w-16' : 'w-56'
   const isAdminMode = role === 'admin'
@@ -161,8 +180,10 @@ export default function DashboardLayout() {
     </div>
   )
 
+  const themeClass = isClientMode ? (themeMode === 'light' ? 'theme-light' : 'theme-dark') : ''
+
   return (
-    <div className={`flex h-screen overflow-hidden font-['Inter'] relative ${theme.layout}`}>
+    <div className={`flex h-screen overflow-hidden font-['Inter'] relative ${themeClass} ${theme.layout}`}>
       <BackgroundOrbs />
       {/* ── Desktop Sidebar ── */}
       <aside
@@ -181,18 +202,22 @@ export default function DashboardLayout() {
             FITFORGE
           </Link>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md relative hidden md:block">
-            <Search size={16} className={`absolute left-3 top-1/2 -translate-y-1/2 ${theme.searchIcon}`} />
-            <input 
-              type="text"
-              placeholder="Search..."
-              className={`w-full border rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none transition-all ${theme.searchContainer}`}
-            />
-          </div>
 
           {/* Right actions */}
           <div className="flex items-center gap-4 ml-auto">
+            {isClientMode && (
+              <button 
+                onClick={toggleTheme}
+                className={`flex items-center justify-center w-8 h-8 rounded-xl border transition-all cursor-pointer ${
+                  themeMode === 'light' 
+                    ? 'bg-[#F97316]/10 border-[#F97316]/30 text-[#F97316] hover:bg-[#F97316]/20' 
+                    : 'bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10'
+                }`}
+                title={themeMode === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              >
+                {themeMode === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+              </button>
+            )}
             <button className={`relative flex items-center justify-center transition-colors ${theme.btnColor}`}>
               <Bell size={20} />
               <span className={`absolute top-0 right-0 w-2 h-2 rounded-full border-2 ${theme.bellDot}`} />

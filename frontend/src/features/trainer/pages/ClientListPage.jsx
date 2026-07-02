@@ -23,6 +23,13 @@ export default function ClientListPage() {
           <h1 className="text-[32px] font-bold text-white tracking-tight">My Clients</h1>
           <p className="text-sm text-gray-400 mt-1">Manage your active clients and their programs.</p>
         </div>
+      </div>
+
+      {/* Status Disclaimer Banner */}
+      <div className="bg-[#2563EB]/10 border border-[#2563EB]/30 rounded-[16px] p-4 flex items-center gap-3 text-sm font-bold text-[#2563EB]">
+        <Activity size={18} className="shrink-0 animate-pulse" />
+        <p>Demo Mode — These are pre-loaded demo clients for previewing your profile layout. You can click "Update Plan" on any client to view the custom plan builder tool.</p>
+      </div>
         
         <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />

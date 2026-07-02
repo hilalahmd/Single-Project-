@@ -36,8 +36,246 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root {
+  --track-line-color: rgba(255, 255, 255, 0.30);
+  --vignette-fade-color: rgba(7, 8, 12, 0.95);
+}
+
+.theme-light {
+  --track-line-color: rgba(100, 116, 139, 0.55);
+  --vignette-fade-color: rgba(248, 250, 252, 0.95);
+}
+
 body {
   @apply bg-[#07080C] text-white font-['Inter'] selection:bg-[#F97316] selection:text-white;
   margin: 0;
   padding: 0;
+}
+
+/* ── Theme Light Overrides ── */
+.theme-light,
+.theme-light body {
+  background-color: #F8FAFC !important;
+  color: #1E293B !important;
+}
+
+/* 1. Global Page Backgrounds - Comprehensive Audit of all Dark Hexes */
+.theme-light [class*="07080C"],
+.theme-light [class*="07080c"],
+.theme-light [class*="0a0a0a"],
+.theme-light [class*="000000"],
+.theme-light [class*="030712"],
+.theme-light [class*="0b0c10"],
+.theme-light [class*="0f1117"],
+.theme-light [class*="0f111a"],
+.theme-light [class*="0B0F19"],
+.theme-light [class*="0b0f19"],
+.theme-light [class*="14161f"],
+.theme-light [class*="1a1d27"],
+.theme-light [class*="slate-950"],
+.theme-light [class*="111318"],
+.theme-light [class*="111827"],
+.theme-light [class*="1E293B"],
+.theme-light [class*="1e293b"],
+.theme-light [class*="slate-900"],
+.theme-light header,
+.theme-light aside,
+.theme-light footer {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* 2. Card elements override to translucent white glass */
+.theme-light [class*="bg-white/5"],
+.theme-light [class*="bg-white/10"],
+.theme-light [class*="bg-white/20"],
+.theme-light [class*="slate-900/50"],
+.theme-light [class*="slate-800"],
+.theme-light [class*="0F172A"],
+.theme-light [class*="0f172a"],
+.theme-light [class*="111827"],
+.theme-light [class*="0f1117"],
+.theme-light [class*="black/20"],
+.theme-light [class*="black/30"],
+.theme-light [class*="black/40"],
+.theme-light [class*="1a1d27"] {
+  background-color: rgba(255, 255, 255, 0.70) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+/* Specific Solid Dropdowns or Popups context to prevent transparency overlaps */
+.theme-light div[class*="absolute"][class*="0f1117"],
+.theme-light div[class*="absolute"][class*="111827"],
+.theme-light select option {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* 3. Text Contrast Overrides - High Contrast Dark Slate */
+.theme-light .text-white,
+.theme-light .text-gray-100,
+.theme-light .text-slate-100,
+.theme-light .text-gray-200,
+.theme-light .text-slate-200,
+.theme-light h1,
+.theme-light h2,
+.theme-light h3,
+.theme-light h4,
+.theme-light h5,
+.theme-light h6,
+.theme-light p.text-white,
+.theme-light span.text-white,
+.theme-light label.text-white {
+  color: #0F172A !important;
+}
+
+/* Muted Descriptions/Subtitles */
+.theme-light .text-gray-300,
+.theme-light .text-slate-300,
+.theme-light .text-gray-400,
+.theme-light .text-slate-400,
+.theme-light .text-gray-500,
+.theme-light .text-slate-500,
+.theme-light p.text-gray-400,
+.theme-light span.text-gray-400,
+.theme-light span[class*="text-gray-300"] {
+  color: #475569 !important;
+}
+
+/* cyan/highlight texts contrast */
+.theme-light [class*="text-cyan-400"],
+.theme-light [class*="text-cyan-400"] {
+  color: #0284C7 !important;
+}
+
+/* Maintain orange text color */
+.theme-light [class*="text-orange-500"] {
+  color: #F97316 !important;
+}
+
+/* Preserve text overlays sitting on top of images (relative wrappers) */
+.theme-light [class*="h-64"] h2,
+.theme-light [class*="h-64"] p,
+.theme-light [class*="h-64"] span,
+.theme-light [class*="h-64"] .text-white,
+.theme-light [class*="aspect-"] .text-white,
+.theme-light [class*="aspect-"] span,
+.theme-light [class*="aspect-"] p {
+  color: #FFFFFF !important;
+}
+
+/* 4. Icon backgrounds / Badge boxes next to nav sidebar */
+.theme-light [class*="F97316/10"],
+.theme-light [class*="orange-500/10"] {
+  background-color: rgba(249, 115, 22, 0.08) !important;
+  border-color: rgba(249, 115, 22, 0.20) !important;
+  color: #F97316 !important;
+}
+
+/* Ensure small icon circles or tags inside map loops are clean */
+.theme-light div[class*="bg-white/5"] svg,
+.theme-light span[class*="bg-white/5"] {
+  color: #F97316 !important;
+}
+
+/* 5. Form Fields & Input Controls overrides */
+.theme-light input,
+.theme-light select,
+.theme-light textarea,
+.theme-light [class*="text-white"] input,
+.theme-light input[class*="text-white"] {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+.theme-light input::placeholder {
+  color: #94A3B8 !important;
+}
+
+.theme-light select option {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+/* Ensure hover states of text fields do not flip to white text */
+.theme-light [class*="hover:text-white"]:hover {
+  color: #0F172A !important;
+}
+
+/* 6. Borders overrides */
+.theme-light [class*="border-white/10"],
+.theme-light [class*="border-white/5"],
+.theme-light [class*="1E293B"],
+.theme-light [class*="1e293b"],
+.theme-light [class*="border-slate-800"],
+.theme-light hr {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* 7. Vignettes, overlay grids & gradients */
+.theme-light [class*="from-white"] {
+  background-image: radial-gradient(ellipse at top, rgba(249, 115, 22, 0.03) 0%, rgba(248, 250, 252, 0.95) 75%) !important;
+}
+
+/* Force override of LandingPage.jsx's hardcoded track SVG stroke */
+.theme-light svg[class*="origin-top"] line {
+  stroke: var(--track-line-color) !important;
+}
+
+/* Force override of LandingPage.jsx's hardcoded vignette background gradient */
+.theme-light .fixed.inset-0.z-0 div[class*="radial-gradient"] {
+  background-image: radial-gradient(ellipse, transparent 25%, var(--vignette-fade-color) 100%) !important;
+}
+
+/* Fix Lottie runner visibility under light theme by removing screen blend mode */
+.theme-light [class*="mix-blend-screen"] {
+  mix-blend-mode: normal !important;
+}
+
+/* Grain textures */
+.theme-light [class*="opacity-"][class*="0.03"],
+.theme-light [class*="opacity-"][class*="0.04"],
+.theme-light [style*="noiseFilter"] {
+  opacity: 0.012 !important;
+}
+
+/* Frosted glass lock screens overlay */
+.theme-light [class*="black/50"],
+.theme-light [class*="black/60"],
+.theme-light [class*="07080C/80"] {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+/* 8. Guide lines and SVG strokes visibility */
+.theme-light svg:not([class*="origin-top"]) line[stroke="white"],
+.theme-light path[stroke="white"],
+.theme-light svg:not([class*="origin-top"]) line[stroke*="rgba(255"],
+.theme-light path[stroke*="rgba(255"] {
+  stroke: #E2E8F0 !important;
+}
+
+.theme-light svg circle {
+  stroke: #E2E8F0 !important;
+}
+
+/* Active links in Sidebar */
+.theme-light nav a.active {
+  color: #F97316 !important;
+  background-color: rgba(249, 115, 22, 0.08) !important;
+}
+
+.theme-light nav a:hover {
+  color: #F97316 !important;
+  background-color: rgba(249, 115, 22, 0.04) !important;
+}
+
+/* Modal and notifications overrides */
+.theme-light .react-calendar,
+.theme-light .modal-bg {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
 }

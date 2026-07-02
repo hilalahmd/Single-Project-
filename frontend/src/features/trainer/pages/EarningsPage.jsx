@@ -1,4 +1,4 @@
-import { DollarSign, TrendingUp, ArrowDownToLine } from 'lucide-react'
+import { DollarSign, TrendingUp, ArrowDownToLine, Info } from 'lucide-react'
 
 const MONTHS = [
   { month: 'Jun 2026', sessions: 48, gross: 2880, net: 2448 },
@@ -8,11 +8,33 @@ const MONTHS = [
 ]
 
 export default function EarningsPage() {
+  const handleExportCSV = () => {
+    const headers = ['Month', 'Sessions', 'Gross Earnings ($)', 'Net Earnings ($)']
+    const rows = MONTHS.map(m => [m.month, m.sessions, m.gross, m.net])
+    
+    // Generate CSV content
+    const csvRows = [headers.join(','), ...rows.map(e => e.join(','))]
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join('\n')
+    
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute("download", "FitForge_Earnings_Breakdown.csv")
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
-      <div>
-        <h1 className="text-[32px] font-bold text-white tracking-tight">Earnings</h1>
-        <p className="text-[14px] text-gray-400 mt-1">Track your revenue and upcoming payouts.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-[32px] font-bold text-white tracking-tight">Earnings</h1>
+          <p className="text-[14px] text-gray-400 mt-1">Track your revenue and upcoming payouts.</p>
+        </div>
+        <div className="bg-[#2563EB]/10 border border-[#2563EB]/30 rounded-xl px-4 py-2 text-xs font-bold text-[#2563EB] flex items-center gap-1.5 self-start sm:self-auto">
+          <Info size={14} /> Demo Mode
+        </div>
       </div>
 
       {/* Summary cards */}
@@ -22,7 +44,8 @@ export default function EarningsPage() {
           { label: 'Total Earned',  value: '$9,945',  sub: 'All time' },
           { label: 'Pending Payout', value: '$1,224', sub: 'Next: Jul 1' },
         ].map(s => (
-          <div key={s.label} className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 shadow-sm hover:border-[#F97316] transition-colors">
+          <div key={s.label} className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 shadow-sm hover:border-[#F97316] transition-colors relative group">
+            <span className="absolute top-4 right-4 text-[9px] font-bold tracking-wider text-gray-600 bg-white/5 border border-white/5 px-2 py-0.5 rounded uppercase">Demo</span>
             <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider">{s.label}</p>
             <p className="text-[32px] font-bold text-white mt-2">{s.value}</p>
             <p className="text-[14px] text-gray-400 mt-1 font-medium">{s.sub}</p>
@@ -43,7 +66,10 @@ export default function EarningsPage() {
       <div className="bg-[#111827] border border-[#1E293B] rounded-2xl shadow-sm overflow-hidden">
         <div className="p-6 border-b border-[#1E293B] flex items-center justify-between">
           <h2 className="text-[20px] font-bold text-white">Monthly Breakdown</h2>
-          <button className="flex items-center gap-2 px-4 py-2 border border-[#1E293B] text-gray-300 hover:bg-[#0F172A] hover:text-white rounded-lg text-[14px] font-bold transition-colors">
+          <button 
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 px-4 py-2 border border-[#1E293B] text-gray-300 hover:bg-[#0F172A] hover:text-white rounded-lg text-[14px] font-bold transition-colors cursor-pointer"
+          >
             <ArrowDownToLine size={16} /> Export CSV
           </button>
         </div>

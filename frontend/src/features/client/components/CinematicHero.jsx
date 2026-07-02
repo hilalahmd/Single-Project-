@@ -84,7 +84,7 @@ export default function CinematicHero() {
     <div ref={sectionRef} className="h-screen w-full relative font-['Syne']">
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center justify-center">
         
-        {/* Sportsman Running Effect */}
+        {/* Sportsman Running Effect - mix-blend-screen overridden to normal in index.css for light theme */}
         <div 
           className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
           style={{ perspective: '1000px' }}

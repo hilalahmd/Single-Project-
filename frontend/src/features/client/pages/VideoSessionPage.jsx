@@ -1,11 +1,24 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../../shared/context/AuthContext'
 import { Mic, MicOff, Video, VideoOff, Monitor, Phone, MessageSquare, ChevronRight, User } from 'lucide-react'
 import Badge from '../../../shared/components/Badge'
 
 export default function VideoSessionPage() {
+  const { sessionId } = useParams()
+  const navigate = useNavigate()
+  const { subscriptionTier } = useAuth()
   const [mic, setMic] = useState(true)
   const [cam, setCam] = useState(true)
   const [chatOpen, setChatOpen] = useState(false)
+
+  useEffect(() => {
+    if (!sessionId || subscriptionTier !== 'pt') {
+      navigate('/dashboard/coach', { replace: true })
+    }
+  }, [sessionId, subscriptionTier, navigate])
+
+  if (!sessionId || subscriptionTier !== 'pt') return null
 
   return (
     <div className="fixed inset-0 z-50 bg-[#F8FAFC] flex font-sans overflow-hidden">
@@ -93,14 +106,9 @@ export default function VideoSessionPage() {
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           <div className="text-center"><span className="text-[10px] uppercase tracking-widest font-bold text-slate-400 bg-white/80 px-4 py-1.5 rounded-full border border-slate-200 shadow-sm">Session Started</span></div>
           
-          <div className="flex flex-col items-start">
-            <span className="text-[10px] text-slate-400 mb-1.5 ml-1.5 font-bold tracking-wider uppercase drop-shadow-sm">Arjun</span>
-            <div className="bg-white border border-white text-slate-700 text-[14px] px-5 py-3.5 rounded-3xl rounded-tl-sm shadow-[0_4px_20px_rgba(0,0,0,0.04)] leading-relaxed">Can you hear me alright?</div>
-          </div>
-          
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] text-slate-400 mb-1.5 mr-1.5 font-bold tracking-wider uppercase drop-shadow-sm">You</span>
-            <div className="bg-blue-600 text-white text-[14px] px-5 py-3.5 rounded-3xl rounded-tr-sm shadow-[0_8px_20px_rgba(37,99,235,0.2)] font-medium leading-relaxed border border-blue-500">Yes, audio is clear!</div>
+          <div className="flex flex-col items-center justify-center py-8 text-center">
+            <p className="text-slate-400 text-[13px] font-medium">No messages yet</p>
+            <p className="text-slate-400/60 text-[12px] mt-1">Use the input below to chat during the session.</p>
           </div>
         </div>
 

@@ -1,7 +1,11 @@
 import { useState } from 'react'
-import { Sparkles, Send, MessageSquare, Plus } from 'lucide-react'
+import { Sparkles, Send, MessageSquare, Plus, Lock } from 'lucide-react'
+import { useAuth } from '../../../shared/context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function AIAssistantPage() {
+  const navigate = useNavigate()
+  const { subscriptionTier } = useAuth()
   const [input, setInput] = useState('')
   const [started, setStarted] = useState(false)
 
@@ -10,8 +14,31 @@ export default function AIAssistantPage() {
     { text: "I'd be happy to help you create a personalized diet plan! To make it effective, could you tell me a bit more about your goals?\n\n1. What is your primary goal? (Weight loss, muscle gain, maintenance)\n2. Do you have any dietary restrictions? (Vegetarian, vegan, gluten-free, etc.)\n3. How many calories do you currently consume, or would you like me to calculate that for you based on your body metrics?", isUser: false }
   ]
 
+  const isFree = subscriptionTier === 'free'
+
   return (
-    <div className="max-w-6xl mx-auto h-[calc(100vh-8rem)] flex border border-white/10 rounded-2xl overflow-hidden bg-white/5 shadow-sm backdrop-blur-sm">
+    <div className="relative max-w-6xl mx-auto h-[calc(100vh-8rem)]">
+      {/* Free Tier Lock Overlay */}
+      {isFree && (
+        <div className="absolute inset-0 z-45 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 rounded-2xl border border-white/5 animate-fade-in">
+          <div className="w-16 h-16 rounded-full bg-[#F97316]/10 border border-[#F97316]/20 flex items-center justify-center mb-4 text-[#F97316] shadow-[0_0_20px_rgba(249,115,22,0.2)] animate-pulse">
+            <Lock size={28} />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2 font-['Syne']">AI Assistant Locked</h3>
+          <p className="text-sm text-gray-400 max-w-sm mb-6 leading-relaxed">
+            Unlock our premium AI fitness companion to ask unlimited questions, design custom meals, track recipes, and get instant answers.
+          </p>
+          <button
+            onClick={() => navigate('/plans')}
+            className="px-6 py-3 bg-gradient-to-r from-[#F97316] to-[#ff8c3a] text-white rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:shadow-[0_0_25px_rgba(249,115,22,0.5)] transition-all cursor-pointer"
+          >
+            Upgrade Plan
+          </button>
+        </div>
+      )}
+
+      {/* Actual AI Assistant Layout */}
+      <div className={`w-full h-full flex border border-white/10 rounded-2xl overflow-hidden bg-white/5 shadow-sm backdrop-blur-sm ${isFree ? 'blur-sm pointer-events-none select-none' : ''}`}>
       
       {/* Left Panel - History */}
       <div className="w-1/3 border-r border-white/10 hidden md:flex flex-col bg-black/20">
@@ -110,6 +137,7 @@ export default function AIAssistantPage() {
         </div>
       </div>
 
+      </div>
     </div>
   )
 }

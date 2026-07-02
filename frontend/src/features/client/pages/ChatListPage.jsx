@@ -1,19 +1,44 @@
-import { useState } from 'react'
-import { Search, MessageCircle, CheckCheck } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Search, MessageCircle, Lock } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../../../shared/context/AuthContext'
 
 export default function ChatListPage() {
   const [activeChat, setActiveChat] = useState(null)
   const navigate = useNavigate()
+  const location = useLocation()
+  const { role, subscriptionTier } = useAuth()
 
-  const chats = [
-    { id: 1, name: 'Arjun Menon',   role: 'Personal Trainer',  msg: 'Great session today! Remember to stretch.', time: '10:30 AM', unread: 2, online: true },
-    { id: 2, name: 'Priya Nair',    role: 'Wellness Coach',    msg: 'Here is your updated diet plan.',           time: 'Yesterday', unread: 0, online: false },
-    { id: 3, name: 'Support Team',  role: 'FitForge Support',  msg: 'Your refund has been processed.',           time: 'Oct 12',    unread: 0, online: true },
-  ]
+  // TODO: Replace with real API call to fetch conversations
+  const chats = []
+
+  // Determine base path based on current role's route prefix
+  const basePath = location.pathname.startsWith('/trainer') ? '/trainer' : '/dashboard'
+  const isFreeClient = role === 'user' && subscriptionTier === 'free'
 
   return (
-    <div className="w-full h-[calc(100vh-10rem)] md:h-[calc(100vh-8.5rem)] flex border border-[#1E293B] rounded-2xl overflow-hidden bg-[#111827] shadow-sm">
+    <div className="relative w-full h-[calc(100vh-10rem)] md:h-[calc(100vh-8.5rem)]">
+      {/* Free Tier Lock Overlay */}
+      {isFreeClient && (
+        <div className="absolute inset-0 z-50 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 rounded-2xl border border-white/5 animate-fade-in">
+          <div className="w-16 h-16 rounded-full bg-[#F97316]/10 border border-[#F97316]/20 flex items-center justify-center mb-4 text-[#F97316] shadow-[0_0_20px_rgba(249,115,22,0.2)] animate-pulse">
+            <Lock size={28} />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2 font-['Syne']">Coach Chat Locked</h3>
+          <p className="text-sm text-gray-400 max-w-sm mb-6 leading-relaxed">
+            Get 24/7 direct chat messaging with your certified coach. Upgrade to a premium plan to unlock.
+          </p>
+          <button
+            onClick={() => navigate('/plans')}
+            className="px-6 py-3 bg-gradient-to-r from-[#F97316] to-[#ff8c3a] text-white rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(249,115,22,0.3)] hover:shadow-[0_0_25px_rgba(249,115,22,0.5)] transition-all cursor-pointer"
+          >
+            Upgrade Plan
+          </button>
+        </div>
+      )}
+
+      {/* Actual Chat Layout */}
+      <div className={`w-full h-full flex border border-[#1E293B] rounded-2xl overflow-hidden bg-[#111827] shadow-sm ${isFreeClient ? 'blur-sm pointer-events-none select-none' : ''}`}>
 
       {/* ── Left Panel: Chat List ── */}
       <div className={`w-full md:w-[320px] border-r border-[#1E293B] flex flex-col bg-[#0F172A] shrink-0 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
@@ -33,52 +58,65 @@ export default function ChatListPage() {
 
         {/* Chat Items */}
         <div className="flex-1 overflow-y-auto">
-          {chats.map(c => {
-            const isActive = activeChat === c.id
-            return (
-              <button
-                key={c.id}
-                onClick={() => setActiveChat(c.id)}
-                className={`w-full text-left p-4 flex gap-3 transition-all border-b border-[#1E293B]/50 last:border-0 ${
-                  isActive
-                    ? 'bg-[#2563EB]/10 border-l-2 border-l-[#2563EB]'
-                    : 'hover:bg-[#1E293B]/50'
-                }`}
-              >
-                {/* Avatar */}
-                <div className="relative shrink-0">
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-[16px] transition-all ${
+          {chats.length > 0 ? (
+            chats.map(c => {
+              const isActive = activeChat === c.id
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveChat(c.id)}
+                  className={`w-full text-left p-4 flex gap-3 transition-all border-b border-[#1E293B]/50 last:border-0 ${
                     isActive
-                      ? 'bg-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.4)]'
-                      : 'bg-[#1E293B] text-gray-300 border border-[#1E293B]'
-                  }`}>
-                    {c.name[0]}
+                      ? 'bg-[#2563EB]/10 border-l-2 border-l-[#2563EB]'
+                      : 'hover:bg-[#1E293B]/50'
+                  }`}
+                >
+                  {/* Avatar */}
+                  <div className="relative shrink-0">
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-[16px] transition-all ${
+                      isActive
+                        ? 'bg-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.4)]'
+                        : 'bg-[#1E293B] text-gray-300 border border-[#1E293B]'
+                    }`}>
+                      {c.name[0]}
+                    </div>
+                    {c.online && (
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0F172A]" />
+                    )}
                   </div>
-                  {c.online && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0F172A]" />
+
+                  {/* Text */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start mb-0.5">
+                      <h3 className={`font-bold text-[14px] truncate ${isActive ? 'text-white' : 'text-gray-200'}`}>{c.name}</h3>
+                      <span className={`text-[11px] font-medium shrink-0 ml-2 ${isActive ? 'text-[#2563EB]' : 'text-gray-500'}`}>{c.time}</span>
+                    </div>
+                    <p className={`text-[12px] truncate ${isActive ? 'text-gray-300' : 'text-gray-500'}`}>{c.msg}</p>
+                  </div>
+
+                  {/* Unread badge */}
+                  {c.unread > 0 && (
+                    <div className="shrink-0 flex items-center self-center">
+                      <span className="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-[#2563EB] text-white shadow-[0_2px_6px_rgba(37,99,235,0.4)]">
+                        {c.unread}
+                      </span>
+                    </div>
                   )}
-                </div>
-
-                {/* Text */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-0.5">
-                    <h3 className={`font-bold text-[14px] truncate ${isActive ? 'text-white' : 'text-gray-200'}`}>{c.name}</h3>
-                    <span className={`text-[11px] font-medium shrink-0 ml-2 ${isActive ? 'text-[#2563EB]' : 'text-gray-500'}`}>{c.time}</span>
-                  </div>
-                  <p className={`text-[12px] truncate ${isActive ? 'text-gray-300' : 'text-gray-500'}`}>{c.msg}</p>
-                </div>
-
-                {/* Unread badge */}
-                {c.unread > 0 && (
-                  <div className="shrink-0 flex items-center self-center">
-                    <span className="w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full bg-[#2563EB] text-white shadow-[0_2px_6px_rgba(37,99,235,0.4)]">
-                      {c.unread}
-                    </span>
-                  </div>
-                )}
-              </button>
-            )
-          })}
+                </button>
+              )
+            })
+          ) : (
+            /* Empty state — no conversations */
+            <div className="flex flex-col items-center justify-center text-center px-6 py-16">
+              <div className="w-14 h-14 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center mb-4">
+                <MessageCircle size={24} className="text-[#2563EB]" />
+              </div>
+              <p className="font-bold text-[16px] text-white mb-1">No conversations yet</p>
+              <p className="text-[13px] text-gray-400">
+                Your conversations with coaches will appear here.
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -90,8 +128,14 @@ export default function ChatListPage() {
             <div className="w-16 h-16 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center mb-5 shadow-[0_0_30px_rgba(37,99,235,0.1)]">
               <MessageCircle size={28} className="text-[#2563EB]" />
             </div>
-            <p className="font-bold text-[18px] text-white mb-2">Select a conversation</p>
-            <p className="text-[14px] text-gray-400 text-center">Choose a chat from the list to start messaging your coach.</p>
+            <p className="font-bold text-[18px] text-white mb-2">
+              {chats.length > 0 ? 'Select a conversation' : 'No messages'}
+            </p>
+            <p className="text-[14px] text-gray-400 text-center">
+              {chats.length > 0
+                ? 'Choose a chat from the list to start messaging your coach.'
+                : 'When you start chatting with a coach, your conversations will show up here.'}
+            </p>
           </div>
         ) : (
           /* Selected — open button */
@@ -102,15 +146,16 @@ export default function ChatListPage() {
             <p className="text-white font-bold text-[16px] mb-1">{chats.find(c => c.id === activeChat)?.name}</p>
             <p className="text-gray-400 text-[13px] mb-6">{chats.find(c => c.id === activeChat)?.role}</p>
             <button
-              onClick={() => navigate(`/dashboard/chat/${activeChat}`)}
+              onClick={() => navigate(`${basePath}/chat/${activeChat}`)}
               className="px-6 py-3 bg-[#2563EB] hover:bg-blue-500 text-white rounded-xl text-[14px] font-bold transition-all shadow-[0_4px_12px_rgba(37,99,235,0.3)] flex items-center gap-2"
             >
-              <CheckCheck size={16} /> Open Conversation
+              <MessageCircle size={16} /> Open Conversation
             </button>
           </div>
         )}
       </div>
 
     </div>
+  </div>
   )
 }

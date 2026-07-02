@@ -113,3 +113,27 @@ export const updateTrainerProfile = async (req, res) => {
     res.status(500).json({ message: error.message })
   }
 }
+
+
+
+
+export const getMyTrainerProfile = async (req, res) => {
+  try {
+    // req.user._id = the logged-in trainer's user ID (comes from protect middleware)
+    // We search by userId, NOT by trainer's own _id, because the trainer
+    // doesn't know their own Trainer document ID — only their user ID from login
+    const trainer = await Trainer.findOne({ userId: req.user._id })
+      .populate('userId', 'name email avatar')
+
+    // If this user has role 'trainer' but never called registerTrainer,
+    // there will be no Trainer document yet
+    if (!trainer) {
+      return res.status(404).json({ message: 'Trainer profile not found' })
+    }
+
+    res.json(trainer)
+
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}

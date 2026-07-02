@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import React, { Suspense, lazy } from 'react'
 import { AuthProvider } from './shared/context/AuthContext'
+import { ThemeProvider } from './shared/context/ThemeContext'
 import ProtectedRoute from './shared/components/ProtectedRoute'
 import GlobalLoader from './shared/components/GlobalLoader'
 
@@ -34,6 +35,7 @@ const SchedulePage = lazy(() => import('./features/client/pages/SchedulePage'))
 const CheckoutPage = lazy(() => import('./features/client/pages/CheckoutPage'))
 const ClientSettingsPage = lazy(() => import('./features/client/pages/ClientSettingsPage'))
 const ClientProfilePage = lazy(() => import('./features/client/pages/ClientProfilePage'))
+const MyCoachPage = lazy(() => import('./features/client/pages/MyCoachPage'))
 const NutritionTrackerPage = lazy(() => import('./features/client/pages/NutritionTrackerPage'))
 const FoodAIPage = lazy(() => import('./features/client/pages/FoodAIPage'))
 const AIAssistantPage = lazy(() => import('./features/client/pages/AIAssistantPage'))
@@ -86,9 +88,10 @@ function NotFoundPage() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Suspense fallback={<GlobalLoader />}>
-        <Routes>
+    <ThemeProvider>
+      <AuthProvider>
+        <Suspense fallback={<GlobalLoader />}>
+          <Routes>
 
           {/* ── Auth — self-contained pages (own layout) ── */}
           <Route path="/auth/login" element={<LoginPage />} />
@@ -125,7 +128,8 @@ function App() {
               <Route path="/dashboard/chat" element={<ChatListPage />} />
               <Route path="/dashboard/chat/:id" element={<ChatWindowPage />} />
               <Route path="/dashboard/ai" element={<AIAssistantPage />} />
-              <Route path="/dashboard/video" element={<VideoSessionPage />} />
+              <Route path="/dashboard/coach" element={<MyCoachPage />} />
+              <Route path="/dashboard/video/:sessionId" element={<VideoSessionPage />} />
               <Route path="/dashboard/schedule" element={<SchedulePage />} />
               <Route path="/dashboard/subscription" element={<CheckoutPage />} />
               <Route path="/dashboard/settings" element={<ClientSettingsPage />} />
@@ -170,6 +174,7 @@ function App() {
         </Routes>
       </Suspense>
     </AuthProvider>
+  </ThemeProvider>
   )
 }
 

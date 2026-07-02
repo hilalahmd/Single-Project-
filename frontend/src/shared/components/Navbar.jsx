@@ -1,19 +1,27 @@
 import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Sun, Moon, User } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 
-const navLinks = [
-  { label: 'Find Coach', to: '/trainers' },
-  { label: 'Plans',      to: '/plans' },
-  { label: 'Diet',  to: '/free-diet-plan' },
-  { label: 'Become a Coach', to: '/auth/trainer-register' },
-]
+const getNavLinks = (user, subscriptionTier) => {
+  const hasCoach = user && subscriptionTier !== 'free'
+  return [
+    hasCoach
+      ? { label: 'My Coach', to: '/dashboard/coach' }
+      : { label: 'Find Coach', to: '/trainers' },
+    { label: 'Plans',  to: '/plans' },
+    { label: 'Diet',   to: '/free-diet-plan' },
+  ]
+}
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+  const { user, role, subscriptionTier } = useAuth()
+  const { theme, toggleTheme } = useTheme()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,7 +52,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-6">
             
             <nav className="flex items-center gap-6 mr-2">
-              {navLinks.map(({ label, to }) => (
+              {getNavLinks(user, subscriptionTier).map(({ label, to }) => (
                 <NavLink
                   key={to}
                   to={to}
@@ -60,19 +68,56 @@ export default function Navbar() {
               ))}
             </nav>
 
-            <Link
-              to="/auth/login"
-              className={`text-xs font-bold transition-colors uppercase tracking-widest ${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}
-            >
-              Log in
-            </Link>
+            {user ? (
+              <button
+                onClick={() => {
+                  const dashboardUrl = role === 'admin' ? '/admin' : (role === 'trainer' || role === 'wellness_coach' ? '/trainer/dashboard' : '/dashboard')
+                  navigate(dashboardUrl)
+                }}
+                className="bg-[#F97316] text-white px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:bg-[#EA580C] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+              >
+                DASHBOARD
+              </button>
+            ) : (
+              <>
+                <Link
+                  to="/auth/login"
+                  className={`text-xs font-bold transition-colors uppercase tracking-widest ${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}
+                >
+                  Log in
+                </Link>
 
-            <button
-              onClick={() => navigate('/auth/register')}
-              className="bg-[#F97316] text-white px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:bg-[#EA580C] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                <button
+                  onClick={() => navigate('/auth/register')}
+                  className="bg-[#F97316] text-white px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:bg-[#EA580C] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                >
+                  GET STARTED
+                </button>
+              </>
+            )}
+            
+            <button 
+              onClick={toggleTheme}
+              className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all cursor-pointer ${
+                theme === 'light' 
+                  ? 'text-[#F97316] hover:bg-black/5' 
+                  : 'text-gray-300 hover:text-[#F97316] hover:bg-white/5'
+              }`}
+              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
             >
-              GET STARTED
+              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             </button>
+
+            {/* Profile avatar — only when logged in */}
+            {user && (
+              <button
+                onClick={() => navigate('/dashboard/profile')}
+                className="relative flex items-center justify-center w-9 h-9 rounded-full bg-transparent text-gray-300 hover:text-[#F97316] border border-white/15 hover:border-[#F97316]/50 transition-all duration-300 cursor-pointer"
+                title="My Profile"
+              >
+                <User size={18} />
+              </button>
+            )}
           </div>
 
           {/* Mobile hamburger */}
@@ -91,7 +136,7 @@ export default function Navbar() {
       {menuOpen && (
          <div className={`md:hidden absolute top-full left-0 w-full p-4 flex flex-col gap-4 border-b ${isHome ? 'bg-[#07080C] border-white/10' : 'bg-white shadow-sm border-gray-100'}`}>
             {/* Nav Links */}
-            {navLinks.map(({ label, to }) => (
+            {getNavLinks(user, subscriptionTier).map(({ label, to }) => (
                <NavLink 
                  key={to} 
                  to={to} 
@@ -102,12 +147,46 @@ export default function Navbar() {
                </NavLink>
             ))}
             <hr className={isHome ? 'border-white/10' : 'border-gray-100'} />
-            <Link to="/auth/login" onClick={() => setMenuOpen(false)} className={`text-sm font-bold uppercase tracking-widest ${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}>
-              Log in
-            </Link>
-            <button onClick={() => { setMenuOpen(false); navigate('/auth/register'); }} className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] transition-colors duration-200 cursor-pointer">
-              Get Started
-            </button>
+            
+            <div className="flex items-center justify-between py-1">
+              <span className={`text-xs font-bold uppercase tracking-widest ${theme === 'light' ? 'text-[#0F172A]' : 'text-gray-300'}`}>Theme</span>
+              <button 
+                onClick={() => {
+                  toggleTheme()
+                  setMenuOpen(false)
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all ${
+                  theme === 'light' 
+                    ? 'bg-[#F97316]/10 border-[#F97316]/30 text-[#F97316] hover:bg-[#F97316]/20' 
+                    : 'bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+              </button>
+            </div>
+            
+            {user ? (
+              <button 
+                onClick={() => {
+                  setMenuOpen(false)
+                  const dashboardUrl = role === 'admin' ? '/admin' : (role === 'trainer' || role === 'wellness_coach' ? '/trainer/dashboard' : '/dashboard')
+                  navigate(dashboardUrl)
+                }} 
+                className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] transition-colors duration-200 cursor-pointer"
+              >
+                Dashboard
+              </button>
+            ) : (
+              <>
+                <Link to="/auth/login" onClick={() => setMenuOpen(false)} className={`text-sm font-bold uppercase tracking-widest ${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}>
+                  Log in
+                </Link>
+                <button onClick={() => { setMenuOpen(false); navigate('/auth/register'); }} className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] transition-colors duration-200 cursor-pointer">
+                  Get Started
+                </button>
+              </>
+            )}
          </div>
       )}
     </header>

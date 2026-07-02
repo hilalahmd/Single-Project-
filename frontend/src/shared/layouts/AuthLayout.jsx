@@ -1,8 +1,12 @@
 import { Outlet, Link } from 'react-router-dom'
+import { useTheme } from '../context/ThemeContext'
 
 export default function AuthLayout() {
+  const { theme } = useTheme()
+  const themeClass = theme === 'light' ? 'theme-light' : 'theme-dark'
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className={`min-h-screen flex items-center justify-center px-4 py-12 ${themeClass}`}>
       {/* Background styling matching FreeDietPlanPage */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(37,99,235,0.15)_0%,_transparent_70%)] z-10"></div>
