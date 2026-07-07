@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Save, Plus, Trash2, Dumbbell, Salad } from 'lucide-react'
+import API from '../../../shared/utils/api' // API connect cheyyan
 
 export default function TrainerPlanBuilderPage() {
   const { id } = useParams() // Client ID
@@ -29,6 +30,61 @@ export default function TrainerPlanBuilderPage() {
     setMeals([...meals, { name: '', foods: '', calories: 0 }])
   }
 
+  // --- Puthiyathayi add cheytha functions (API Call) ---
+
+  const handleUpdateExercise = (index, field, value) => {
+    const newExercises = [...exercises]
+    newExercises[index][field] = value
+    setExercises(newExercises)
+  }
+
+  const handleRemoveExercise = (index) => {
+    setExercises(exercises.filter((_, i) => i !== index))
+  }
+
+  const handleSavePlan = async () => {
+    try {
+      const formattedExercises = exercises.map(ex => ({
+        name: ex.name,
+        sets: `${ex.sets} Sets x ${ex.reps} Reps (Rest: ${ex.rest}s)`
+      }))
+
+      const payload = {
+        clientId: id, // URL-nnu kittunna ID
+        title: "Custom Workout Plan",
+        description: "Assigned by Trainer",
+        type: "workout",
+        startDate: new Date(),
+        workouts: [
+          {
+            title: "Day 1 Workout",
+            dayNumber: 1,
+            exercises: formattedExercises
+          }
+        ]
+      }
+
+      // Backend API vilikkunnu
+      const res = await fetch(`${API}/workouts/plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      })
+      
+      const data = await res.json()
+      if (data.success) {
+        alert("Plan saved successfully!")
+        navigate('/trainer/clients') 
+      } else {
+        alert("Error saving plan: " + data.message)
+      }
+    } catch (error) {
+      console.error("Save failed:", error)
+      alert("Something went wrong!")
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
@@ -46,7 +102,10 @@ export default function TrainerPlanBuilderPage() {
           </div>
         </div>
         
-        <button className="px-6 py-2.5 bg-gradient-to-r from-[#2563EB] to-blue-500 hover:to-blue-400 text-white font-semibold rounded-xl flex items-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.3)] transition-all">
+        {/* Puthiya handleSavePlan function ivide connect cheythu */}
+        <button 
+          onClick={handleSavePlan}
+          className="px-6 py-2.5 bg-gradient-to-r from-[#2563EB] to-blue-500 hover:to-blue-400 text-white font-semibold rounded-xl flex items-center gap-2 shadow-[0_0_15px_rgba(37,99,235,0.3)] transition-all">
           <Save size={18} /> Save Plan
         </button>
       </div>
@@ -94,21 +153,22 @@ export default function TrainerPlanBuilderPage() {
                   <input 
                     type="text" 
                     value={ex.name}
+                    onChange={(e) => handleUpdateExercise(i, 'name', e.target.value)}
                     placeholder="e.g. Squats"
                     className="w-full bg-transparent border-none text-white text-sm font-semibold focus:outline-none focus:ring-0 px-3 py-2 placeholder-gray-600" 
                   />
                 </div>
                 <div className="col-span-2">
-                  <input type="number" value={ex.sets} className="w-full bg-[#111827] border border-[#1E293B] rounded-lg text-white text-sm text-center py-2 focus:border-[#2563EB] focus:outline-none" />
+                  <input type="number" value={ex.sets} onChange={(e) => handleUpdateExercise(i, 'sets', e.target.value)} className="w-full bg-[#111827] border border-[#1E293B] rounded-lg text-white text-sm text-center py-2 focus:border-[#2563EB] focus:outline-none" />
                 </div>
                 <div className="col-span-2">
-                  <input type="number" value={ex.reps} className="w-full bg-[#111827] border border-[#1E293B] rounded-lg text-white text-sm text-center py-2 focus:border-[#2563EB] focus:outline-none" />
+                  <input type="number" value={ex.reps} onChange={(e) => handleUpdateExercise(i, 'reps', e.target.value)} className="w-full bg-[#111827] border border-[#1E293B] rounded-lg text-white text-sm text-center py-2 focus:border-[#2563EB] focus:outline-none" />
                 </div>
                 <div className="col-span-2">
-                  <input type="number" value={ex.rest} className="w-full bg-[#111827] border border-[#1E293B] rounded-lg text-white text-sm text-center py-2 focus:border-[#2563EB] focus:outline-none" />
+                  <input type="number" value={ex.rest} onChange={(e) => handleUpdateExercise(i, 'rest', e.target.value)} className="w-full bg-[#111827] border border-[#1E293B] rounded-lg text-white text-sm text-center py-2 focus:border-[#2563EB] focus:outline-none" />
                 </div>
                 <div className="col-span-1 flex justify-center">
-                  <button className="text-gray-500 hover:text-red-500 transition-colors">
+                  <button onClick={() => handleRemoveExercise(i)} className="text-gray-500 hover:text-red-500 transition-colors">
                     <Trash2 size={18} />
                   </button>
                 </div>
@@ -151,15 +211,12 @@ export default function TrainerPlanBuilderPage() {
                   <input 
                     type="text" 
                     value={meal.foods}
-                    placeholder="e.g. 200g Chicken, 100g Rice"
-                    className="w-full bg-[#111827] border border-[#1E293B] rounded-lg text-white text-sm px-3 py-2 focus:border-[#22C55E] focus:outline-none placeholder-gray-600" 
+                    placeholder="e.g. Chicken breast, Rice, Broccoli"
+                    className="w-full bg-transparent border-none text-white text-sm focus:outline-none focus:ring-0 px-3 py-2 placeholder-gray-700" 
                   />
                 </div>
                 <div className="col-span-2">
-                  <div className="relative">
-                    <input type="number" value={meal.calories} className="w-full bg-[#111827] border border-[#1E293B] rounded-lg text-[#22C55E] font-bold text-sm text-center py-2 focus:border-[#22C55E] focus:outline-none" />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 font-bold uppercase">kcal</span>
-                  </div>
+                  <input type="number" value={meal.calories} className="w-full bg-[#111827] border border-[#1E293B] rounded-lg text-white text-sm text-center py-2 focus:border-[#22C55E] focus:outline-none" />
                 </div>
                 <div className="col-span-1 flex justify-center">
                   <button className="text-gray-500 hover:text-red-500 transition-colors">

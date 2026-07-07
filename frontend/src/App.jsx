@@ -9,6 +9,7 @@ import GlobalLoader from './shared/components/GlobalLoader'
 import MainLayout from './shared/layouts/MainLayout'
 import AuthLayout from './shared/layouts/AuthLayout'
 import DashboardLayout from './shared/layouts/DashboardLayout'
+import ClientAppLayout from './shared/layouts/ClientAppLayout'
 
 // ── Auth pages ───────────────────────────────────────────────────────────────
 const LoginPage = lazy(() => import('./features/auth/pages/LoginPage'))
@@ -119,7 +120,7 @@ function App() {
 
           {/* ── Client Dashboard (Protected) ── */}
           <Route element={<ProtectedRoute allowedRoles={['user']} />}>
-            <Route element={<DashboardLayout />}>
+            <Route element={<ClientAppLayout />}>
               <Route path="/dashboard" element={<ClientDashboardPage />} />
               <Route path="/dashboard/plans" element={<MyPlansPage />} />
               <Route path="/dashboard/progress" element={<ProgressTrackerPage />} />

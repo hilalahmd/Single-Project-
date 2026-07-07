@@ -1,32 +1,107 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowLeft, Video, Info, Smile, Paperclip, Send, CheckCheck, Phone, MessageCircle, Lock } from 'lucide-react'
+import { ArrowLeft, Video, Info, Phone, MessageCircle, Lock, Paperclip, Send, CheckCheck } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../shared/context/AuthContext'
+import API from '../../../shared/utils/api'
+import { io } from 'socket.io-client'
+
+// Backend-ilekku Socket connect cheyyunnu (Live Connection)
+const SOCKET_URL = 'http://localhost:5000'
+const socket = io(SOCKET_URL)
 
 export default function ChatWindowPage() {
   const navigate = useNavigate()
-  const { id } = useParams()
-  const { role, subscriptionTier } = useAuth()
+  const { id: otherUserId } = useParams() // URL-il ninnum matte aalude ID edukkunnu
+  const { user, role, subscriptionTier } = useAuth()
+  
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState([])
+  const [contactInfo, setContactInfo] = useState(null)
   const bottomRef = useRef(null)
 
-  // TODO: Fetch contact info and messages from API using `id`
-  const contactName = 'Coach'
-  const contactInitials = 'C'
   const isFree = role === 'user' && subscriptionTier === 'free'
 
+  // Oru unique room ID undakkunnu. Nammude id-yum averude id-yum vechu.
+  // Sort cheyyunnathu kondu randu perkum ore Room ID thanne kittum.
+  // NOTE: user object uses _id from MongoDB!
+  const roomId = user ? [user._id, otherUserId].sort().join('_') : null
+
+  // 1. Pazhaya messages fetch cheyyunnu (Database-il ninnum)
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`${API}/chat/history/${otherUserId}`, { credentials: 'include' })
+        const data = await res.json()
+        if (data.success) {
+          // Backend-il ninnu kittunna messages reverse cheyyunnu (pazhayathu aadyam varan)
+          setMessages(data.data.reverse())
+          setContactInfo(data.contact) // User details set cheyyunnu
+        }
+      } catch (error) {
+        console.error("Failed to load history:", error)
+      }
+    }
+    if (user && !isFree) fetchHistory()
+  }, [user, otherUserId, isFree])
+
+  // 2. Socket Room-ilekku join cheyyunnu & Messages receive cheyyunnu
+  useEffect(() => {
+    if (!roomId) return
+
+    // Aa theerumanicha room-ilekku join cheyyan backend-nodu parayunnu
+    socket.emit('join_chat', roomId)
+
+    // Puthiya message varumpol kekkan ulla listener (Like phone ringing)
+    const handleReceiveMessage = (newMessage) => {
+      setMessages((prev) => [...prev, newMessage])
+    }
+
+    socket.on('receive_message', handleReceiveMessage)
+
+    // Component unmount aavumpol (Page close cheyyumpol) listener remove cheyyunnu
+    return () => {
+      socket.off('receive_message', handleReceiveMessage)
+    }
+  }, [roomId])
+
+  // Scroll to bottom puthiya message varumpol
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const sendMessage = () => {
-    if (!input.trim()) return
-    setMessages(prev => [
-      ...prev,
-      { id: Date.now(), text: input.trim(), sender: 'client', time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-    ])
-    setInput('')
+  // 3. Message ayakkumpol nadakkunnathu
+  const sendMessage = async () => {
+    if (!input.trim() || !user) return
+
+    const tempText = input.trim()
+    setInput('') // Input field udane clear cheyyunnu (Fast aayi thonan)
+
+    try {
+      // Aadyam Backend DB-ilekku save cheyyan ayakkunnu
+      const res = await fetch(`${API}/chat/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ receiverId: otherUserId, text: tempText })
+      })
+      
+      const data = await res.json()
+      
+      if (data.success) {
+        const newMessage = data.data
+
+        // Nammude local screen-il appozhe kanikkan state update cheyyunnu
+        setMessages((prev) => [...prev, newMessage])
+
+        // PINNE, matte aalkku live aayi kittan Socket vazhi emit cheyyunnu! 🔥
+        socket.emit('send_message', {
+          ...newMessage,
+          chatId: roomId // Ee room-il ulla aalkku mathram povanaanu ithu
+        })
+      }
+    } catch (error) {
+      console.error("Message send failed:", error)
+    }
   }
 
   const handleKey = (e) => {
@@ -69,14 +144,18 @@ export default function ChatWindowPage() {
 
           {/* Avatar */}
           <div className="relative">
-            <div className="w-10 h-10 bg-[#2563EB] rounded-full flex items-center justify-center text-[14px] font-bold text-white shadow-[0_0_12px_rgba(37,99,235,0.4)]">
-              {contactInitials}
+            <div className="w-10 h-10 bg-[#2563EB] rounded-full flex items-center justify-center text-[14px] font-bold text-white shadow-[0_0_12px_rgba(37,99,235,0.4)] uppercase">
+              {contactInfo ? contactInfo.name.charAt(0) : 'U'}
             </div>
           </div>
 
           <div>
-            <h2 className="font-bold text-white text-[15px] leading-tight">{contactName}</h2>
-            <p className="text-[12px] text-gray-500 font-medium">Conversation #{id}</p>
+            <h2 className="font-bold text-white text-[15px] leading-tight capitalize">
+              {contactInfo ? contactInfo.name : 'Loading...'}
+            </h2>
+            <p className="text-[12px] text-gray-500 font-medium">
+              {contactInfo?.role === 'trainer' ? 'Coach' : 'Client'} • Online
+            </p>
           </div>
         </div>
 
@@ -106,9 +185,11 @@ export default function ChatWindowPage() {
             </div>
 
             {messages.map((m) => {
-              const isMe = m.sender === 'client'
+              // Nammal ayacha message aano ennu check cheyyunnu
+              const isMe = user && m.senderId === user._id
+              const time = new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
               return (
-                <div key={m.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                <div key={m._id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                   {/* Bubble */}
                   <div className={`max-w-[78%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed ${
                     isMe
@@ -119,7 +200,7 @@ export default function ChatWindowPage() {
                   </div>
                   {/* Meta */}
                   <div className={`flex items-center gap-1 mt-1 text-[11px] font-medium text-gray-500 ${isMe ? 'flex-row-reverse' : ''}`}>
-                    <span>{m.time}</span>
+                    <span>{time}</span>
                     {isMe && <CheckCheck size={13} className="text-blue-400" />}
                   </div>
                 </div>
@@ -148,28 +229,26 @@ export default function ChatWindowPage() {
 
           <div className="flex-1 bg-[#111827] border border-[#1E293B] rounded-2xl flex items-end overflow-hidden focus-within:border-[#2563EB] focus-within:ring-1 focus-within:ring-[#2563EB] transition-all">
             <textarea
-              rows={1}
-              placeholder="Type a message..."
               value={input}
-              onChange={e => setInput(e.target.value)}
+              onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKey}
-              className="w-full bg-transparent border-0 focus:ring-0 resize-none px-4 py-3 text-[14px] text-white placeholder-gray-600 max-h-32 focus:outline-none leading-relaxed"
+              placeholder="Message..."
+              className="w-full bg-transparent text-white px-4 py-3 min-h-[44px] max-h-[120px] resize-none focus:outline-none text-[14px]"
+              rows={1}
             />
-            <button className="p-3 text-gray-500 hover:text-white transition-colors shrink-0">
-              <Smile size={19} />
-            </button>
           </div>
 
           <button
             onClick={sendMessage}
             disabled={!input.trim()}
-            className="p-3 bg-[#2563EB] hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl shrink-0 transition-all shadow-[0_0_12px_rgba(37,99,235,0.3)] hover:shadow-[0_0_20px_rgba(37,99,235,0.5)]"
+            className="p-3 bg-[#2563EB] hover:bg-blue-500 disabled:bg-[#1E293B] disabled:text-gray-500 text-white rounded-xl transition-all shadow-[0_4px_12px_rgba(37,99,235,0.3)] disabled:shadow-none shrink-0"
           >
-            <Send size={18} />
+            <Send size={18} className={input.trim() ? "translate-x-0.5" : ""} />
           </button>
         </div>
       </div>
-      </div>
+
     </div>
+  </div>
   )
 }

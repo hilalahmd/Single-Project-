@@ -14,7 +14,8 @@ export default function ClientProfilePage() {
   const [profile, setProfile] = useState({
     name: '',
     email: '',
-    preferredLanguage: 'English'
+    preferredLanguage: 'English',
+    bio: ''
   })
 
   const [metrics, setMetrics] = useState({
@@ -39,7 +40,8 @@ export default function ClientProfilePage() {
         setProfile({
           name: data.name || '',
           email: data.email || '',
-          preferredLanguage: data.preferredLanguage || 'English'
+          preferredLanguage: data.preferredLanguage || 'English',
+          bio: data.bio || ''
         })
 
         setMetrics({
@@ -69,7 +71,8 @@ export default function ClientProfilePage() {
         credentials: 'include',
         body: JSON.stringify({
           name: profile.name,
-          preferredLanguage: profile.preferredLanguage
+          preferredLanguage: profile.preferredLanguage,
+          bio: profile.bio
         })
       })
       if (!res.ok) throw new Error('Failed to save profile')
@@ -112,8 +115,14 @@ export default function ClientProfilePage() {
           <div className="flex items-center gap-6 mb-8">
             <div className="w-24 h-24 bg-[#0F172A] rounded-full flex items-center justify-center text-[32px] font-bold text-gray-400 border border-[#1E293B]">H</div>
             <div className="space-y-2">
-              <button className="px-4 py-2 border border-[#1E293B] text-white hover:bg-[#0F172A] rounded-lg text-[14px] font-semibold transition-colors">Change Avatar</button>
-              <p className="text-[14px] text-gray-400">JPG, GIF or PNG. Max size of 2MB.</p>
+              <button
+                disabled
+                title="Avatar upload coming soon"
+                className="px-4 py-2 border border-[#1E293B] text-gray-500 rounded-lg text-[14px] font-semibold cursor-not-allowed opacity-50 select-none"
+              >
+                Change Avatar
+              </button>
+              <p className="text-[12px] text-gray-500">Avatar upload <span className="text-amber-400 font-semibold">coming soon</span>. JPG, GIF or PNG. Max 2MB.</p>
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
@@ -147,7 +156,13 @@ export default function ClientProfilePage() {
             </div>
             <div className="md:col-span-2">
               <label className="block text-[14px] font-semibold text-gray-300 mb-2">Bio</label>
-              <textarea rows="3" placeholder="Tell us a bit about yourself..." className="w-full px-4 py-3 border border-[#1E293B] rounded-lg text-[14px] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none bg-[#0F172A] text-white placeholder-gray-500"></textarea>
+              <textarea 
+                rows="3" 
+                placeholder="Tell us a bit about yourself..." 
+                value={profile.bio}
+                onChange={e => setProfile({ ...profile, bio: e.target.value })}
+                className="w-full px-4 py-3 border border-[#1E293B] rounded-lg text-[14px] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] resize-none bg-[#0F172A] text-white placeholder-gray-500"
+              ></textarea>
             </div>
           </div>
         </Card>

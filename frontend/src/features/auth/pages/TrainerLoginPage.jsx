@@ -154,6 +154,7 @@ export default function TrainerLoginPage() {
                 <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors">
                   <input
                     type="email"
+                    autoComplete="email"
                     placeholder="coach@fitforge.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -174,6 +175,7 @@ export default function TrainerLoginPage() {
                 <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors">
                   <input
                     type={showPw ? 'text' : 'password'}
+                    autoComplete="current-password"
                     placeholder="••••••••"
                     value={password}
                     onChange={e => setPassword(e.target.value)}

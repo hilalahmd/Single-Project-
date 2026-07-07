@@ -7,6 +7,7 @@ import Modal from '../../../shared/components/Modal'
 import Toast from '../../../shared/components/Toast'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../shared/context/AuthContext'
+import API from '../../../shared/utils/api'
 
 export default function SchedulePage() {
   const navigate = useNavigate()
@@ -19,27 +20,55 @@ export default function SchedulePage() {
   const days = ['Mon 12', 'Tue 13', 'Wed 14', 'Thu 15', 'Fri 16', 'Sat 17', 'Sun 18']
   const times = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00']
 
-  // ─── Local Sessions State (relative to Oct 12-18, 2026) ───
-  const [sessions, setSessions] = useState([
-    {
-      id: 'session-1',
-      name: 'Arjun Menon',
-      date: '2026-10-14T18:00:00',
-      timeSlot: '18:00',
-      dayIndex: 2, // Wed (0-indexed from Mon)
-      type: 'Form Correction',
-      duration: '18:00 - 19:00'
-    },
-    {
-      id: 'session-2',
-      name: 'Arjun Menon',
-      date: '2026-10-17T08:00:00',
-      timeSlot: '08:00',
-      dayIndex: 5, // Sat (0-indexed from Mon)
-      type: 'Weekly Check-in',
-      duration: '08:00 - 09:00'
+    const [sessions, setSessions] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Fetch real sessions from backend
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const res = await fetch(`${API}/sessions/my-sessions`, { credentials: 'include' })
+        const data = await res.json()
+        if (data.success) {
+          // Backend ninnu varunna data namukku aavashyamulla pole format cheyyunnu
+          const formattedSessions = data.data.map(session => {
+            const startDate = new Date(session.startTime)
+            const dayOfWeek = startDate.getDay()
+            const dayIdx = dayOfWeek === 0 ? 6 : dayOfWeek - 1 // Monday = 0, Sunday = 6
+            
+            // 24-hour format time for the calendar grid matching (e.g. "14:00")
+            const time24 = startDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+            const endHour = startDate.getHours() + 1
+            const durationStr = `${time24} - ${endHour < 10 ? '0'+endHour : endHour}:00`
+
+            return {
+              id: session._id,
+              name: session.trainerId ? 'Your Coach' : 'Trainer', 
+              date: session.startTime,
+              timeSlot: time24,
+              dayIndex: dayIdx,
+              type: session.sessionType,
+              status: session.status,
+              duration: durationStr,
+              meetingLink: session.meetingLink
+            }
+          })
+          setSessions(formattedSessions)
+        }
+      } catch (error) {
+        console.error("Error fetching sessions:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
-  ])
+
+    if (subscriptionTier && subscriptionTier !== 'free') {
+      fetchSessions()
+    } else {
+      setIsLoading(false)
+    }
+  }, [subscriptionTier])
+
 
   // Form input states
   const [selectedCoach, setSelectedCoach] = useState('Arjun Menon')
@@ -54,7 +83,8 @@ export default function SchedulePage() {
     const diffMs = start - now
     const diffMin = diffMs / 60000
 
-    if (diffMin > 15) {
+    // IVIDE MAATTUKA 15 ennullathu maatti 99999999 aakkuka (For testing UX)
+    if (diffMin > 99999999) {
       return {
         status: 'upcoming',
         label: `Starts at ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
@@ -62,7 +92,7 @@ export default function SchedulePage() {
       }
     }
 
-    if (diffMin > -60 && diffMin <= 15) {
+    if (diffMin > -60 && diffMin <= 99999999) {
       return {
         status: 'active',
         label: 'Join Call',
@@ -118,7 +148,7 @@ export default function SchedulePage() {
     setToastMessage("Session successfully cancelled.")
   }
 
-  const isLocked = subscriptionTier !== 'pt'
+  const isLocked = subscriptionTier !== 'personal_training'
 
   return (
     <div className="relative max-w-7xl mx-auto min-h-[500px]">

@@ -1,11 +1,51 @@
+import { useState, useEffect } from 'react'
 import { Users, UserCheck, IndianRupee, Clock, ChevronRight } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import API from '../../../shared/utils/api'
 
 export default function AdminDashboardPage() {
+  const navigate = useNavigate()
+  const [pendingTrainers, setPendingTrainers] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchPendingTrainers = async () => {
+      try {
+        const res = await fetch(`${API}/admin/trainers`, {
+          credentials: 'include'
+        })
+        if (res.ok) {
+          const data = await res.json()
+          const pending = data.filter(t => !t.isApproved)
+          setPendingTrainers(pending)
+        }
+      } catch (err) {
+        console.error("Failed to load trainers for dashboard", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPendingTrainers()
+  }, [])
+
+  const handleApprove = async (trainerId) => {
+    try {
+      const res = await fetch(`${API}/admin/approve/${trainerId}`, {
+        method: 'PUT',
+        credentials: 'include'
+      })
+      if (res.ok) {
+        setPendingTrainers(prev => prev.filter(t => t._id !== trainerId))
+      }
+    } catch (err) {
+      alert("Error approving trainer")
+    }
+  }
+
   const recentRegistrations = [
     { id: 1, name: 'Sanjay Kumar', role: 'Client', date: 'Oct 15, 2026', status: 'Active' },
     { id: 2, name: 'Priya Nair', role: 'Trainer', date: 'Oct 15, 2026', status: 'Pending' },
     { id: 3, name: 'Arjun Menon', role: 'Trainer', date: 'Oct 14, 2026', status: 'Active' },
-    { id: 4, name: 'Meera Thomas', role: 'Client', date: 'Oct 14, 2026', status: 'Active' },
   ]
 
   return (
@@ -20,7 +60,7 @@ export default function AdminDashboardPage() {
           { label: 'Total Users', val: '1,240', icon: Users },
           { label: 'Active Trainers', val: '89', icon: UserCheck },
           { label: 'Monthly Revenue', val: '₹1,84,000', icon: IndianRupee },
-          { label: 'Pending Approvals', val: '7', icon: Clock },
+          { label: 'Pending Approvals', val: loading ? '...' : pendingTrainers.length, icon: Clock },
         ].map((stat, i) => (
           <div key={i} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex items-center gap-4">
             <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center shrink-0 border border-gray-200">
@@ -78,31 +118,37 @@ export default function AdminDashboardPage() {
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-black">Pending Approvals</h2>
-              <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-black text-white">7</span>
+              <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-black text-white">
+                {pendingTrainers.length}
+              </span>
             </div>
+            
             <div className="space-y-4">
-              {[
-                { name: 'Priya Nair', spec: 'Yoga, Nutrition', exp: '4 years' },
-                { name: 'Karthik S', spec: 'Strength, HIIT', exp: '2 years' },
-                { name: 'Aiswarya M', spec: 'Pilates', exp: '5 years' },
-              ].map((t, i) => (
-                <div key={i} className="p-4 border border-gray-200 rounded-xl bg-gray-50">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="font-bold text-black">{t.name}</h3>
-                      <p className="text-xs text-gray-500 font-medium">{t.spec}</p>
+              {pendingTrainers.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">No pending approvals at the moment.</p>
+              ) : (
+                pendingTrainers.slice(0, 3).map((t) => (
+                  <div key={t._id} className="p-4 border border-gray-200 rounded-xl bg-gray-50">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="font-bold text-black">{t.userId?.name || 'Unknown User'}</h3>
+                        <p className="text-xs text-gray-500 font-medium capitalize">{t.role.replace('_', ' ')}</p>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-gray-600 bg-white px-2 py-1 rounded border border-gray-200">{t.exp}</span>
+                    <div className="flex gap-2">
+                      <button onClick={() => handleApprove(t._id)} className="flex-1 py-1.5 bg-black text-white text-xs font-bold rounded hover:bg-gray-800 transition-colors">Approve</button>
+                      <button onClick={() => navigate('/admin/approvals')} className="flex-1 py-1.5 bg-white border border-gray-200 text-black text-xs font-bold rounded hover:bg-gray-100 transition-colors">View full</button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button className="flex-1 py-1.5 bg-black text-white text-xs font-bold rounded hover:bg-gray-800 transition-colors">Approve</button>
-                    <button className="flex-1 py-1.5 bg-white border border-gray-200 text-red-600 text-xs font-bold rounded hover:bg-red-50 hover:border-red-200 transition-colors">Reject</button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
-            <button className="w-full mt-4 py-3 border border-gray-200 rounded-xl text-sm font-bold text-black flex items-center justify-center hover:bg-gray-50 transition-colors">
-              View All <ChevronRight size={16} className="ml-1" />
+            
+            <button 
+              onClick={() => navigate('/admin/approvals')} 
+              className="w-full mt-4 py-3 border border-gray-200 rounded-xl text-sm font-bold text-black flex items-center justify-center hover:bg-gray-50 transition-colors"
+            >
+              View All Approvals <ChevronRight size={16} className="ml-1" />
             </button>
           </div>
         </div>

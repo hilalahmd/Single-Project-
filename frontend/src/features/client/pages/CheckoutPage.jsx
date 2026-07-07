@@ -34,7 +34,7 @@ export default function CheckoutPage() {
       tax: 152.39,
       subtotal: 846.61
     },
-    pt: {
+    personal_training: {
       name: 'Personal Training Plan (Monthly)',
       price: 2499,
       subtext: 'Billed every month. Cancel anytime.',

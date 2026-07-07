@@ -134,7 +134,7 @@ export default function MyPlansPage() {
   const dietDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
   // Determine coach assign label
-  const coachLabel = subscriptionTier === 'pt' 
+  const coachLabel = subscriptionTier === 'personal_training'
     ? 'Assigned by Coach Arjun Menon' 
     : (subscriptionTier === 'wellness' ? 'Assigned by Coach Priya Nair' : 'Self-Assigned Program')
 
@@ -178,13 +178,13 @@ export default function MyPlansPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`pb-4 text-sm font-bold capitalize transition-colors relative ${
+            className={`pb-4 text-sm font-bold capitalize transition-all duration-300 ease-out relative ${
               activeTab === tab ? 'text-[#F97316]' : 'text-gray-400 hover:text-[#F97316]'
             }`}
           >
             {tab} Plan
             {activeTab === tab && (
-              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#F97316] rounded-t-full" />
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#F97316] rounded-t-full shadow-[0_0_8px_#F97316] animate-in fade-in zoom-in duration-300" />
             )}
           </button>
         ))}
@@ -199,8 +199,8 @@ export default function MyPlansPage() {
               <button 
                 key={w}
                 onClick={() => setActiveWeek(w)}
-                className={`px-4 py-2 rounded-full text-sm font-bold transition-all shadow-sm ${
-                  activeWeek === w ? 'bg-[#F97316] text-white shadow-[0_4px_12px_rgba(249,115,22,0.3)]' : 'bg-white/10 text-gray-300 border border-white/20 hover:border-[#F97316] hover:text-[#F97316]'
+                className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-out shadow-sm ${
+                  activeWeek === w ? 'bg-[#F97316]/20 backdrop-blur-md border border-[#F97316]/50 text-[#F97316] shadow-[0_0_15px_rgba(249,115,22,0.3)] scale-105' : 'bg-white/[0.04] backdrop-blur-md text-gray-400 border border-white/[0.05] hover:border-[#F97316]/50 hover:text-[#F97316]'
                 }`}
               >
                 Week {w}
@@ -215,14 +215,15 @@ export default function MyPlansPage() {
           </div>
 
           {/* Workout Days List */}
-          <div className="space-y-4">
-            {workouts.map((wDay) => {
-              const progress = getDayProgress(wDay)
-              const hasExs = wDay.exs && wDay.exs.length > 0
+          {activeWeek === 1 ? (
+            <div className="space-y-4">
+              {workouts.map((wDay) => {
+                const progress = getDayProgress(wDay)
+                const hasExs = wDay.exs && wDay.exs.length > 0
 
-              return (
-                <div key={wDay.day} className="bg-white/5 border border-white/10 rounded-[16px] overflow-hidden hover:border-white/20 transition-all">
-                  <div className="w-full flex flex-col sm:flex-row items-stretch justify-between p-4 sm:p-6 hover:bg-white/5 transition-colors">
+                return (
+                  <div key={wDay.day} className="bg-white/[0.06] backdrop-blur-2xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-[16px] overflow-hidden hover:bg-white/[0.08] transition-all duration-300">
+                  <div className="w-full flex flex-col sm:flex-row items-stretch justify-between p-6 hover:bg-white/[0.02] transition-colors">
                     
                     {/* Day description */}
                     <button 
@@ -277,16 +278,16 @@ export default function MyPlansPage() {
 
                   {/* Expanded Exercises */}
                   {expandedDay === wDay.day && hasExs && (
-                    <div className="px-4 sm:px-6 pb-6 border-t border-white/10 pt-4 bg-transparent">
+                    <div className="px-6 pb-6 border-t border-white/[0.05] pt-6 bg-transparent">
                       <div className="space-y-3">
                         {wDay.exs.map((ex) => (
                           <div 
                             key={ex.id} 
                             onClick={() => toggleExerciseCompletion(wDay.day, ex.id)}
-                            className={`p-4 rounded-xl border transition-all flex items-center justify-between gap-4 shadow-sm cursor-pointer ${
+                            className={`p-4 rounded-xl border transition-all duration-300 flex items-center justify-between gap-4 shadow-sm cursor-pointer ${
                               ex.completed 
-                                ? 'bg-green-500/5 border-green-500/20 hover:border-green-500/30' 
-                                : 'bg-white/5 border-white/10 hover:border-white/20'
+                                ? 'bg-green-500/5 border-green-500/20 hover:border-green-500/30 opacity-60' 
+                                : 'bg-[#111318]/50 border-white/[0.04] hover:bg-white/[0.04]'
                             }`}
                           >
                             <div className="flex items-center gap-3">
@@ -322,7 +323,16 @@ export default function MyPlansPage() {
                 </div>
               )
             })}
-          </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-center bg-white/[0.02] border border-white/5 rounded-[24px]">
+              <Lock size={40} className="text-gray-500 mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">Week {activeWeek} Locked</h3>
+              <p className="text-gray-400 text-sm max-w-sm">
+                Complete Week {activeWeek - 1} to unlock this week's progressive overload routine.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -335,8 +345,8 @@ export default function MyPlansPage() {
               <button 
                 key={day}
                 onClick={() => setActiveDietDay(day)}
-                className={`px-6 py-2 rounded-full text-sm font-bold transition-all shadow-sm ${
-                  activeDietDay === day ? 'bg-[#F97316] text-white shadow-[0_4px_12px_rgba(249,115,22,0.3)]' : 'bg-white/10 text-gray-300 border border-white/20 hover:border-[#F97316] hover:text-[#F97316]'
+                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 ease-out shadow-sm ${
+                  activeDietDay === day ? 'bg-[#F97316]/20 backdrop-blur-md border border-[#F97316]/50 text-[#F97316] shadow-[0_0_15px_rgba(249,115,22,0.3)] scale-105' : 'bg-white/[0.04] backdrop-blur-md text-gray-400 border border-white/[0.05] hover:border-[#F97316]/50 hover:text-[#F97316]'
                 }`}
               >
                 {day}
@@ -345,7 +355,7 @@ export default function MyPlansPage() {
           </div>
 
           {/* Daily Target calories summary */}
-          <div className="bg-white/5 border border-white/10 rounded-[16px] p-5 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="bg-white/[0.06] backdrop-blur-2xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-[16px] p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <p className="text-gray-400 text-sm font-bold mb-1 uppercase tracking-wider">Daily Target</p>
               <p className="text-3xl font-black text-white">2,200 <span className="text-sm font-bold text-gray-500">kcal</span></p>
@@ -365,7 +375,7 @@ export default function MyPlansPage() {
               { name: 'Snack', time: '04:30 PM', items: 'Greek Yogurt, Almonds', cal: 300, p: 20, c: 15, f: 18 },
               { name: 'Dinner', time: '08:00 PM', items: 'Salmon, Sweet Potato, Asparagus', cal: 500, p: 40, c: 45, f: 20 },
             ].map((meal, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 rounded-[16px] p-5 hover:border-white/20 transition-all">
+              <div key={i} className="bg-white/[0.06] backdrop-blur-2xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-[16px] p-6 hover:bg-white/[0.08] transition-all duration-300">
                 <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-4">
                   <div>
                     <h3 className="text-xl font-bold text-white">{meal.name}</h3>
@@ -391,6 +401,10 @@ export default function MyPlansPage() {
       {isFree && (
         <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={`Create Workout Day ${newDayNum}`}>
           <form onSubmit={handleSaveDay} className="space-y-4">
+            <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 p-3 rounded-xl text-xs font-bold flex gap-2">
+              <Info size={16} className="shrink-0" />
+              <p>Preview Mode: New workout days are currently saved locally. They will reset on page refresh until the backend API is connected.</p>
+            </div>
             
             {/* Workout Details */}
             <div className="grid grid-cols-2 gap-4 pb-4 border-b border-white/10">

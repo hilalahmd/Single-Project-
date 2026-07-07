@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle2, Loader2, ArrowRight, Camera, AlertCircle, ChevronRight, Zap, Target, Trophy, Clock, CalendarDays } from 'lucide-react'
 import API from '../../../shared/utils/api'
@@ -6,6 +6,47 @@ import API from '../../../shared/utils/api'
 const SLOTS = ['front', 'back', 'left', 'right']
 const SLOT_LABELS = { front: 'Front View', back: 'Back View', left: 'Left Side', right: 'Right Side' }
 const TIMELINE_KEYS = ['threeMonths', 'sixMonths', 'oneYear']
+
+function GeneratedImage({ prompt, altText, originalImage }) {
+  const [imageUrl, setImageUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API}/transformation/generate-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ 
+            prompt: prompt,
+            originalImageBase64: originalImage 
+          })
+        });
+        
+        const data = await res.json();
+        if (data.imageUrl) {
+          setImageUrl(data.imageUrl);
+        }
+      } catch (err) {
+        console.error("Error fetching image:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (prompt) fetchImage();
+  }, [prompt, originalImage]);
+
+  if (loading) return <div className="w-full h-full flex items-center justify-center bg-black/50 text-[#ff6b1a] text-xs font-bold animate-pulse">AI Drawing Image...</div>;
+  if (!imageUrl) return <div className="w-full h-full flex items-center justify-center bg-black/50 text-white text-xs">Failed to load</div>;
+
+  return <img src={imageUrl} alt={altText} className="w-full h-full object-cover relative z-10" />;
+}
+
+
+
 
 const TIMELINE_CONFIG = {
   threeMonths: {
@@ -167,14 +208,14 @@ export default function TransformPreviewPage() {
   const allUploaded  = SLOTS.every(s => uploads[s] !== null)
   const canGenerate  = allUploaded && goal !== '' && timeline !== ''
 
-  const handleGenerate = async () => {
+    const handleGenerate = async () => {
     setIsGenerating(true)
     setError(null)
     try {
-      const token = localStorage.getItem('token')
-      const res   = await fetch(`${API}/food-ai/analyze-transformation`, {
+      const res = await fetch(`${API}/transformation/analyze`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ images: uploads, goal, timeline })
       })
       const data = await res.json()
@@ -187,6 +228,7 @@ export default function TransformPreviewPage() {
       setIsGenerating(false)
     }
   }
+
 
   const handleReset = () => {
     setUploads({ front: null, back: null, left: null, right: null })
@@ -442,14 +484,19 @@ export default function TransformPreviewPage() {
                         <div className="aspect-[3/4] rounded-xl border overflow-hidden relative flex items-center justify-center"
                           style={{ background: `linear-gradient(135deg, #14161f, #0a0a0a)`, borderColor: col.accent + '44' }}>
                           <div className="absolute inset-0" style={{ boxShadow: `inset 0 0 60px ${col.accent}11` }} />
-                          <div className="w-4/5 h-5/6 relative z-10">
-                            <TransformedSilhouette
-                              phase={TIMELINE_CONFIG[key].silhouettePhase}
-                              accent={col.accent}
-                              goal={goal}
-                            />
-                          </div>
-                          {/* Projected stats overlay */}
+      {/* FLUX.1 HUGGING FACE IMAGE GENERATION */}
+  {t.imagePrompt ? (
+    <GeneratedImage prompt={t.imagePrompt} altText={`After - ${col.label}`} originalImage={previews.front} />
+  ) : (
+    <div className="w-4/5 h-5/6 relative z-10">
+      <TransformedSilhouette
+        phase={TIMELINE_CONFIG[key].silhouettePhase}
+        accent={col.accent}
+        goal={goal}
+      />
+    </div>
+  )}
+  {/* Projected stats overlay */}
                           <div className="absolute bottom-0 inset-x-0 p-3" style={{ background: `linear-gradient(to top, ${col.accent}22, transparent)` }}>
                             <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: col.accent }}>{t?.projectedBodyFat} projected</p>
                             <p className="text-white font-bold text-xs">{t?.projectedMuscleMass}</p>

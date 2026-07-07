@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext'
 const getNavLinks = (user, subscriptionTier) => {
   const hasCoach = user && subscriptionTier !== 'free'
   return [
+    { label: 'Home', to: '/' },
     hasCoach
       ? { label: 'My Coach', to: '/dashboard/coach' }
       : { label: 'Find Coach', to: '/trainers' },
@@ -18,17 +19,30 @@ const getNavLinks = (user, subscriptionTier) => {
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [hidden, setHidden] = useState(false)
+  
   const location = useLocation()
   const navigate = useNavigate()
   const { user, role, subscriptionTier } = useAuth()
   const { theme, toggleTheme } = useTheme()
 
   useEffect(() => {
+    let lastScrollY = window.scrollY
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20)
+      const currentScrollY = window.scrollY
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        setHidden(true)
+      } else {
+        setHidden(false)
+      }
+      
+      lastScrollY = currentScrollY
+      setScrolled(currentScrollY > 20)
     }
+    
     window.addEventListener('scroll', handleScroll, { passive: true })
-    // Init state
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
@@ -36,7 +50,7 @@ export default function Navbar() {
   const isHome = true // Always use home page theme for navbar
 
   return (
-    <header className={`fixed top-0 w-full z-[100] transition-all duration-300 ${isHome ? 'bg-[#07080C] border-b border-white/5' : 'bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] border-b border-gray-100'}`}>
+    <header className={`fixed top-0 w-full z-[100] transition-all duration-500 ease-in-out ${hidden ? '-translate-y-full' : 'translate-y-0'} ${isHome ? 'bg-[#07080C] border-b border-white/5' : 'bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] border-b border-gray-100'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-16' : 'h-20'}`}>
 

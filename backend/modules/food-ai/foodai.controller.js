@@ -1,6 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import User from '../users/user.model.js'
 import { getGenAI } from '../../config/gemini.js'
+import MealLog from './meallog.model.js'
+
 
 const MONTHLY_LIMIT = 10000
 
@@ -16,7 +18,7 @@ function calculateBodyFat({ gender, height, neck, waist, hip }) {
   }
 }
 
-function buildPrompt(data, estimatedBodyFat) {
+function buildPrompt(data, estimatedBodyFat, isSubscribed) {
   const { gender, age, height, weight, country, goal, dietPref, measurements } = data
 
   let mealGuidance = ''
@@ -32,7 +34,11 @@ function buildPrompt(data, estimatedBodyFat) {
     ? `Body measurements provided: neck ${measurements.neck || 'N/A'}cm, waist ${measurements.waist || 'N/A'}cm, navel ${measurements.navel || 'N/A'}cm, arm ${measurements.arm || 'N/A'}cm, wrist ${measurements.wrist || 'N/A'}cm, hip ${measurements.hip || 'N/A'}cm, thigh ${measurements.thigh || 'N/A'}cm.${estimatedBodyFat ? ` Estimated body fat using Navy method: ${estimatedBodyFat}%.` : ''}`
     : 'No body measurements provided.'
 
-  return `You are a professional nutritionist creating a ONE-DAY sample diet plan as a free preview/demo for a fitness app. This is meant to showcase quality and entice the user to subscribe for a full 7-day wellness coaching plan, so make it genuinely excellent, specific, and regionally accurate.
+  const planDurationText = isSubscribed 
+    ? 'a FULL 7-DAY diet plan since they are a premium subscriber. Provide variety across the 7 days.'
+    : 'a ONE-DAY sample diet plan as a free preview/demo for a fitness app. This is meant to showcase quality and entice the user to subscribe for a full 7-day wellness coaching plan.'
+
+  return `You are a professional nutritionist creating ${planDurationText} Make it genuinely excellent, specific, and regionally accurate.
 
 USER PROFILE:
 - Gender: ${gender}
@@ -53,7 +59,7 @@ CRITICAL REQUIREMENTS:
 3. Calculate an accurate daily calorie target using Mifflin-St Jeor BMR formula and an activity multiplier of 1.55 (moderately active), then adjust for the goal (+300-500 kcal for gain, -300-500 kcal for loss, 0 for maintenance).
 4. For each meal, give: meal name, time of day, specific food items with quantities, calories, and protein/carbs/fat in grams.
 5. If body measurements were provided, include an estimated body fat percentage and a brief note on what it means for their goal.
-6. End with a short, motivating 2-3 sentence note encouraging them to unlock the full 7-day plan with a Wellness Coach for personalized recovery and adjustments.
+6. End with a short, motivating 2-3 sentence note.
 
 Respond ONLY in this exact JSON format, no markdown, no backticks, no extra text:
 {
@@ -61,11 +67,17 @@ Respond ONLY in this exact JSON format, no markdown, no backticks, no extra text
   "macros": { "protein": number, "carbs": number, "fat": number },
   "estimatedBodyFatPercent": number or null,
   "bodyFatNote": string or null,
-  "meals": [
-    { "name": string, "time": string, "items": string, "calories": number, "protein": number, "carbs": number, "fat": number }
+  "days": [
+    {
+      "day": "Day 1",
+      "meals": [
+        { "name": string, "time": string, "items": string, "calories": number, "protein": number, "carbs": number, "fat": number }
+      ]
+    }
   ],
   "closingNote": string
-}`
+}
+Note: the "days" array should contain exactly ${isSubscribed ? '7' : '1'} object(s) representing the ${isSubscribed ? '7 days' : '1 day'} of meals.`
 }
 
 export const generateFreeDietPlan = async (req, res) => {
@@ -104,15 +116,22 @@ export const generateFreeDietPlan = async (req, res) => {
       hip: Number(measurements?.hip)
     })
 
-    const prompt = buildPrompt({ gender, age, height, weight, country, goal, dietPref, measurements }, estimatedBodyFat)
+       const isSubscribed = true // Testing-nu vendi temporary aayi 'true' aakkunnu
+     const prompt = buildPrompt({ gender, age, height, weight, country, goal, dietPref, measurements }, estimatedBodyFat, isSubscribed)
 
     let dietPlan
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+      const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
       const result = await model.generateContent(prompt)
       const text = result.response.text()
       const cleaned = text.replace(/```json|```/g, '').trim()
       dietPlan = JSON.parse(cleaned)
+      
+      // Legacy compatibility: If AI still returns "meals" instead of "days", wrap it
+      if (dietPlan.meals && !dietPlan.days) {
+        dietPlan.days = [{ day: "Day 1", meals: dietPlan.meals }]
+        delete dietPlan.meals
+      }
     } catch (aiError) {
       console.warn("Gemini API call failed, generating locally computed diet plan:", aiError.message)
       
@@ -163,25 +182,25 @@ export const generateFreeDietPlan = async (req, res) => {
             { 
               name: 'Breakfast', 
               time: '08:30 AM', 
-              items: `Oats porridge (approx. ${Math.round(breakC * 1.5)}g cooked) with low-fat paneer (approx. ${Math.round(breakP * 1.5)}g), ${Math.round(breakF * 2.5)}g of chopped almonds, and chia seeds.`, 
+              items: `Oats porridge (approx. ${Math.round(breakC * 1.5)}g cooked) with low-fat Cottage Cheese (approx. ${Math.round(breakP * 1.5)}g), ${Math.round(breakF * 2.5)}g of chopped almonds, and chia seeds.`, 
               calories: breakCal, protein: breakP, carbs: breakC, fat: breakF 
             },
             { 
               name: 'Lunch', 
               time: '01:30 PM', 
-              items: `Brown rice (approx. ${Math.round(lunchC * 2.5)}g cooked) with yellow dal, sautéed Paneer or Tofu (approx. ${Math.round(lunchP * 3.5)}g), and mixed green salad with ${Math.round(lunchF * 1.2)}ml olive oil.`, 
+              items: `Brown rice (approx. ${Math.round(lunchC * 2.5)}g cooked) with Yellow Lentil Soup, sautéed Cottage Cheese or Tofu (approx. ${Math.round(lunchP * 3.5)}g), and mixed green salad with ${Math.round(lunchF * 1.2)}ml olive oil.`, 
               calories: lunchCal, protein: lunchP, carbs: lunchC, fat: lunchF 
             },
             { 
               name: 'Snack', 
               time: '05:00 PM', 
-              items: `Roasted chana (approx. ${Math.round(snackC * 1.5)}g) with 1 cup double-toned milk (or soy/almond milk) and ${Math.round(snackF * 2)}g walnuts.`, 
+              items: `Roasted chickpeas (approx. ${Math.round(snackC * 1.5)}g) with 1 cup skimmed milk (or almond milk) and ${Math.round(snackF * 2)}g walnuts.`, 
               calories: snackCal, protein: snackP, carbs: snackC, fat: snackF 
             },
             { 
               name: 'Dinner', 
               time: '08:30 PM', 
-              items: `Whole wheat chapati (${Math.max(1, Math.round(dinnerC / 20))} pcs) served with mixed vegetable subji, boiled green peas (100g), and thick curd (approx. ${Math.round(dinnerP * 4.5)}g).`, 
+              items: `Whole wheat flatbread (${Math.max(1, Math.round(dinnerC / 20))} pcs) served with Mixed Vegetable Curry, boiled green peas (100g), and thick yogurt (approx. ${Math.round(dinnerP * 4.5)}g).`, 
               calories: dinnerCal, protein: dinnerP, carbs: dinnerC, fat: dinnerF 
             }
           ]
@@ -220,25 +239,25 @@ export const generateFreeDietPlan = async (req, res) => {
             { 
               name: 'Breakfast', 
               time: '08:30 AM', 
-              items: `Egg bhurji made of ${Math.max(2, Math.round(breakP / 6))} egg whites and 1 whole egg, served with whole wheat toast (${Math.max(1, Math.round(breakC / 15))} slices) and grilled spinach.`, 
+              items: `Scrambled Eggs (Indian Style) made of ${Math.max(2, Math.round(breakP / 6))} egg whites and 1 whole egg, served with whole wheat toast (${Math.max(1, Math.round(breakC / 15))} slices) and grilled spinach.`, 
               calories: breakCal, protein: breakP, carbs: breakC, fat: breakF 
             },
             { 
               name: 'Lunch', 
               time: '01:30 PM', 
-              items: `Steamed Basmati Rice (approx. ${Math.round(lunchC * 3)}g cooked) with homestyle Chicken Curry (approx. ${Math.round(lunchP * 3.2)}g chicken breast cooked in olive oil) and cucumber raita.`, 
+              items: `Steamed Basmati Rice (approx. ${Math.round(lunchC * 3)}g cooked) with homestyle Chicken Curry (approx. ${Math.round(lunchP * 3.2)}g chicken breast cooked in olive oil) and Cucumber Yogurt Dip.`, 
               calories: lunchCal, protein: lunchP, carbs: lunchC, fat: lunchF 
             },
             { 
               name: 'Snack', 
               time: '05:00 PM', 
-              items: `Boiled egg white salad (${Math.max(2, Math.round(snackP / 4))} egg whites) seasoned with black pepper, chat masala, and served with green tea and ${Math.round(snackF * 1.5)}g almonds.`, 
+              items: `Boiled egg white salad (${Math.max(2, Math.round(snackP / 4))} egg whites) seasoned with black pepper, and served with green tea and ${Math.round(snackF * 1.5)}g almonds.`, 
               calories: snackCal, protein: snackP, carbs: snackC, fat: snackF 
             },
             { 
               name: 'Dinner', 
               time: '08:30 PM', 
-              items: `Pan-seared Salmon or surmai fish fillet (approx. ${Math.round(dinnerP * 4.5)}g cooked) served with stir-fried beans, broccoli, and mushrooms.`, 
+              items: `Pan-seared Salmon or King Fish fillet (approx. ${Math.round(dinnerP * 4.5)}g cooked) served with stir-fried beans, broccoli, and mushrooms.`, 
               calories: dinnerCal, protein: dinnerP, carbs: dinnerC, fat: dinnerF 
             }
           ]
@@ -272,13 +291,25 @@ export const generateFreeDietPlan = async (req, res) => {
         }
       }
       
+      // Build days array for fallback
+      const days = []
+      const numDays = isSubscribed ? 7 : 1
+      for (let i = 1; i <= numDays; i++) {
+        days.push({
+          day: `Day ${i}`,
+          meals: mealsList
+        })
+      }
+      
       dietPlan = {
         dailyCalorieTarget: calorieTarget,
         macros: { protein, carbs, fat },
         estimatedBodyFatPercent: estimatedBodyFat || null,
         bodyFatNote: estimatedBodyFat ? `Estimated Navy Body Fat: ${estimatedBodyFat}%. Maintain a clean diet to support goal.` : null,
-        meals: mealsList,
-        closingNote: `This is a dynamically scaled, locally calculated sample plan matching your weight, height, age, and dietary preference.`
+        days: days,
+        closingNote: isSubscribed 
+          ? `This is your dynamically scaled 7-day plan tailored to your weight, height, age, and dietary preference.` 
+          : `This is a dynamically scaled, locally calculated sample plan matching your weight, height, age, and dietary preference.`
       }
     }
 
@@ -334,7 +365,7 @@ export const analyzeFoodImage = async (req, res) => {
     const data = matches[2]
 
     const genAI = getGenAI()
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
 
     const prompt = `You are an expert nutritionist and food recognition AI.
 Analyze this image and identify the food. Provide an estimation of the nutritional macros.
@@ -365,82 +396,48 @@ Respond ONLY in this exact JSON format, no markdown, no backticks:
   }
 }
 
-export const analyzeTransformation = async (req, res) => {
+
+
+
+export const logMeal = async (req, res) => {
   try {
-    const { images, goal } = req.body
-    if (!images || !images.front || !goal) {
-      return res.status(400).json({ message: 'Front photo and goal are required.' })
-    }
+    const { name, calories, macros, imageUrl } = req.body
 
-    const frontMatch = images.front.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
-    if (!frontMatch) {
-      return res.status(400).json({ message: 'Invalid front image format.' })
-    }
-    const frontMime = frontMatch[1]
-    const frontData = frontMatch[2]
+    const meal = await MealLog.create({
+      userId: req.user._id,
+      name,
+      calories,
+      macros,
+      imageUrl
+    })
 
-    const genAI = getGenAI()
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
-
-    const prompt = `You are an expert sports medicine doctor, certified personal trainer, and body composition analyst.
-A client has shared their current body photo (front view attached). Their fitness goal is: "${goal}".
-Analyze their visible body composition and generate realistic transformation projections for THREE timelines.
-Respond ONLY in this exact JSON format (no markdown, no backticks):
-{
-  "currentAnalysis": {
-    "estimatedBodyFat": "~18-22%",
-    "bodyType": "Mesomorph / Endomorph",
-    "visibleStrengths": "Good shoulder width, moderate muscle base",
-    "keyAreas": "Midsection, lower body"
-  },
-  "timelines": {
-    "threeMonths": {
-      "label": "3 Months",
-      "projectedBodyFat": "~16-18%",
-      "projectedMuscleMass": "+1-2 kg lean mass",
-      "fatLoss": "-2 to -4%",
-      "keyChanges": "Visible waistline reduction, improved muscle definition in shoulders and arms",
-      "weeklyCalories": 2200,
-      "weeklyProtein": 160,
-      "workoutsPerWeek": 4,
-      "milestones": ["Noticeable waist reduction", "Improved energy", "Better posture"],
-      "motivationNote": "The first 90 days are about building momentum and habits."
-    },
-    "sixMonths": {
-      "label": "6 Months",
-      "projectedBodyFat": "~13-15%",
-      "projectedMuscleMass": "+3-5 kg lean mass",
-      "fatLoss": "-5 to -7%",
-      "keyChanges": "Visible abs beginning, strong arms and chest definition, significantly leaner physique",
-      "weeklyCalories": 2300,
-      "weeklyProtein": 170,
-      "workoutsPerWeek": 5,
-      "milestones": ["Ab definition visible", "Clothes fit differently", "Significant strength gains"],
-      "motivationNote": "Six months of consistency rewrites your physique completely."
-    },
-    "oneYear": {
-      "label": "1 Year",
-      "projectedBodyFat": "~10-12%",
-      "projectedMuscleMass": "+6-9 kg lean mass",
-      "fatLoss": "-8 to -12%",
-      "keyChanges": "Competition-level definition, full muscle separation, athletic V-taper, remarkable overall transformation",
-      "weeklyCalories": 2400,
-      "weeklyProtein": 180,
-      "workoutsPerWeek": 5,
-      "milestones": ["Full physique transformation", "Athletic performance peak", "Lifestyle completely changed"],
-      "motivationNote": "A year from now you will wish you had started today."
-    }
-  }
-}`
-
-    const result = await model.generateContent([prompt, { inlineData: { data: frontData, mimeType: frontMime } }])
-    const text = result.response.text()
-    const cleaned = text.replace(/\`\`\`json|\`\`\`/g, '').trim()
-    const analysis = JSON.parse(cleaned)
-    res.json({ analysis })
-
+    res.status(201).json(meal)
   } catch (error) {
-    console.error('Transformation analysis error:', error)
-    res.status(500).json({ message: 'Failed to analyze transformation.', error: error.toString() })
+    console.error('Error logging meal:', error)
+    res.status(500).json({ message: 'Failed to log meal', error: error.message })
+  }
+}
+
+export const getMealHistory = async (req, res) => {
+  try {
+    const { date } = req.query
+    let query = { userId: req.user._id }
+
+    // Date query vazhi varunnundel aa divasathe data mathram edukkan
+    if (date) {
+      const startDate = new Date(date)
+      startDate.setHours(0, 0, 0, 0)
+      
+      const endDate = new Date(date)
+      endDate.setHours(23, 59, 59, 999)
+
+      query.loggedAt = { $gte: startDate, $lte: endDate }
+    }
+
+    const meals = await MealLog.find(query).sort({ loggedAt: -1 })
+    res.json(meals)
+  } catch (error) {
+    console.error('Error fetching meal history:', error)
+    res.status(500).json({ message: 'Failed to fetch meal history', error: error.message })
   }
 }

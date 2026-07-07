@@ -150,6 +150,7 @@ res.cookie('jwt', token, {
 
 res.json({ 
   message: 'Login successful',
+  token: token, 
   user: {
     _id: user._id,
     name: user.name,

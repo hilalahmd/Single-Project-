@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, User, Mail, Lock, ArrowRight, CheckCircle, ChevronLeft, Dumbbell } from 'lucide-react';
 
 const ClientRegisterPage = () => {
@@ -22,6 +22,15 @@ const ClientRegisterPage = () => {
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState('');
   const [verified, setVerified] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   const fitnessGoals = [
     { id: 'weight-loss', label: 'Weight Loss', desc: 'Burn fat and get lean' },
@@ -77,6 +86,7 @@ const ClientRegisterPage = () => {
   const handleSendOtp = async () => {
     console.log('Sending OTP to:', formData.email);
     setOtpSent(true);
+    setCountdown(30);
   };
 
   const handleVerifyOtp = async () => {
@@ -93,6 +103,7 @@ const ClientRegisterPage = () => {
     console.log('Resending OTP to:', formData.email);
     setOtp('');
     setOtpError('');
+    setCountdown(30);
   };
 
   const handleSubmit = (e) => {
@@ -260,7 +271,11 @@ const ClientRegisterPage = () => {
                 Verify Email
               </button>
               <div className="text-center mt-4">
-                <button onClick={handleResendOtp} className="text-[14px] text-gray-400 hover:text-white transition-colors">Didn't receive it? <span className="text-[#2563EB] font-medium">Resend OTP</span></button>
+                {countdown > 0 ? (
+                  <p className="text-[14px] text-gray-400">Resend OTP in <span className="text-white font-medium">{countdown}s</span></p>
+                ) : (
+                  <button onClick={handleResendOtp} className="text-[14px] text-gray-400 hover:text-white transition-colors">Didn't receive it? <span className="text-[#2563EB] font-medium">Resend OTP</span></button>
+                )}
               </div>
             </>
           )}

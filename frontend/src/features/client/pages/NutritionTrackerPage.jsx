@@ -5,7 +5,7 @@ import Modal from '../../../shared/components/Modal'
 import Toast from '../../../shared/components/Toast'
 
 export default function NutritionTrackerPage() {
-  const today = "Thursday, December 12"
+  const today = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })
 
   // ─── Local State for Meals ───
   const [meals, setMeals] = useState([
@@ -91,7 +91,14 @@ export default function NutritionTrackerPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 relative z-10">
+    <div className="relative max-w-5xl mx-auto min-h-[500px]">
+      {/* Full Bleed Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/95 to-white/100 dark:from-black/80 dark:via-black/85 dark:to-black/90 backdrop-blur-sm"></div>
+      </div>
+
+      <div className="relative z-10 space-y-8">
       <style>
         {`
           @keyframes wave-spin {
@@ -289,11 +296,11 @@ export default function NutritionTrackerPage() {
         </form>
       </Modal>
 
-      {/* Toast Alert */}
       {toastMessage && (
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
       )}
 
+      </div>
     </div>
   )
 }

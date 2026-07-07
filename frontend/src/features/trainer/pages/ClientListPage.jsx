@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, MoreVertical, Activity, Plus, TrendingUp } from 'lucide-react'
+import { Search, MoreVertical, Activity, Plus, TrendingUp, MessageSquare } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function ClientListPage() {
@@ -41,7 +41,6 @@ export default function ClientListPage() {
             className="w-full sm:w-64 bg-[#111827] border border-[#1E293B] rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[#2563EB] transition-colors"
           />
         </div>
-      </div>
 
       {/* Clients Table / List */}
       <div className="bg-[#111827] border border-[#1E293B] rounded-2xl overflow-hidden shadow-sm">
@@ -97,6 +96,13 @@ export default function ClientListPage() {
                         className="px-3 py-1.5 bg-[#2563EB]/10 hover:bg-[#2563EB]/20 text-[#2563EB] border border-[#2563EB]/20 rounded-lg text-[12px] font-bold transition-colors flex items-center gap-1.5"
                       >
                         <Activity size={14} /> Update Plan
+                      </Link>
+                      <Link 
+                        to={`/trainer/chat/${client.id}`}
+                        className="px-3 py-1.5 bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/20 rounded-lg text-[12px] font-bold transition-colors flex items-center gap-1.5"
+                        title="Message Client"
+                      >
+                        <MessageSquare size={14} /> Chat
                       </Link>
                       <button className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-[#1E293B] transition-colors">
                         <MoreVertical size={16} />

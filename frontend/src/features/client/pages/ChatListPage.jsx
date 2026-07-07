@@ -2,19 +2,56 @@ import { useState, useEffect } from 'react'
 import { Search, MessageCircle, Lock } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../../shared/context/AuthContext'
+import API from '../../../shared/utils/api' // API import cheythu
 
 export default function ChatListPage() {
   const [activeChat, setActiveChat] = useState(null)
+  const [chats, setChats] = useState([]) // Puthiya state
   const navigate = useNavigate()
   const location = useLocation()
-  const { role, subscriptionTier } = useAuth()
+  
+  // user data koodi edukkunnu (namukku own id ariyanam)
+  const { user, role, subscriptionTier } = useAuth() 
 
-  // TODO: Replace with real API call to fetch conversations
-  const chats = []
-
-  // Determine base path based on current role's route prefix
   const basePath = location.pathname.startsWith('/trainer') ? '/trainer' : '/dashboard'
   const isFreeClient = role === 'user' && subscriptionTier === 'free'
+
+  // Backend-il ninnum conversations fetch cheyyunnu
+  useEffect(() => {
+    const fetchConversations = async () => {
+      try {
+        const res = await fetch(`${API}/chat/conversations`, {
+          credentials: 'include'
+        })
+        const data = await res.json()
+        
+        if (data.success) {
+          // Backend tharunna data format cheyyunnu
+          const formattedChats = data.data.map(conv => {
+            // Nammal allatha matte aale kandupidikkanam (Chat listil avarude peru kanikkan)
+            const otherPerson = conv.participants.find(p => p._id !== user.id)
+            
+            return {
+              id: otherPerson?._id,
+              name: otherPerson?.name || 'Unknown User',
+              role: otherPerson?.role || 'user',
+              msg: conv.lastMessage ? conv.lastMessage.text : 'No messages yet',
+              time: conv.lastMessage ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+              unread: 0,
+              online: false
+            }
+          })
+          setChats(formattedChats)
+        }
+      } catch (error) {
+        console.error("Failed to load chats:", error)
+      }
+    }
+
+    if (user && !isFreeClient) {
+      fetchConversations()
+    }
+  }, [user, isFreeClient])
 
   return (
     <div className="relative w-full h-[calc(100vh-10rem)] md:h-[calc(100vh-8.5rem)]">
@@ -38,20 +75,20 @@ export default function ChatListPage() {
       )}
 
       {/* Actual Chat Layout */}
-      <div className={`w-full h-full flex border border-[#1E293B] rounded-2xl overflow-hidden bg-[#111827] shadow-sm ${isFreeClient ? 'blur-sm pointer-events-none select-none' : ''}`}>
+      <div className={`w-full h-full flex border border-white/[0.10] border-t-white/[0.15] rounded-[24px] overflow-hidden bg-white/[0.05] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.3)] ${isFreeClient ? 'blur-sm pointer-events-none select-none' : ''}`}>
 
       {/* ── Left Panel: Chat List ── */}
-      <div className={`w-full md:w-[320px] border-r border-[#1E293B] flex flex-col bg-[#0F172A] shrink-0 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`w-full md:w-[320px] border-r border-white/[0.10] flex flex-col bg-black/20 shrink-0 ${activeChat ? 'hidden md:flex' : 'flex'}`}>
         
         {/* Header */}
-        <div className="p-5 border-b border-[#1E293B]">
+        <div className="p-5 border-b border-white/[0.10]">
           <h2 className="text-[20px] font-bold text-white mb-4">Messages</h2>
           <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search conversations..."
-              className="w-full pl-9 pr-3 py-2.5 border border-[#1E293B] rounded-xl text-[13px] bg-[#111827] text-white placeholder-gray-600 focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-all"
+              className="w-full pl-9 pr-3 py-2.5 border border-white/[0.10] rounded-xl text-[13px] bg-white/[0.03] text-white placeholder-gray-400 focus:outline-none focus:border-[#2563EB]/50 focus:ring-1 focus:ring-[#2563EB]/50 transition-all hover:bg-white/[0.05]"
             />
           </div>
         </div>
@@ -65,10 +102,10 @@ export default function ChatListPage() {
                 <button
                   key={c.id}
                   onClick={() => setActiveChat(c.id)}
-                  className={`w-full text-left p-4 flex gap-3 transition-all border-b border-[#1E293B]/50 last:border-0 ${
+                  className={`w-full text-left p-4 flex gap-3 transition-all border-b border-white/[0.05] last:border-0 cursor-pointer ${
                     isActive
-                      ? 'bg-[#2563EB]/10 border-l-2 border-l-[#2563EB]'
-                      : 'hover:bg-[#1E293B]/50'
+                      ? 'bg-white/[0.08] border-l-2 border-l-[#2563EB]'
+                      : 'hover:bg-white/[0.04]'
                   }`}
                 >
                   {/* Avatar */}
@@ -76,9 +113,9 @@ export default function ChatListPage() {
                     <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-[16px] transition-all ${
                       isActive
                         ? 'bg-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.4)]'
-                        : 'bg-[#1E293B] text-gray-300 border border-[#1E293B]'
+                        : 'bg-white/[0.05] border border-white/[0.10] text-gray-300'
                     }`}>
-                      {c.name[0]}
+                      {c.name ? c.name[0] : 'U'}
                     </div>
                     {c.online && (
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0F172A]" />
@@ -121,7 +158,7 @@ export default function ChatListPage() {
       </div>
 
       {/* ── Right Panel ── */}
-      <div className={`flex-1 flex flex-col bg-[#030712] ${!activeChat ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`flex-1 flex flex-col bg-transparent relative ${!activeChat ? 'hidden md:flex' : 'flex'}`}>
         {!activeChat ? (
           /* Empty state */
           <div className="flex-1 flex flex-col items-center justify-center text-gray-500 px-4">
@@ -144,7 +181,7 @@ export default function ChatListPage() {
               {chats.find(c => c.id === activeChat)?.name[0]}
             </div>
             <p className="text-white font-bold text-[16px] mb-1">{chats.find(c => c.id === activeChat)?.name}</p>
-            <p className="text-gray-400 text-[13px] mb-6">{chats.find(c => c.id === activeChat)?.role}</p>
+            <p className="text-gray-400 text-[13px] mb-6 capitalize">{chats.find(c => c.id === activeChat)?.role}</p>
             <button
               onClick={() => navigate(`${basePath}/chat/${activeChat}`)}
               className="px-6 py-3 bg-[#2563EB] hover:bg-blue-500 text-white rounded-xl text-[14px] font-bold transition-all shadow-[0_4px_12px_rgba(37,99,235,0.3)] flex items-center gap-2"

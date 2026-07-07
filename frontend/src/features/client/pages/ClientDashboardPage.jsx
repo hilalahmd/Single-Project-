@@ -1,9 +1,12 @@
-import { Calendar as CalendarIcon, Check, Sparkles, ArrowRight } from 'lucide-react'
+import { useState, useEffect } from 'react' // useEffect puthiyathayi add cheythu
+import { Calendar as CalendarIcon, Check, Sparkles, ArrowRight, Salad, Target, UserCheck, Dumbbell, Flame, TrendingUp, MessageSquare } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../../shared/context/AuthContext'
+import API from '../../../shared/utils/api' // Backend URL edukkan vendi puthiyathayi add cheythu
+
 
 export default function ClientDashboardPage() {
-  const { user } = useAuth()
+  const { user, subscriptionTier } = useAuth()
   
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -15,6 +18,59 @@ export default function ClientDashboardPage() {
 
   const greeting = getGreeting()
   const firstName = user?.name ? user.name.split(' ')[0] : 'User'
+  const isFree = subscriptionTier === 'free'
+  
+  const [todaysWorkout, setTodaysWorkout] = useState([]) 
+  const [workoutTitle, setWorkoutTitle] = useState('Rest Day') 
+  const [workoutId, setWorkoutId] = useState(null) // Added to store workout ID
+
+  useEffect(() => {
+    const fetchTodayWorkout = async () => {
+      try {
+        const res = await fetch(`${API}/workouts/today`, {
+          credentials: 'include' 
+        })
+        const data = await res.json()
+
+        if (data.success && data.data) { // Backend returns data.data, not data.workout!
+          setTodaysWorkout(data.data.exercises)
+          setWorkoutTitle(data.data.title)
+          setWorkoutId(data.data._id)
+        }
+      } catch (error) {
+        console.error("Failed to load workout:", error)
+      }
+    }
+    fetchTodayWorkout()
+  }, []) 
+
+  const completedCount = todaysWorkout.filter(ex => ex.isCompleted).length
+  const totalCount = todaysWorkout.length
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+  
+  const toggleExercise = async (exerciseId) => {
+    if (!workoutId) return; // Prevent calling if no workout loaded
+
+    try {
+      const res = await fetch(`${API}/workouts/toggle-exercise`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ exerciseId, workoutId }) // Need to send workoutId too
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        setTodaysWorkout(prev => prev.map(ex => 
+          ex._id === exerciseId ? { ...ex, isCompleted: !ex.isCompleted } : ex 
+        ))
+      }
+    } catch (error) {
+      console.error("Toggle failed:", error)
+    }
+  }
+
+
   
   const today = new Date().toLocaleDateString([], {
     weekday: 'long',
@@ -22,217 +78,236 @@ export default function ClientDashboardPage() {
     day: 'numeric'
   })
 
-  const glassCard = "bg-white/5 border border-white/10 rounded-[16px] p-6 transition-all hover:border-white/20"
-  const blueCard = "bg-[#F97316]/10 border border-[#F97316]/30 rounded-[16px] p-6 transition-all"
+  // Medium-Large Premium Card CSS
+  const glassCard = "bg-white/[0.06] backdrop-blur-2xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-2xl md:rounded-[24px] p-6 md:p-8 transition-all hover:bg-white/[0.08]"
+  
+  // Quick Action Btn (Height ~ 96px)
+  const actionBtn = "flex flex-col items-center justify-center gap-2 p-4 h-24 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] transition-all duration-250 ease-out text-white group"
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 relative z-10">
+    <div className="max-w-7xl mx-auto space-y-6 md:space-y-7 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-4 md:pt-6">
       
       {/* Header */}
       <div>
-        <h1 className="text-[32px] font-bold text-white tracking-tight">{greeting}, {firstName}</h1>
-        <p className="text-gray-400 font-medium text-[14px] mt-1">{today} — here's your overview</p>
+        <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight font-['Syne']">{greeting}, {firstName}!</h1>
+        <p className="text-gray-400 font-medium text-sm mt-1">{today} — Let's crush it today.</p>
       </div>
 
-      {/* Top Stats Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className={glassCard}>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Weight</p>
-          <p className="text-[24px] font-bold text-white mb-1">72.4 kg</p>
-          <p className="text-[13px] font-bold text-[#F97316]">-0.3 this week</p>
-        </div>
-        <div className={glassCard}>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Body Fat</p>
-          <p className="text-[24px] font-bold text-white mb-1">18.2%</p>
-          <p className="text-[13px] font-bold text-[#F97316]">-0.4 this week</p>
-        </div>
-        <div className={glassCard}>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Workouts</p>
-          <p className="text-[24px] font-bold text-white mb-1">14</p>
-          <p className="text-[13px] font-bold text-gray-500">this month</p>
-        </div>
-        <div className={blueCard}>
-          <p className="text-[11px] font-bold text-[#F97316] uppercase tracking-wider mb-2">Streak</p>
-          <p className="text-[24px] font-bold text-white mb-1">7 days</p>
-          <p className="text-[13px] font-bold text-[#F97316]/80">personal best</p>
-        </div>
-      </div>
-
-      {/* Second Row Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
-        
-        {/* Today's Calories */}
-        <div className={`${glassCard} flex flex-col`}>
-          <h2 className="text-[20px] font-bold text-white mb-8">Today's Calories</h2>
-          
-          <div className="flex-1 flex flex-col items-center justify-center mb-10">
-            <div className="relative w-40 h-40 flex items-center justify-center">
-              {/* SVG Circle Chart Mock */}
-              <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-                <circle cx="80" cy="80" r="70" className="stroke-white/10" strokeWidth="16" fill="none" />
-                <circle cx="80" cy="80" r="70" className="stroke-[#F97316]" strokeWidth="16" strokeDasharray="440" strokeDashoffset="140" fill="none" strokeLinecap="round" />
-              </svg>
-              <div className="text-center mt-1">
-                <p className="text-[28px] font-bold text-white">1,360</p>
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">of 2,000 kcal</p>
-              </div>
+      {isFree ? (
+        // ── FREE USER VIEW ──
+        <div className="space-y-6 md:space-y-7">
+          <div className="p-6 md:p-8 rounded-[24px] bg-gradient-to-br from-[#F97316]/10 to-transparent border border-[#F97316]/20 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#F97316]/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/4" />
+            <div className="relative z-10 max-w-lg">
+              <h2 className="text-2xl font-black text-white font-['Syne'] mb-2">Welcome to FitForge</h2>
+              <p className="text-gray-300 text-sm leading-relaxed mb-6">Your personal fitness journey starts here. Explore powerful tools designed to get you moving.</p>
+              <Link to="/plans" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold rounded-full text-sm transition-colors shadow-md shadow-[#F97316]/10">
+                Unlock Premium Coaching <ArrowRight size={16} />
+              </Link>
             </div>
           </div>
 
-          {/* Macros */}
-          <div className="flex justify-between px-2 pt-6 border-t border-white/10">
-            <div className="text-center">
-              <div className="w-12 h-1.5 bg-[#F97316] rounded-full mb-3 mx-auto shadow-sm"></div>
-              <p className="text-[16px] font-bold text-white">98g</p>
-              <p className="text-[12px] text-gray-400 font-bold mt-1">Protein</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-1.5 bg-[#F97316]/70 rounded-full mb-3 mx-auto shadow-sm"></div>
-              <p className="text-[16px] font-bold text-white">156g</p>
-              <p className="text-[12px] text-gray-400 font-bold mt-1">Carbs</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-1.5 bg-[#F97316]/40 rounded-full mb-3 mx-auto shadow-sm"></div>
-              <p className="text-[16px] font-bold text-white">42g</p>
-              <p className="text-[12px] text-gray-400 font-bold mt-1">Fat</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Today's Workout */}
-        <div className={`${glassCard} flex flex-col`}>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-[20px] font-bold text-white">Today's Workout</h2>
-            <span className="px-3 py-1 bg-[#F97316]/20 text-[#F97316] text-[11px] font-bold rounded-full uppercase tracking-wider border border-[#F97316]/30">Upper Body</span>
-          </div>
-          
-          <div className="space-y-5 mb-8 flex-1">
-            {[
-              { name: 'Bench Press', sets: '4x8', done: true },
-              { name: 'Pull-ups', sets: '3x10', done: true },
-              { name: 'OHP', sets: '3x8', done: false },
-              { name: 'Lateral Raises', sets: '3x15', done: false },
-              { name: 'Face Pulls', sets: '3x20', done: false }
-            ].map((ex, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center border transition-all ${
-                    ex.done ? 'bg-[#F97316] border-[#F97316] text-white shadow-sm' : 'border-white/20 bg-transparent'
-                  }`}>
-                    {ex.done && <Check size={14} strokeWidth={4} />}
-                  </div>
-                  <span className={`text-[15px] font-bold ${ex.done ? 'text-gray-500 line-through' : 'text-white'}`}>
-                    {ex.name}
-                  </span>
-                </div>
-                <span className="text-[13px] text-gray-400 font-bold">{ex.sets}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="pt-6 border-t border-white/10">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[12px] text-gray-400 font-bold uppercase tracking-wider">Progress</span>
-              <span className="text-[12px] text-[#F97316] font-bold">2 / 5 done</span>
-            </div>
-            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-              <div className="w-2/5 h-full bg-[#F97316] rounded-full"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Upcoming Sessions */}
-        <div className={glassCard}>
-          <h2 className="text-[20px] font-bold text-white mb-8">Upcoming Sessions</h2>
-          <div className="space-y-6">
-            {[
-              { title: 'Strength with Alex Chen', time: 'Today, 6:00 PM · 60 min', active: true },
-              { title: 'HIIT with Alex Chen', time: 'Sat Dec 14, 9:00 AM · 45 min', active: false },
-              { title: 'Strength with Alex Chen', time: 'Mon Dec 16, 6:00 PM · 60 min', active: false }
-            ].map((s, i) => (
-              <div key={i} className="flex items-start gap-5">
-                <div className={`w-12 h-12 rounded-[10px] flex items-center justify-center shrink-0 ${s.active ? 'bg-[#F97316]/20 text-[#F97316]' : 'bg-white/5 text-gray-500 border border-white/10'}`}>
-                  <CalendarIcon size={20} />
+          <div>
+            <h3 className="text-lg font-bold text-white mb-4 font-['Syne']">Quick Actions</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              
+              <Link to="/free-diet-plan" className="group flex items-center gap-4 p-5 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] hover:border-[#10b981]/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] transition-all duration-250 ease-out">
+                <div className="w-10 h-10 rounded-full bg-[#10b981]/15 backdrop-blur-md border border-[#10b981]/20 flex items-center justify-center shrink-0">
+                  <Salad size={18} className="text-[#10b981]" />
                 </div>
                 <div>
-                  <p className={`font-bold text-[15px] leading-tight mb-1.5 ${s.active ? 'text-white' : 'text-gray-400'}`}>{s.title}</p>
-                  <p className={`text-[13px] font-bold ${s.active ? 'text-[#F97316]' : 'text-gray-500'}`}>{s.time}</p>
+                  <h4 className="font-bold text-sm text-white group-hover:text-[#10b981] transition-colors">Diet Plan</h4>
+                  <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">Free nutrition strategy</p>
+                </div>
+              </Link>
+
+              <Link to="/dashboard/profile" className="group flex items-center gap-4 p-5 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] hover:border-[#3b82f6]/40 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all duration-250 ease-out">
+                <div className="w-10 h-10 rounded-full bg-[#3b82f6]/15 backdrop-blur-md border border-[#3b82f6]/20 flex items-center justify-center shrink-0">
+                  <Target size={18} className="text-[#3b82f6]" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-white group-hover:text-[#3b82f6] transition-colors">Set Goal</h4>
+                  <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">Update body metrics</p>
+                </div>
+              </Link>
+
+              <Link to="/trainers" className="group flex items-center gap-4 p-5 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] hover:border-[#a855f7]/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)] transition-all duration-250 ease-out">
+                <div className="w-10 h-10 rounded-full bg-[#a855f7]/15 backdrop-blur-md border border-[#a855f7]/20 flex items-center justify-center shrink-0">
+                  <UserCheck size={18} className="text-[#a855f7]" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-white group-hover:text-[#a855f7] transition-colors">Find Coach</h4>
+                  <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">Browse top trainers</p>
+                </div>
+              </Link>
+
+              <Link to="/transform-preview" className="group flex items-center gap-4 p-5 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] hover:border-[#F97316]/40 hover:shadow-[0_0_30px_rgba(249,115,22,0.2)] transition-all duration-250 ease-out">
+                <div className="w-10 h-10 rounded-full bg-[#F97316]/15 backdrop-blur-md border border-[#F97316]/20 flex items-center justify-center shrink-0">
+                  <Sparkles size={18} className="text-[#F97316]" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm text-white group-hover:text-[#F97316] transition-colors">AI Preview</h4>
+                  <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">See future physique</p>
+                </div>
+              </Link>
+
+            </div>
+          </div>
+        </div>
+      ) : (
+        // ── PREMIUM USER VIEW ──
+        <div className="space-y-6 md:space-y-7">
+          
+          {/* Quick Actions Grid (Medium Height) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link to="/dashboard/plans" className={`${actionBtn} hover:border-[#3b82f6]/40 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]`}>
+              <div className="w-10 h-10 rounded-full bg-[#3b82f6]/15 backdrop-blur-md border border-[#3b82f6]/20 flex items-center justify-center group-hover:bg-[#3b82f6]/25 transition-colors">
+                <Dumbbell size={18} className="text-[#3b82f6]" />
+              </div>
+              <span className="text-sm font-bold">Start Workout</span>
+            </Link>
+            <Link to="/dashboard/food-ai" className={`${actionBtn} hover:border-[#10b981]/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)]`}>
+              <div className="w-10 h-10 rounded-full bg-[#10b981]/15 backdrop-blur-md border border-[#10b981]/20 flex items-center justify-center group-hover:bg-[#10b981]/25 transition-colors">
+                <Salad size={18} className="text-[#10b981]" />
+              </div>
+              <span className="text-sm font-bold">Log Meal (AI)</span>
+            </Link>
+            <Link 
+              to={user?.assignedTrainer ? `/dashboard/chat/${user.assignedTrainer._id || user.assignedTrainer}` : '/dashboard/chat'} 
+              className={`${actionBtn} hover:border-[#a855f7]/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]`}
+            >
+              <div className="w-10 h-10 rounded-full bg-[#a855f7]/15 backdrop-blur-md border border-[#a855f7]/20 flex items-center justify-center group-hover:bg-[#a855f7]/25 transition-colors">
+                <MessageSquare size={18} className="text-[#a855f7]" />
+              </div>
+              <span className="text-sm font-bold">Message Coach</span>
+            </Link>
+            <Link to="/dashboard/progress" className={`${actionBtn} hover:border-[#F97316]/40 hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]`}>
+              <div className="w-10 h-10 rounded-full bg-[#F97316]/15 backdrop-blur-md border border-[#F97316]/20 flex items-center justify-center group-hover:bg-[#F97316]/25 transition-colors">
+                <TrendingUp size={18} className="text-[#F97316]" />
+              </div>
+              <span className="text-sm font-bold">Log Weight</span>
+            </Link>
+          </div>
+
+          {/* Main Dashboard Grid */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            
+            {/* Today's Workout */}
+            <div className={`${glassCard} lg:col-span-2 flex flex-col relative overflow-hidden`}>
+              <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-[#3b82f6]/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="flex flex-col mb-5 relative z-10 gap-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-white font-['Syne']">Today's Workout</h2>
+                  <span className="px-3 py-1 bg-[#3b82f6]/10 text-[#3b82f6] text-[11px] font-bold rounded-md uppercase tracking-wider border border-[#3b82f6]/20">
+                    Upper Body
+                  </span>
+                </div>
+                {/* Progress Bar */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-[#3b82f6] transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
+                  </div>
+                  <span className="text-xs font-bold text-gray-400">{progressPercent}%</span>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Third Row: Weekly Calorie Intake (Mocked Chart) */}
-      <div className={`${glassCard} relative overflow-hidden`}>
-        <h2 className="text-[20px] font-bold text-white mb-8">Weekly Calorie Intake</h2>
-        
-        <div className="h-64 relative w-full flex items-end">
-          {/* Y Axis labels */}
-          <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[12px] font-bold text-gray-500 py-2">
-            <span>2500</span>
-            <span>2250</span>
-            <span>2000</span>
-            <span>1750</span>
-          </div>
-
-          {/* Grid lines */}
-          <div className="absolute left-14 right-0 top-0 bottom-0 flex flex-col justify-between py-3">
-            <div className="w-full border-b border-dashed border-white/10"></div>
-            <div className="w-full border-b border-dashed border-white/10"></div>
-            <div className="w-full border-b border-dashed border-white/10"></div>
-            <div className="w-full border-b border-dashed border-white/10"></div>
-          </div>
-
-          {/* SVG Line Chart Mock */}
-          <div className="absolute left-14 right-0 top-0 bottom-0 px-4">
-             <svg className="w-full h-full drop-shadow-[0_4px_12px_rgba(249,115,22,0.25)]" viewBox="0 0 1000 200" preserveAspectRatio="none">
-               <path 
-                 d="M0,150 C100,100 200,90 300,100 C400,120 500,140 600,110 C700,70 800,160 900,120 L1000,150" 
-                 fill="none" 
-                 stroke="#F97316" 
-                 strokeWidth="4" 
-                 strokeLinecap="round"
-               />
-               <circle cx="250" cy="95" r="6" fill="#F97316" stroke="#07080C" strokeWidth="3" />
-             </svg>
-             {/* Tooltip mockup */}
-             <div className="absolute left-[20%] top-[30%] bg-[#1E293B] border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.4)] rounded-[10px] p-3 px-4 z-10">
-               <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Tue</p>
-               <p className="text-[14px] font-bold text-white">2,100 kcal</p>
-             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* AI Transform Preview Banner */}
-      <Link
-        to="/transform-preview"
-        className="block group relative overflow-hidden rounded-[20px] border border-[#F97316]/30 bg-gradient-to-r from-[#F97316]/10 via-[#F97316]/5 to-transparent hover:from-[#F97316]/20 hover:border-[#F97316]/50 transition-all duration-300 p-7"
-      >
-        {/* Glow orb */}
-        <div className="absolute right-0 top-0 w-64 h-64 bg-[#F97316]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 group-hover:bg-[#F97316]/20 transition-all duration-500" />
-        
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-[#F97316]/20 border border-[#F97316]/30 flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-[0_0_24px_rgba(249,115,22,0.4)] transition-all duration-300">
-              <Sparkles size={26} className="text-[#F97316]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#F97316] bg-[#F97316]/10 border border-[#F97316]/20 px-2 py-0.5 rounded-full">AI Preview</span>
+              
+              <div className="space-y-3 mb-5 flex-1 relative z-10">
+                {todaysWorkout.length === 0 ? (
+                  <p className="text-gray-400 text-sm text-center py-4">No exercises for today! Take a rest.</p>
+                ) : (
+                  todaysWorkout.map((ex) => (
+                    <div key={ex._id} onClick={() => toggleExercise(ex._id)} className={`flex items-center justify-between p-3.5 px-4 rounded-xl border transition-all duration-300 cursor-pointer ${
+                      ex.isCompleted ? 'bg-[#3b82f6]/5 border-[#3b82f6]/20 opacity-50' : 'bg-[#111318]/50 border-white/[0.04] hover:bg-white/[0.04]'
+                    }`}>
+                      <div className="flex items-center gap-4">
+                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-all duration-300 ${
+                          ex.isCompleted ? 'bg-[#3b82f6] border-[#3b82f6] text-white scale-110' : 'border-white/20'
+                        }`}>
+                          {ex.isCompleted && <Check size={14} strokeWidth={4} />}
+                        </div>
+                        <span className={`text-[15px] font-bold transition-colors ${ex.isCompleted ? 'text-gray-500 line-through' : 'text-white'}`}>
+                          {ex.name}
+                        </span>
+                      </div>
+                      <span className={`text-[13px] font-medium transition-colors ${ex.isCompleted ? 'text-gray-600' : 'text-gray-400'}`}>{ex.sets}</span>
+                    </div>
+                  ))
+                )}
               </div>
-              <h2 className="text-[20px] font-bold text-white leading-tight">See Your Transformation Before You Start</h2>
-              <p className="text-[13px] text-gray-400 mt-1">Upload 4 quick photos, pick your goal, and let AI generate a hyper-realistic physique preview.</p>
             </div>
+
+            {/* Macros & Streaks */}
+            <div className="space-y-6 flex flex-col">
+              {/* Macros Summary */}
+              <div className={`${glassCard} flex-1 flex flex-col justify-center`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-white font-['Syne']">Nutrition</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-500">Sample</span>
+                </div>
+                <div className="flex items-center justify-between mb-5 opacity-60">
+                  <div>
+                    <p className="text-3xl font-bold text-white tracking-tight">1,360</p>
+                    <p className="text-[11px] text-gray-400 uppercase tracking-widest font-bold mt-1">kcal eaten</p>
+                  </div>
+                  <div className="w-14 h-14 rounded-full border-[4px] border-[#10b981]/80 flex items-center justify-center bg-[#10b981]/5">
+                    <span className="text-xs font-bold text-[#10b981]">68%</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3 opacity-60">
+                  <div className="bg-[#111318]/50 p-2.5 rounded-xl border border-white/[0.04] text-center">
+                    <p className="text-[14px] font-bold text-white">98g</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Pro</p>
+                  </div>
+                  <div className="bg-[#111318]/50 p-2.5 rounded-xl border border-white/[0.04] text-center">
+                    <p className="text-[14px] font-bold text-white">156g</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Carb</p>
+                  </div>
+                  <div className="bg-[#111318]/50 p-2.5 rounded-xl border border-white/[0.04] text-center">
+                    <p className="text-[14px] font-bold text-white">42g</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Fat</p>
+                  </div>
+                </div>
+                <Link to="/dashboard/nutrition" className="mt-4 text-[11px] font-bold text-[#10b981] hover:text-[#34d399] transition-colors flex items-center gap-1">
+                  Log today's meals <span aria-hidden>→</span>
+                </Link>
+              </div>
+
+              {/* Streak */}
+              <div className="bg-gradient-to-r from-[#F97316]/90 to-[#ea580c] rounded-[24px] p-5 relative overflow-hidden shadow-sm shadow-[#F97316]/10 flex items-center justify-between">
+                <Flame size={80} className="absolute right-[-15px] top-[5px] text-white/10 pointer-events-none" />
+                <div className="relative z-10">
+                  <p className="text-[11px] font-bold text-white/80 uppercase tracking-widest mb-1">Current Streak</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-white font-['Syne'] leading-none">7</span>
+                    <span className="text-white/90 text-sm font-bold">days</span>
+                  </div>
+                  <p className="text-[10px] text-white/50 mt-1">(demo — not tracked yet)</p>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <div className="shrink-0 ml-6 flex items-center gap-2 text-[#F97316] font-bold text-[14px] group-hover:translate-x-1 transition-transform duration-300">
-            <span className="hidden sm:block">Try Now</span>
-            <ArrowRight size={20} />
+
+          {/* Upcoming Session */}
+          <div className="bg-white/[0.06] backdrop-blur-2xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-[24px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden">
+            <div className="absolute left-[-20px] bottom-[-20px] w-48 h-48 bg-[#a855f7]/5 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex items-center gap-5 relative z-10 w-full md:w-auto">
+              <div className="w-12 h-12 rounded-2xl bg-[#a855f7]/10 text-[#a855f7] flex items-center justify-center shrink-0 border border-[#a855f7]/20">
+                <CalendarIcon size={20} />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-[#a855f7] uppercase tracking-widest mb-1">Next Session</p>
+                <h3 className="text-lg font-bold text-white leading-tight font-['Syne']">Strength with Alex Chen</h3>
+                <p className="text-sm text-gray-400 mt-0.5">Today, 6:00 PM (60 min)</p>
+              </div>
+            </div>
+            <Link to="/dashboard/coach" className="w-full md:w-auto px-6 py-3 bg-[#a855f7]/10 hover:bg-[#a855f7]/20 text-[#a855f7] rounded-xl font-bold text-sm transition-colors text-center border border-[#a855f7]/20 relative z-10 whitespace-nowrap">
+              Join Session
+            </Link>
           </div>
+
         </div>
-      </Link>
+      )}
 
     </div>
   )

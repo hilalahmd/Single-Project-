@@ -19,7 +19,7 @@ export default function SubscriptionPlansPage() {
   const pricing = {
     free: { mo: 0, yr: 0 },
     wellness: { mo: 999, yr: 999 * 12 * 0.8 },
-    pt: { mo: 2499, yr: 2499 * 12 * 0.8 }
+    personal_training: { mo: 2499, yr: 2499 * 12 * 0.8 }
   }
 
   const handleSelectPlan = (planName) => {
@@ -117,7 +117,7 @@ export default function SubscriptionPlansPage() {
         <div className="bg-[#0f1117] rounded-[20px] p-[1px] flex flex-col relative z-10 shadow-xl group hover:shadow-[0_0_30px_rgba(255,107,26,0.1)] transition-all bg-gradient-to-br from-[rgba(255,255,255,0.15)] via-transparent to-[rgba(255,107,26,0.2)]">
           <div className="bg-[#0f1117] rounded-[19px] p-8 flex flex-col h-full border border-[rgba(255,255,255,0.02)]">
             <h3 className="text-[22px] font-bold mb-2 text-white">Personal Training</h3>
-            <div className="mb-6"><span className="text-[40px] font-black text-white font-['Syne']">₹{Math.round(isAnnual ? pricing.pt.yr : pricing.pt.mo)}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
+            <div className="mb-6"><span className="text-[40px] font-black text-white font-['Syne']">₹{Math.round(isAnnual ? pricing.personal_training.yr : pricing.personal_training.mo)}</span><span className="text-gray-500 font-medium">/{isAnnual ? 'year' : 'month'}</span></div>
             <p className="text-[14px] text-gray-400 mb-8 border-b border-[rgba(255,255,255,0.08)] pb-8">Premium 1-on-1 coaching for guaranteed results.</p>
             <ul className="space-y-4 mb-8 flex-1">
               <li className="flex items-start gap-3 text-white font-bold text-[14px]"><Check size={20} strokeWidth={2.5} className="shrink-0 text-[#ff6b1a]" />Everything in Wellness</li>
@@ -128,7 +128,7 @@ export default function SubscriptionPlansPage() {
             </ul>
             <button 
               className="w-full py-4 border-2 border-[rgba(255,255,255,0.1)] bg-white/5 text-white text-[15px] font-bold rounded-full group-hover:border-[#ff6b1a]/50 transition-colors uppercase tracking-wide cursor-pointer" 
-              onClick={() => handleSelectPlan('pt')}
+              onClick={() => handleSelectPlan('personal_training')}
             >
               Choose PT
             </button>
