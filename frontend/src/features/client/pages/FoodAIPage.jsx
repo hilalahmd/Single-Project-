@@ -1,8 +1,27 @@
 import { useState, useRef, useEffect } from 'react'
-import { Camera, Image as ImageIcon, RotateCcw, Lock, AlertCircle, Upload, Edit2, Info } from 'lucide-react'
+import { Camera, Image as ImageIcon, RotateCcw, Lock, AlertCircle, Upload, Edit2, Info, Sparkles, UtensilsCrossed } from 'lucide-react'
 import { useAuth } from '../../../shared/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import API from '../../../shared/utils/api'
+import { addMealItem } from '../services/nutrition.service'
+
+// ─── Animated macro bar (grows from 0 on mount) ─────────────────────────────
+function AIMacroBar({ label, value, max, color, gradientTo, delay = 0 }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0
+  const [animated, setAnimated] = useState(false)
+  useEffect(() => { const t = setTimeout(() => setAnimated(true), delay); return () => clearTimeout(t) }, [delay])
+  return (
+    <div className="flex items-center gap-4">
+      <span className="text-gray-400 text-[13px] font-medium w-16">{label}</span>
+      <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}
+        role="progressbar" aria-valuenow={value} aria-label={`${label}: ${value}g`}>
+        <div className="h-full rounded-full transition-all duration-1000 ease-out"
+          style={{ width: animated ? `${pct}%` : '0%', background: `linear-gradient(90deg, ${color}, ${gradientTo})`, boxShadow: `0 0 8px ${color}60` }} />
+      </div>
+      <span className="text-white font-bold text-sm w-10 text-right">{value || 0}g</span>
+    </div>
+  )
+}
 
 export default function FoodAIPage() {
   const navigate = useNavigate()
@@ -15,6 +34,7 @@ export default function FoodAIPage() {
   const [error, setError] = useState(null)
   const [loggedMeals, setLoggedMeals] = useState([])
   const [dragOver, setDragOver] = useState(false)
+  const [selectedMealIndex, setSelectedMealIndex] = useState("1") // Default to Lunch
 
   const isFreeClient = role === 'user' && subscriptionTier === 'free'
 
@@ -101,6 +121,18 @@ export default function FoodAIPage() {
 
       const savedMeal = await res.json()
       setLoggedMeals(prev => [savedMeal, ...prev])
+
+      // Save to Nutrition Tracker
+      const dateString = new Date().toLocaleDateString('en-CA')
+      const nutritionItem = {
+        name: result.name || 'Unknown Meal',
+        calories: result.calories,
+        protein: result.macros?.protein || 0,
+        carbs: result.macros?.carbs || 0,
+        fat: result.macros?.fat || 0
+      }
+      await addMealItem(dateString, Number(selectedMealIndex), nutritionItem)
+
       handleReset()
     } catch (err) {
       setError(err.message)
@@ -111,241 +143,440 @@ export default function FoodAIPage() {
   const maxMacro = result ? Math.max(result.macros?.carbs || 0, result.macros?.protein || 0, result.macros?.fat || 0, 1) : 1
 
   return (
-    <div className="relative max-w-4xl mx-auto min-h-[500px] pb-24 md:pb-8 pt-8 px-4 font-sans">
-      <div className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0a]"></div>
+    <div className="relative max-w-4xl mx-auto min-h-[500px] pb-16 space-y-6">
+      {/* Ambient glows — same pattern as Nutrition page */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[400px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(196,241,53,0.04) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[300px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.03) 0%, transparent 70%)' }} />
+      </div>
 
-      <style>{`
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes growBar { from { width: 0%; } to { width: var(--target-width); } }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        @keyframes ringPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.35); } 50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); } }
-        @keyframes popIn { 0% { opacity: 0; transform: scale(0.96); } 100% { opacity: 1; transform: scale(1); } }
-        .anim-fade-up { animation: fadeUp 0.45s ease-out both; }
-        .anim-fade-in { animation: fadeIn 0.3s ease-out both; }
-        .anim-pop { animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .anim-bar { animation: growBar 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        .anim-shimmer { background: linear-gradient(90deg, #171717 25%, #1f1f1f 37%, #171717 63%); background-size: 400% 100%; animation: shimmer 1.6s ease-in-out infinite; }
-        .anim-ring-pulse { animation: ringPulse 2s ease-in-out infinite; }
-        .stagger-1 { animation-delay: 0.05s; }
-        .stagger-2 { animation-delay: 0.15s; }
-        .stagger-3 { animation-delay: 0.25s; }
-        .stagger-4 { animation-delay: 0.35s; }
-        .hover-lift { transition: transform 0.2s ease, border-color 0.2s ease; }
-        .hover-lift:hover { transform: translateY(-1px); }
-        .btn-press { transition: transform 0.1s ease; }
-        .btn-press:active { transform: scale(0.97); }
-      `}</style>
+      <div className="relative z-10 space-y-6">
 
-      <div className="relative z-10">
-
+        {/* ── Free tier lock overlay ── */}
         {isFreeClient && (
-          <div className="absolute inset-0 z-50 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 rounded-2xl border border-white/5 anim-fade-in">
-            <div className="w-16 h-16 rounded-full bg-[#F97316]/10 border border-[#F97316]/20 flex items-center justify-center mb-4 text-[#F97316] shadow-[0_0_20px_rgba(249,115,22,0.2)] animate-pulse">
-              <Lock size={28} />
+          <div className="absolute inset-0 z-50 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 rounded-[20px]"
+            style={{ background: 'rgba(10,10,11,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-5"
+              style={{ background: 'rgba(196,241,53,0.08)', border: '1px solid rgba(196,241,53,0.2)', boxShadow: '0 0 30px rgba(196,241,53,0.1)' }}>
+              <Lock size={26} style={{ color: '#C4F135' }} className="glow-pulse" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">AI Food Analyzer Locked</h3>
-            <p className="text-sm text-gray-400 max-w-sm mb-6 leading-relaxed">
-              Upgrade to a premium plan to unlock instant nutritional macro breakdowns.
+            <h3 className="text-xl font-black text-white mb-2 font-['Syne']">AI Food Analyzer Locked</h3>
+            <p className="text-sm text-gray-400 max-w-xs mb-7 leading-relaxed">
+              Upgrade to a premium plan to unlock instant AI-powered nutritional macro breakdowns.
             </p>
-            <button onClick={() => navigate('/plans')} className="btn-press px-6 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold transition-colors hover:bg-blue-500">
+            <button
+              onClick={() => navigate('/plans')}
+              className="px-7 py-3 rounded-full text-sm font-black transition-all active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #C4F135, #a3d625)', color: '#0a0a0b', boxShadow: '0 4px 20px rgba(196,241,53,0.3)' }}
+            >
               Upgrade Plan
             </button>
           </div>
         )}
 
-        <div className={`space-y-8 ${isFreeClient ? 'blur-sm pointer-events-none select-none' : ''}`}>
+        <div className={`space-y-6 ${isFreeClient ? 'blur-sm pointer-events-none select-none' : ''}`}>
 
-          <header className="mb-2 anim-fade-up">
-            <h1 className="text-[28px] font-semibold text-white tracking-tight">AI Food Analysis</h1>
-            <p className="text-[14px] text-gray-400 mt-1">Upload a photo of your meal for an instant macro breakdown.</p>
+          {/* ── Header ── */}
+          <header className="ai-card-1">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: 'rgba(196,241,53,0.12)' }}>
+                <Sparkles size={14} style={{ color: '#C4F135' }} />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#C4F135' }}>AI-Powered</span>
+            </div>
+            <h1 className="text-[28px] font-black text-white tracking-tight font-['Syne']">Food Analysis</h1>
+            <p className="text-gray-500 text-sm mt-1">Upload a photo of your meal for an instant macro breakdown.</p>
           </header>
 
+          {/* ── Error banner ── */}
           {error && (
-            <div className="anim-fade-up bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center gap-3">
-              <AlertCircle size={20} className="shrink-0" />
-              <p className="text-sm font-medium">{error}</p>
+            <div className="ai-card-2 flex items-center gap-3 p-4 rounded-[16px] border"
+              style={{ background: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.2)' }}
+              role="alert">
+              <AlertCircle size={18} className="shrink-0 text-red-400" />
+              <p className="text-red-400 text-sm font-medium">{error}</p>
             </div>
           )}
 
-          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            aria-label="Upload meal photo"
+          />
 
-          {/* 1. Empty Upload State */}
+          {/* ── Upload drop zone ── */}
           {!result && !analyzing && (
             <div
               onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
-              className={`anim-pop bg-[#121212] border border-dashed rounded-[16px] py-12 px-8 flex flex-col items-center justify-center text-center transition-colors duration-200 ${
-                dragOver ? 'border-blue-500 bg-blue-500/5' : 'border-gray-700'
+              className={`ai-card-2 relative rounded-[20px] overflow-hidden transition-all duration-300 ${
+                dragOver ? 'scale-[1.02]' : 'zone-breathe'
               }`}
+              style={{
+                background: dragOver
+                  ? 'linear-gradient(135deg, rgba(196,241,53,0.06) 0%, rgba(196,241,53,0.02) 100%)'
+                  : 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)',
+                border: dragOver
+                  ? '1px solid rgba(196,241,53,0.5)'
+                  : '1px solid rgba(255,255,255,0.08)',
+                boxShadow: dragOver
+                  ? '0 0 30px rgba(196,241,53,0.12), 0 8px 32px rgba(0,0,0,0.3)'
+                  : '0 8px 32px rgba(0,0,0,0.3)',
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label="Drag and drop meal photo or click to upload"
+              onKeyDown={(e) => e.key === 'Enter' && handleUploadClick()}
             >
-              <div className={`w-14 h-14 bg-blue-500/10 rounded-full flex items-center justify-center mb-5 transition-transform duration-300 ${dragOver ? 'scale-110' : ''}`}>
-                <Camera size={26} className="text-blue-500" />
-              </div>
-              <h2 className="text-white font-medium text-lg mb-1.5">Upload a photo of your meal</h2>
-              <p className="text-gray-500 text-[13px] mb-8">JPG or PNG, clear top-down shot works best · drag and drop also works</p>
+              {/* Dashed border overlay — subtle animated border */}
+              <div className="absolute inset-0 rounded-[20px] pointer-events-none" style={{
+                backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,255,255,0.04) 8px, rgba(255,255,255,0.04) 9px), repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(255,255,255,0.04) 8px, rgba(255,255,255,0.04) 9px)`,
+              }} />
 
-              <div className="flex flex-wrap items-center justify-center gap-4 w-full sm:w-auto">
-                <button onClick={handleUploadClick} className="btn-press w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg border border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors text-sm font-medium">
-                  <Upload size={16} /> Choose file
-                </button>
-                <button onClick={handleUploadClick} className="btn-press w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-colors text-sm font-medium">
-                  <Camera size={16} /> Take photo
-                </button>
+              <div className="relative z-10 py-14 px-8 flex flex-col items-center justify-center text-center">
+                {/* Camera icon with glow and float animation */}
+                <div className="relative mb-7">
+                  {/* Glow ring */}
+                  <div className={`absolute inset-0 rounded-full blur-xl transition-opacity duration-500 ${dragOver ? 'opacity-100' : 'opacity-40'}`}
+                    style={{ background: 'radial-gradient(circle, rgba(196,241,53,0.3) 0%, transparent 70%)', transform: 'scale(1.8)' }} />
+                  {/* Icon circle */}
+                  <div
+                    className={`relative w-[72px] h-[72px] rounded-full flex items-center justify-center transition-all duration-300 ${dragOver ? 'scale-110' : 'camera-float'}`}
+                    style={{
+                      background: dragOver
+                        ? 'rgba(196,241,53,0.18)'
+                        : 'rgba(196,241,53,0.08)',
+                      border: `1px solid ${dragOver ? 'rgba(196,241,53,0.5)' : 'rgba(196,241,53,0.2)'}`,
+                      boxShadow: dragOver ? '0 0 24px rgba(196,241,53,0.25)' : '0 0 16px rgba(196,241,53,0.1)',
+                    }}
+                  >
+                    <Camera size={28} style={{ color: '#C4F135' }} />
+                  </div>
+                </div>
+
+                <h2 className="text-xl font-black text-white mb-2 font-['Syne']">
+                  {dragOver ? 'Drop it to analyze!' : 'Upload your meal photo'}
+                </h2>
+                <p className="text-gray-500 text-[13px] mb-8 max-w-xs leading-relaxed">
+                  JPG or PNG · top-down shots work best · or just drag &amp; drop here
+                </p>
+
+                {/* Buttons */}
+                <div className="flex flex-wrap items-center justify-center gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={handleUploadClick}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 rounded-full text-sm font-bold transition-all duration-200 active:scale-95 hover:-translate-y-0.5"
+                    style={{
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      color: '#e5e7eb',
+                      background: 'rgba(255,255,255,0.06)',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}
+                  >
+                    <Upload size={15} /> Choose file
+                  </button>
+                  <button
+                    onClick={handleUploadClick}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 rounded-full text-sm font-black transition-all duration-200 active:scale-95 hover:-translate-y-0.5 group"
+                    style={{
+                      background: 'linear-gradient(135deg, #C4F135, #a3d625)',
+                      color: '#0a0a0b',
+                      boxShadow: '0 4px 20px rgba(196,241,53,0.3)',
+                    }}
+                  >
+                    <Camera size={15} className="group-hover:scale-110 transition-transform duration-200" />
+                    Take photo
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Analyzing Loading State */}
+          {/* ── Analyzing / loading state ── */}
           {analyzing && (
-            <div className="anim-pop bg-[#121212] border border-gray-800 rounded-[16px] py-16 flex flex-col items-center justify-center relative overflow-hidden">
-              {imagePreview && <img src={imagePreview} className="absolute inset-0 w-full h-full object-cover opacity-10 blur-md" />}
-              <div className="w-14 h-14 bg-[#1a1a1a] rounded-full flex items-center justify-center border border-gray-800 relative z-10 shadow-lg mb-4 anim-ring-pulse">
-                <div className="w-6 h-6 border-2 border-gray-700 border-t-blue-500 rounded-full animate-spin" />
+            <div className="ai-card-2 relative rounded-[20px] overflow-hidden"
+              style={{
+                border: '1px solid rgba(196,241,53,0.15)',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
+                boxShadow: '0 0 40px rgba(196,241,53,0.05), 0 8px 32px rgba(0,0,0,0.4)',
+              }}>
+              {/* Blurred photo background */}
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="Meal being analyzed"
+                  className="absolute inset-0 w-full h-full object-cover opacity-[0.07] blur-xl"
+                />
+              )}
+              {/* Shimmer sweep overlay */}
+              <div className="absolute inset-0 shimmer-bg pointer-events-none" />
+
+              <div className="relative z-10 py-16 flex flex-col items-center justify-center text-center gap-5">
+                {/* Spinner with lime ring */}
+                <div className="relative w-16 h-16">
+                  <div className="absolute inset-0 rounded-full"
+                    style={{ border: '1px solid rgba(196,241,53,0.15)' }} />
+                  <div className="absolute inset-[3px] rounded-full"
+                    style={{
+                      border: '2px solid transparent',
+                      borderTopColor: '#C4F135',
+                      borderRightColor: 'rgba(196,241,53,0.3)',
+                      animation: 'analyzeRing 1s linear infinite',
+                    }} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Camera size={22} style={{ color: '#C4F135' }} className="opacity-80" />
+                  </div>
+                </div>
+
+                <div>
+                  <p className="font-black text-white text-[17px] font-['Syne']">Analyzing your meal…</p>
+                  <p className="text-gray-500 text-[13px] mt-1.5">Reading the plate · estimating portions · calculating macros</p>
+                </div>
+
+                {/* Skeleton shimmer lines */}
+                <div className="w-64 space-y-2 mt-2">
+                  <div className="h-2 rounded-full shimmer-bg" style={{ width: '80%', margin: '0 auto' }} />
+                  <div className="h-2 rounded-full shimmer-bg" style={{ width: '60%', margin: '0 auto' }} />
+                  <div className="h-2 rounded-full shimmer-bg" style={{ width: '70%', margin: '0 auto' }} />
+                </div>
               </div>
-              <p className="font-medium text-white text-[15px] relative z-10">Analyzing meal...</p>
-              <p className="text-gray-500 text-[12px] relative z-10 mt-1">Reading the plate, estimating portions</p>
             </div>
           )}
 
-          {/* 2. Results Card (Diagnostic Report Style) */}
+          {/* ── Results card ── */}
           {result && !analyzing && (
-            <div className="anim-pop bg-[#121212] border border-gray-800 rounded-[16px] overflow-hidden shadow-2xl">
+            <div className="result-pop rounded-[20px] overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(196,241,53,0.05)',
+              }}>
 
-              {/* Header Row */}
-              <div className="flex items-center justify-between px-6 py-3.5 border-b border-gray-800 bg-[#171717]">
+              {/* Result header bar */}
+              <div className="flex items-center justify-between px-6 py-3.5"
+                style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
                 <div className="flex items-center gap-2">
                   <span className="relative flex w-1.5 h-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400" />
                   </span>
-                  <span className="text-green-500 text-[10px] font-mono tracking-widest font-bold">FOOD DETECTED</span>
+                  <span className="text-green-400 text-[10px] font-mono tracking-widest font-bold uppercase">Food Detected</span>
                 </div>
-                <span className="text-gray-500 text-[10px] font-mono">ID: {Math.random().toString(36).substring(2, 9).toUpperCase()}</span>
+                <span className="text-gray-600 text-[10px] font-mono">
+                  ID: {Math.random().toString(36).substring(2, 9).toUpperCase()}
+                </span>
               </div>
 
-              <div className="p-6 sm:p-8">
-                {/* Dish Info */}
-                <div className="flex items-center gap-5 mb-8 anim-fade-up stagger-1">
-                  <div className="w-[72px] h-[72px] rounded-xl overflow-hidden bg-gray-800 shrink-0 border border-gray-700">
-                    {imagePreview ? <img src={imagePreview} className="w-full h-full object-cover" /> : <ImageIcon className="text-gray-600 m-auto h-full" />}
+              <div className="p-6 sm:p-8 space-y-7">
+
+                {/* Dish info row */}
+                <div className="flex items-center gap-5 ai-card-1">
+                  <div className="w-[76px] h-[76px] rounded-[16px] overflow-hidden shrink-0"
+                    style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)' }}>
+                    {imagePreview
+                      ? <img src={imagePreview} alt={result.name || 'Meal'} className="w-full h-full object-cover" />
+                      : <ImageIcon className="text-gray-600 m-auto h-full" />}
                   </div>
                   <div>
-                    <h2 className="text-2xl text-white font-medium capitalize mb-1">{result.name || 'Unknown Meal'}</h2>
-                    <p className="text-gray-400 text-[13px]">Visual analysis via AI detection model</p>
+                    <h2 className="text-2xl font-black text-white capitalize leading-tight font-['Syne']">
+                      {result.name || 'Unknown Meal'}
+                    </h2>
+                    <p className="text-gray-500 text-[13px] mt-1">Visual analysis via AI detection model</p>
                   </div>
                 </div>
 
-                {/* Confidence Bar */}
-                <div className="mb-8 anim-fade-up stagger-2">
+                {/* Confidence bar */}
+                <div className="ai-card-2">
                   <div className="flex justify-between items-end mb-2">
-                    <span className="text-gray-500 text-[10px] uppercase font-bold tracking-wider">Analysis Confidence</span>
-                    <span className="text-green-400 text-[11px] font-mono font-bold">92%</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Analysis Confidence</span>
+                    <span className="text-[11px] font-black font-mono" style={{ color: '#C4F135' }}>92%</span>
                   </div>
-                  <div className="w-full h-1 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="anim-bar h-full bg-green-500 rounded-full" style={{ '--target-width': '92%', width: '92%' }}></div>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="h-full rounded-full macro-bar-ai"
+                      style={{ width: '92%', background: 'linear-gradient(90deg, #C4F135, #a3d625)', boxShadow: '0 0 8px rgba(196,241,53,0.4)' }} />
                   </div>
                 </div>
 
-                {/* Macro Section */}
-                <div className="grid md:grid-cols-[1fr_1.5fr] gap-6 mb-6">
-                  {/* Calories Panel */}
-                  <div className="anim-fade-up stagger-2 bg-[#0a0a0a] border border-gray-800/60 rounded-xl p-6 flex flex-col items-center justify-center text-center shadow-inner">
-                    <span className="text-gray-500 text-[10px] uppercase font-bold tracking-wider font-mono mb-2">ESTIMATED ENERGY</span>
+                {/* Macro section */}
+                <div className="grid md:grid-cols-[1fr_1.6fr] gap-5 ai-card-3">
+                  {/* Calorie panel */}
+                  <div className="flex flex-col items-center justify-center py-7 rounded-[16px] text-center"
+                    style={{ background: 'rgba(196,241,53,0.04)', border: '1px solid rgba(196,241,53,0.1)' }}>
+                    <span className="text-[10px] font-bold uppercase tracking-widest mb-2" style={{ color: 'rgba(196,241,53,0.6)' }}>
+                      Estimated Energy
+                    </span>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl text-white font-mono font-medium">{result.calories}</span>
-                      <span className="text-gray-500 text-sm font-mono">kcal</span>
+                      <span className="text-[44px] font-black text-white leading-none font-['Syne']">{result.calories}</span>
+                      <span className="text-gray-500 text-sm font-medium">kcal</span>
                     </div>
                   </div>
 
-                  {/* Macros Panel */}
+                  {/* Macro bars */}
                   <div className="flex flex-col justify-center space-y-4">
-                    <div className="flex items-center gap-4 anim-fade-up stagger-2">
-                      <span className="text-gray-400 text-[13px] font-medium w-16">Carbs</span>
-                      <div className="flex-1 h-1.5 bg-gray-800/80 rounded-full overflow-hidden flex">
-                        <div
-                          className="anim-bar h-full bg-orange-400 rounded-full"
-                          style={{ '--target-width': `${(result.macros?.carbs / maxMacro) * 100}%`, width: `${(result.macros?.carbs / maxMacro) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-white font-mono text-sm w-10 text-right">{result.macros?.carbs || 0}g</span>
-                    </div>
-                    <div className="flex items-center gap-4 anim-fade-up stagger-3">
-                      <span className="text-gray-400 text-[13px] font-medium w-16">Protein</span>
-                      <div className="flex-1 h-1.5 bg-gray-800/80 rounded-full overflow-hidden flex">
-                        <div
-                          className="anim-bar h-full bg-green-500 rounded-full"
-                          style={{ '--target-width': `${(result.macros?.protein / maxMacro) * 100}%`, width: `${(result.macros?.protein / maxMacro) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-white font-mono text-sm w-10 text-right">{result.macros?.protein || 0}g</span>
-                    </div>
-                    <div className="flex items-center gap-4 anim-fade-up stagger-4">
-                      <span className="text-gray-400 text-[13px] font-medium w-16">Fat</span>
-                      <div className="flex-1 h-1.5 bg-gray-800/80 rounded-full overflow-hidden flex">
-                        <div
-                          className="anim-bar h-full bg-amber-500 rounded-full"
-                          style={{ '--target-width': `${(result.macros?.fat / maxMacro) * 100}%`, width: `${(result.macros?.fat / maxMacro) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-white font-mono text-sm w-10 text-right">{result.macros?.fat || 0}g</span>
-                    </div>
+                    <AIMacroBar label="Carbs"   value={result.macros?.carbs   || 0} max={maxMacro} color="#f97316" gradientTo="#fb923c" delay={100} />
+                    <AIMacroBar label="Protein" value={result.macros?.protein || 0} max={maxMacro} color="#22c55e" gradientTo="#4ade80" delay={200} />
+                    <AIMacroBar label="Fat"     value={result.macros?.fat     || 0} max={maxMacro} color="#f59e0b" gradientTo="#fbbf24" delay={300} />
                   </div>
                 </div>
 
-                <div className="anim-fade-up stagger-4 flex items-start gap-2.5 text-gray-400 bg-gray-800/20 p-3.5 rounded-lg border border-gray-800/40 mb-8">
-                  <Info size={15} className="shrink-0 mt-0.5 text-gray-500" />
-                  <p className="text-[12px] leading-relaxed">Multi-dish plates or hidden ingredients (like oils) may be less precise. You can adjust the macros manually if you know the exact preparation.</p>
+                {/* Disclaimer note */}
+                <div className="flex items-start gap-2.5 p-3.5 rounded-[12px] ai-card-4"
+                  style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <Info size={14} className="shrink-0 mt-0.5 text-gray-600" />
+                  <p className="text-[12px] text-gray-500 leading-relaxed">
+                    Multi-dish plates or hidden ingredients (like oils) may be less precise. Adjust macros manually if needed.
+                  </p>
                 </div>
 
-                {/* Button Row */}
-                <div className="anim-fade-up stagger-4 flex flex-wrap sm:flex-nowrap items-center gap-3">
-                  <button onClick={handleReset} className="btn-press flex-1 sm:flex-none px-4 py-2.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors text-[13px] font-medium flex justify-center items-center gap-2">
-                    <RotateCcw size={15} /> Retake
+                {/* Action row */}
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 pt-2 ai-card-4"
+                  style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '1.25rem' }}>
+                  <button
+                    onClick={handleReset}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-bold transition-all duration-200 active:scale-95 hover:-translate-y-0.5"
+                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', background: 'rgba(255,255,255,0.04)' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.09)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                  >
+                    <RotateCcw size={14} /> Retake
                   </button>
-                  <button className="btn-press flex-1 sm:flex-none px-4 py-2.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors text-[13px] font-medium flex justify-center items-center gap-2">
-                    <Edit2 size={15} /> Adjust
+                  <button
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-bold transition-all duration-200 active:scale-95 hover:-translate-y-0.5"
+                    style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', background: 'rgba(255,255,255,0.04)' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.09)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                  >
+                    <Edit2 size={14} /> Adjust
                   </button>
-                  <button onClick={handleLogMeal} className="btn-press w-full sm:w-auto sm:ml-auto px-6 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition-colors text-[13px] font-bold shadow-md">
-                    Log this meal
-                  </button>
+
+                  <div className="w-full sm:w-auto sm:ml-auto flex gap-2">
+                    <select
+                      value={selectedMealIndex}
+                      onChange={(e) => setSelectedMealIndex(e.target.value)}
+                      className="px-3 py-2.5 rounded-full text-[13px] font-bold focus:outline-none transition-all"
+                      style={{
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'white',
+                      }}
+                      aria-label="Select meal slot"
+                    >
+                      <option value="0">Breakfast</option>
+                      <option value="1">Lunch</option>
+                      <option value="2">Dinner</option>
+                      <option value="3">Snacks</option>
+                    </select>
+                    <button
+                      onClick={handleLogMeal}
+                      disabled={analyzing}
+                      className="px-6 py-2.5 rounded-full text-[13px] font-black transition-all duration-200 active:scale-95 hover:-translate-y-0.5 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+                      style={{
+                        background: 'linear-gradient(135deg, #C4F135, #a3d625)',
+                        color: '#0a0a0b',
+                        boxShadow: '0 4px 16px rgba(196,241,53,0.3)',
+                      }}
+                    >
+                      Log this meal
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* 3. Recent Analyses List */}
-          <div className="pt-6 anim-fade-up">
-            <h3 className="text-[16px] font-medium text-white mb-4">Recent Analyses</h3>
-
-            <div className="space-y-2.5">
-              {loggedMeals.length === 0 ? (
-                <div className="p-5 text-center border border-dashed border-gray-800 rounded-xl bg-[#121212]">
-                  <p className="text-gray-500 text-[13px]">No meals logged yet. Analyze and log a meal to see it here.</p>
-                </div>
-              ) : (
-                loggedMeals.map((item, i) => (
-                  <div
-                    key={item._id}
-                    style={{ animationDelay: `${i * 0.05}s` }}
-                    className="anim-fade-up hover-lift flex items-center gap-4 p-3 pr-5 border border-gray-800 rounded-[12px] hover:border-gray-700 bg-[#121212]"
-                  >
-                    <div className="w-12 h-12 rounded-lg bg-gray-800 shrink-0 overflow-hidden border border-gray-700/50">
-                      {item.imageUrl ? <img src={item.imageUrl} className="w-full h-full object-cover" /> : <ImageIcon className="text-gray-600 m-auto h-full" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-white font-medium text-[14px] truncate capitalize">{item.name}</h4>
-                      <p className="text-gray-500 text-[11px] mt-0.5 font-medium">{new Date(item.loggedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {new Date(item.loggedAt).toLocaleDateString()}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-white font-mono font-medium text-[16px] leading-none mb-1">{item.calories}</p>
-                      <p className="text-gray-500 text-[10px] font-mono leading-none">kcal</p>
-                    </div>
-                  </div>
-                ))
+          {/* ── Recent Analyses ── */}
+          <div className="ai-card-4">
+            <div className="flex items-center gap-3 mb-5">
+              <h3 className="text-[16px] font-black text-white">Recent Analyses</h3>
+              {loggedMeals.length > 0 && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                  style={{ color: '#C4F135', background: 'rgba(196,241,53,0.1)', border: '1px solid rgba(196,241,53,0.2)' }}>
+                  {loggedMeals.length}
+                </span>
               )}
             </div>
+
+            {loggedMeals.length === 0 ? (
+              /* Premium empty state */
+              <div className="flex flex-col items-center justify-center py-12 px-6 text-center rounded-[20px]"
+                style={{
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px dashed rgba(255,255,255,0.08)',
+                }}>
+                {/* Empty plate icon */}
+                <div className="relative mb-5">
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <UtensilsCrossed size={26} className="text-gray-600" />
+                  </div>
+                  {/* Small sparkle accent */}
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center"
+                    style={{ background: 'rgba(196,241,53,0.1)', border: '1px solid rgba(196,241,53,0.2)' }}>
+                    <Sparkles size={10} style={{ color: '#C4F135' }} />
+                  </div>
+                </div>
+                <h4 className="text-base font-black text-white mb-1.5">No analyses yet</h4>
+                <p className="text-[13px] text-gray-500 max-w-[220px] leading-relaxed">
+                  Upload a meal photo above — your logged analyses will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {loggedMeals.map((item, i) => (
+                  <div
+                    key={item._id}
+                    style={{ animationDelay: `${i * 0.07}s` }}
+                    className="ai-card-1 flex items-center gap-4 p-3 pr-5 rounded-[14px] transition-all duration-200 hover:-translate-y-0.5 group"
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'
+                      e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'
+                      e.currentTarget.style.boxShadow = 'none'
+                    }}
+                    style={{
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.07)',
+                      animationDelay: `${i * 0.07}s`,
+                    }}
+                  >
+                    {/* Thumbnail */}
+                    <div className="w-12 h-12 rounded-[10px] shrink-0 overflow-hidden"
+                      style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)' }}>
+                      {item.imageUrl
+                        ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                        : <div className="w-full h-full flex items-center justify-center"><ImageIcon size={18} className="text-gray-600" /></div>
+                      }
+                    </div>
+
+                    {/* Meal info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-white font-bold text-[14px] truncate capitalize leading-none mb-1">{item.name}</h4>
+                      <p className="text-gray-600 text-[11px] font-medium">
+                        {new Date(item.loggedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {' · '}
+                        {new Date(item.loggedAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                      </p>
+                    </div>
+
+                    {/* Calorie badge */}
+                    <div className="shrink-0 text-right">
+                      <p className="text-white font-black text-[17px] leading-none">{item.calories}</p>
+                      <p className="text-gray-600 text-[10px] font-bold uppercase tracking-wider mt-0.5">kcal</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </div>
@@ -353,3 +584,4 @@ export default function FoodAIPage() {
     </div>
   )
 }
+

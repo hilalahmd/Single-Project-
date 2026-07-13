@@ -11,11 +11,33 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('fitforge_user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
+    const initAuth = async () => {
+      const storedUser = localStorage.getItem('fitforge_user')
+      if (storedUser) {
+        // Set stored user immediately so UI doesn't flicker
+        setUser(JSON.parse(storedUser))
+      }
+      try {
+        // Always fetch fresh data from DB to get real subscriptionTier
+        const res = await fetch(`${API}/auth/me`, { credentials: 'include' })
+        if (res.ok) {
+          const freshUser = await res.json()
+          // Merge with stored user to preserve any local-only fields
+          const stored = storedUser ? JSON.parse(storedUser) : {}
+          const mergedUser = { ...stored, ...freshUser }
+          setUser(mergedUser)
+          localStorage.setItem('fitforge_user', JSON.stringify(mergedUser))
+        } else {
+          // Token invalid/expired — clear stale data
+          setUser(null)
+          localStorage.removeItem('fitforge_user')
+        }
+      } catch (e) {
+        // Network error — keep localStorage value so app still works offline
+      }
+      setLoading(false)
     }
-    setLoading(false)
+    initAuth()
   }, [])
 
   const register = async (name, email, password, role) => {
@@ -60,9 +82,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('fitforge_user')
   }
 
-  const updateSubscription = (tier) => {
+  const updateSubscription = (tier, userData) => {
     if (user) {
-      const updatedUser = { ...user, subscriptionTier: tier }
+      // If full user data is provided (from assign-trainer API), use it
+      const updatedUser = userData ? { ...userData } : { ...user, subscriptionTier: tier }
       setUser(updatedUser)
       localStorage.setItem('fitforge_user', JSON.stringify(updatedUser))
     }
@@ -70,6 +93,14 @@ export const AuthProvider = ({ children }) => {
 
   const value = useMemo(() => ({
     user,
+    setUser: (newUser) => {
+      setUser(newUser)
+      if (newUser) {
+        localStorage.setItem('fitforge_user', JSON.stringify(newUser))
+      } else {
+        localStorage.removeItem('fitforge_user')
+      }
+    },
     role: user?.role || null,
     subscriptionTier: user?.subscriptionTier || 'free',
     register,

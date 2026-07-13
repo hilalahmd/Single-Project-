@@ -9,6 +9,16 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'trainer', 'wellness_coach', 'admin'],
     default: 'user'
   },
+  adminRole: {
+    type: String,
+    enum: ['Super Admin', 'Support Manager', 'Finance Manager'],
+    // Optional: only used when role is 'admin'
+  },
+  status: {
+    type: String,
+    enum: ['active', 'suspended'],
+    default: 'active'
+  },
   subscriptionTier: {
     type: String,
     enum: ['free', 'wellness', 'personal_training'],
@@ -42,6 +52,8 @@ const userSchema = new mongoose.Schema({
     hip: { type: Number },         // cm
     thigh: { type: Number }        // cm
   },
+
+  assignedTrainer: { type: mongoose.Schema.Types.ObjectId, ref: 'Trainer' },
 
   dietGenerationCount: { type: Number, default: 0 },
   dietGenerationResetDate: { type: Date, default: Date.now },

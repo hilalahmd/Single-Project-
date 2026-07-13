@@ -23,6 +23,12 @@ const planSchema = new mongoose.Schema({
     enum: ['workout', 'diet', 'hybrid'], // Plan type
     default: 'workout'
   },
+  nutritionTargets: {
+    calories: { type: Number },
+    protein: { type: Number },
+    carbs: { type: Number },
+    fat: { type: Number }
+  },
   startDate: {
     type: Date,
     default: Date.now

@@ -7,7 +7,24 @@ const trainerSchema = new mongoose.Schema({
   specialties: [String],
   languagesSpoken: [String],
   certifications: [String],
-  isApproved: { type: Boolean, default: false },
+  profilePhoto: { type: String, default: '' },
+  experience: { type: Number, default: 0 },
+  
+  // Admin Approval Workflow
+  status: { 
+    type: String, 
+    enum: ['pending', 'approved', 'rejected', 'suspended'], 
+    default: 'pending' 
+  },
+  rejectionReason: { type: String, default: '' },
+  reason: { type: String, default: '' }, // For suspension reason
+  approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  approvedAt: { type: Date },
+  reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  reviewedAt: { type: Date },
+  suspendedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  suspendedAt: { type: Date },
+
   pricing: {
     wellnessMonthly: { type: Number, default: 0 },
     personalTrainingMonthly: { type: Number, default: 0 }

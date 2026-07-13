@@ -5,28 +5,42 @@ import API from '../../../shared/utils/api'
 
 export default function AdminDashboardPage() {
   const navigate = useNavigate()
-  const [pendingTrainers, setPendingTrainers] = useState([])
+    const [pendingTrainers, setPendingTrainers] = useState([])
+  const [dashboardStats, setDashboardStats] = useState({
+    totalUsers: 0,
+    activeTrainers: 0,
+    monthlyRevenue: 0,
+    recentRegistrations: []
+  })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchPendingTrainers = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch(`${API}/admin/trainers`, {
-          credentials: 'include'
-        })
-        if (res.ok) {
-          const data = await res.json()
-          const pending = data.filter(t => !t.isApproved)
-          setPendingTrainers(pending)
+        // Fetch both trainers and our new dashboard stats simultaneously
+        const [trainersRes, statsRes] = await Promise.all([
+          fetch(`${API}/admin/trainers`, { credentials: 'include' }),
+          fetch(`${API}/admin/dashboard`, { credentials: 'include' })
+        ])
+
+        if (trainersRes.ok) {
+          const data = await trainersRes.json()
+          setPendingTrainers(data.filter(t => !t.isApproved))
+        }
+
+        if (statsRes.ok) {
+          const statsData = await statsRes.json()
+          setDashboardStats(statsData)
         }
       } catch (err) {
-        console.error("Failed to load trainers for dashboard", err)
+        console.error("Failed to load dashboard data", err)
       } finally {
         setLoading(false)
       }
     }
-    fetchPendingTrainers()
+    fetchData()
   }, [])
+
 
   const handleApprove = async (trainerId) => {
     try {
@@ -42,11 +56,7 @@ export default function AdminDashboardPage() {
     }
   }
 
-  const recentRegistrations = [
-    { id: 1, name: 'Sanjay Kumar', role: 'Client', date: 'Oct 15, 2026', status: 'Active' },
-    { id: 2, name: 'Priya Nair', role: 'Trainer', date: 'Oct 15, 2026', status: 'Pending' },
-    { id: 3, name: 'Arjun Menon', role: 'Trainer', date: 'Oct 14, 2026', status: 'Active' },
-  ]
+   
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -56,12 +66,13 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: 'Total Users', val: '1,240', icon: Users },
-          { label: 'Active Trainers', val: '89', icon: UserCheck },
-          { label: 'Monthly Revenue', val: '₹1,84,000', icon: IndianRupee },
+                 {[
+          { label: 'Total Users', val: loading ? '...' : dashboardStats.totalUsers, icon: Users },
+          { label: 'Active Trainers', val: loading ? '...' : dashboardStats.activeTrainers, icon: UserCheck },
+          { label: 'Monthly Revenue', val: loading ? '...' : `₹${dashboardStats.monthlyRevenue.toLocaleString()}`, icon: IndianRupee },
           { label: 'Pending Approvals', val: loading ? '...' : pendingTrainers.length, icon: Clock },
         ].map((stat, i) => (
+
           <div key={i} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex items-center gap-4">
             <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center shrink-0 border border-gray-200">
               <stat.icon className="text-black" size={24} />
@@ -96,15 +107,15 @@ export default function AdminDashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {recentRegistrations.map((row, i) => (
+                  {dashboardStats.recentRegistrations.map((row, i) => (
                     <tr key={i} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 font-bold text-black">{row.name}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${row.role === 'Trainer' ? 'bg-white border-gray-300 text-gray-700' : 'bg-gray-100 border-gray-200 text-black'}`}>{row.role}</span>
+                        <span className={`px-2.5 py-1 text-xs font-bold rounded-full border capitalize ${row.role === 'trainer' ? 'bg-white border-gray-300 text-gray-700' : 'bg-gray-100 border-gray-200 text-black'}`}>{row.role}</span>
                       </td>
-                      <td className="px-6 py-4 text-gray-600 font-medium">{row.date}</td>
+                      <td className="px-6 py-4 text-gray-600 font-medium">{new Date(row.createdAt).toLocaleDateString()}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${row.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{row.status}</span>
+                        <span className={`px-2.5 py-1 text-xs font-bold rounded-full capitalize ${row.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{row.status}</span>
                       </td>
                     </tr>
                   ))}

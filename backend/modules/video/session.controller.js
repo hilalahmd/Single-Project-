@@ -107,7 +107,7 @@ export const bookSession = async (req, res) => {
 // @access  Private
 export const getMySessions = async (req, res) => {
   try {
-    const query = req.user.role === 'client' 
+    const query = req.user.role === 'user' 
       ? { clientId: req.user.id } 
       : { trainerId: req.user.id }
       

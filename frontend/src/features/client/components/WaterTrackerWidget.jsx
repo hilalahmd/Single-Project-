@@ -1,22 +1,36 @@
 import { useState, useEffect } from 'react'
 import { Plus, Droplet, Edit2, CheckCircle2 } from 'lucide-react'
+import { updateWaterIntake, updateWaterGoal } from '../services/nutrition.service'
 
-export default function WaterTrackerWidget() {
-  const [intake, setIntake] = useState(1250)
-  const [goal, setGoal] = useState(3000)
+export default function WaterTrackerWidget({ dateString, initialIntake = 0, initialGoal = 3000 }) {
+  const [intake, setIntake] = useState(initialIntake)
+  const [goal, setGoal] = useState(initialGoal)
   const [isEditingGoal, setIsEditingGoal] = useState(false)
-  const [tempGoal, setTempGoal] = useState(goal)
+  const [tempGoal, setTempGoal] = useState(initialGoal)
   const [customAmount, setCustomAmount] = useState('')
 
-  const percentage = Math.min((intake / goal) * 100, 100)
+  // Sync state when props change
+  useEffect(() => {
+    setIntake(initialIntake)
+    setGoal(initialGoal)
+    setTempGoal(initialGoal)
+  }, [initialIntake, initialGoal])
+
+  const percentage = goal > 0 ? Math.min((intake / goal) * 100, 100) : 0
   const goalReached = intake >= goal
 
   // For the water clip, viewBox is 0 0 100 240, so height is 240. 
   // 0% filled = y at 240, 100% filled = y at 0
   const fillY = 240 - (percentage / 100) * 240
 
-  const addWater = (amount) => {
-    setIntake(prev => prev + amount)
+  const addWater = async (amount) => {
+    const newIntake = intake + amount
+    setIntake(newIntake)
+    try {
+      if (dateString) await updateWaterIntake(dateString, newIntake)
+    } catch (err) {
+      console.error("Failed to update water intake", err)
+    }
   }
 
   const handleAddCustom = () => {
@@ -27,12 +41,17 @@ export default function WaterTrackerWidget() {
     }
   }
 
-  const saveGoal = () => {
+  const saveGoal = async () => {
     const newGoal = parseInt(tempGoal)
     if (!isNaN(newGoal) && newGoal > 0) {
       setGoal(newGoal)
+      setIsEditingGoal(false)
+      try {
+        if (dateString) await updateWaterGoal(dateString, newGoal)
+      } catch (err) {
+        console.error("Failed to update water goal", err)
+      }
     }
-    setIsEditingGoal(false)
   }
 
   // Removed body shape path for sleek chart design

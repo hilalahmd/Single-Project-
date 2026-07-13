@@ -1,4 +1,5 @@
 import User from '../users/user.model.js'
+import Trainer from '../trainers/trainer.model.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
@@ -135,6 +136,32 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' })
     }
 
+    let trainerData = null
+    // --- Trainer Approval Status Check ---
+    if (user.role === 'trainer' || user.role === 'wellness_coach') {
+      const trainer = await Trainer.findOne({ userId: user._id }).sort({ createdAt: -1 })
+      trainerData = trainer
+      
+      if (!trainer) {
+        // If a trainer has registered a User but hasn't completed Trainer Registration yet,
+        // we DO NOT block them. We need to issue a JWT so they can call /complete-registration.
+        // We will just let them pass. Their trainerStatus will be 'incomplete'.
+      }
+
+      if (trainer && trainer.status === 'pending') {
+        return res.status(403).json({ message: 'Admin approval is pending', status: 'pending' })
+      }
+      
+      if (trainer && trainer.status === 'suspended') {
+        return res.status(403).json({ message: 'Your trainer account has been suspended.', status: 'suspended' })
+      }
+      
+      // If status === 'rejected', we DO NOT block them! 
+      // We allow them to login so the frontend can redirect them to the resubmit page.
+      // (The frontend TrainerLoginPage will check the status and handle the redirect).
+    }
+    // -------------------------------------
+
     const token = jwt.sign(
   { userId: user._id, role: user.role },
   process.env.JWT_SECRET,
@@ -148,6 +175,20 @@ res.cookie('jwt', token, {
   maxAge: 7 * 24 * 60 * 60 * 1000
 })
 
+// Build assignedTrainer data if exists
+let assignedTrainerData = null
+if (user.assignedTrainer) {
+  const Trainer = (await import('../trainers/trainer.model.js')).default
+  const trainer = await Trainer.findById(user.assignedTrainer).populate('userId', 'name email avatar')
+  if (trainer) {
+    assignedTrainerData = {
+      _id: trainer._id,
+      name: trainer.userId?.name || 'Coach',
+      trainerUserId: trainer.userId?._id
+    }
+  }
+}
+
 res.json({ 
   message: 'Login successful',
   token: token, 
@@ -156,8 +197,11 @@ res.json({
     name: user.name,
     email: user.email,
     role: user.role,
-    subscriptionTier: user.subscriptionTier
-  }
+    subscriptionTier: user.subscriptionTier,
+    assignedTrainer: assignedTrainerData,
+    trainerStatus: trainerData ? trainerData.status : null,
+    rejectionReason: trainerData ? trainerData.rejectionReason : null
+  } 
 })
 
   } catch (error) {
@@ -173,7 +217,23 @@ export const logout = (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password -otp -otpExpiry')
-    res.json(user)
+    
+    // Convert to plain object to attach custom assignedTrainerData
+    const userObj = user.toObject()
+
+    if (user.assignedTrainer) {
+      const Trainer = (await import('../trainers/trainer.model.js')).default
+      const trainer = await Trainer.findById(user.assignedTrainer).populate('userId', 'name email avatar')
+      if (trainer) {
+        userObj.assignedTrainer = {
+          _id: trainer._id,
+          name: trainer.userId?.name || 'Coach',
+          trainerUserId: trainer.userId?._id
+        }
+      }
+    }
+
+    res.json(userObj)
   } catch (error) {
     res.status(500).json({ message: error.message })
   }

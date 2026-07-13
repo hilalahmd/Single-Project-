@@ -1,15 +1,29 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { IndianRupee, FileCheck, CheckCircle2 } from 'lucide-react'
+import API from '../../../shared/utils/api'
 
 export default function PayoutManagementPage() {
   const [payModal, setPayModal] = useState(false)
   const [selectedPayout, setSelectedPayout] = useState(null)
+  const [payouts, setPayouts] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const payouts = [
-    { id: 1, name: 'Arjun Menon', bal: 12500, req: 12500, bank: 'HDFC •••• 1234', date: 'Oct 15, 2026', status: 'Pending' },
-    { id: 2, name: 'Priya Nair', bal: 8000, req: 8000, bank: 'SBI •••• 5678', date: 'Oct 14, 2026', status: 'Pending' },
-    { id: 3, name: 'Rahul S', bal: 0, req: 15000, bank: 'ICICI •••• 9012', date: 'Oct 10, 2026', status: 'Paid' },
-  ]
+  useEffect(() => {
+    const fetchPayouts = async () => {
+      try {
+        const res = await fetch(`${API}/admin/payouts`, { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          setPayouts(data)
+        }
+      } catch (err) {
+        console.error("Failed to load payouts", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPayouts()
+  }, [])
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -25,7 +39,7 @@ export default function PayoutManagementPage() {
           </div>
           <div>
             <p className="text-sm text-gray-500 font-bold mb-1 uppercase tracking-wider">Total Pending Requests</p>
-            <p className="text-3xl font-bold text-black">₹20,500</p>
+            <p className="text-3xl font-bold text-black">{loading ? '...' : `₹${payouts.reduce((sum, p) => p.status === 'Pending' ? sum + p.req : sum, 0).toLocaleString()}`}</p>
           </div>
         </div>
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex items-center gap-4">
@@ -34,7 +48,7 @@ export default function PayoutManagementPage() {
           </div>
           <div>
             <p className="text-sm text-gray-500 font-bold mb-1 uppercase tracking-wider">Paid This Month</p>
-            <p className="text-3xl font-bold text-black">₹98,000</p>
+            <p className="text-3xl font-bold text-black">{loading ? '...' : `₹${payouts.reduce((sum, p) => p.status === 'Paid' ? sum + p.req : sum, 0).toLocaleString()}`}</p>
           </div>
         </div>
       </div>
@@ -51,7 +65,7 @@ export default function PayoutManagementPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {payouts.map((row) => (
-                <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={row._id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 font-bold text-black">{row.name}</td>
                   <td className="px-6 py-4 font-bold text-black">₹{row.req.toLocaleString()}</td>
                   <td className="px-6 py-4 font-mono text-gray-500 text-xs">{row.bank}</td>

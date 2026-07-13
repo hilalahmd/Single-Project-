@@ -1,12 +1,15 @@
 import Trainer from './trainer.model.js'
 import User from '../users/user.model.js'
+import mongoose from 'mongoose'
+import { uploadFile } from '../../shared/services/storage.service.js'
+import { Conversation, Message } from '../chat/chat.model.js'
 
 
 export const getTrainers = async (req, res) => {
   try {
     const { language } = req.query
 
-    const filter = { isApproved: true }
+    const filter = { status: 'approved' }
     if (language) {
       filter.languagesSpoken = language
     }
@@ -51,37 +54,125 @@ export const getTrainerById = async (req, res) => {
 }
 
 
-export const registerTrainer = async (req, res) => {
+export const completeTrainerRegistration = async (req, res) => {
+  const session = await mongoose.startSession()
+  session.startTransaction()
   try {
-    // Get trainer details from request body
-    const { bio, specialties, languagesSpoken, pricing } = req.body
+    const { bio, specialties, languagesSpoken, wellnessPrice, personalPrice, experience } = req.body
 
-    // Check if trainer profile already exists for this user
-    // req.user._id comes from JWT middleware (logged in user)
-    const existing = await Trainer.findOne({ userId: req.user._id })
+    const existing = await Trainer.findOne({ userId: req.user._id }).session(session)
     if (existing) {
+      await session.abortTransaction()
+      session.endSession()
       return res.status(400).json({ message: 'Trainer profile already exists' })
     }
 
-    // Create new trainer profile in DB
-    // isApproved is false by default — admin must approve first
-    const trainer = await Trainer.create({
-      userId: req.user._id,
-      role: req.user.role, // 'trainer' or 'wellness_coach'
-      bio,
-      specialties,
-      languagesSpoken,
-      pricing,
-      isApproved: false // needs admin approval
-    })
+    // Handle file uploads
+    let profilePhotoUrl = ''
+    let certificationsUrls = []
 
-    // Send success response with created trainer
+    if (req.files) {
+      if (req.files['profilePhoto'] && req.files['profilePhoto'][0]) {
+        const result = await uploadFile(req.files['profilePhoto'][0], 'profiles')
+        profilePhotoUrl = result.url
+      }
+      if (req.files['certifications']) {
+        for (const file of req.files['certifications']) {
+          const result = await uploadFile(file, 'certifications')
+          certificationsUrls.push(result.url)
+        }
+      }
+    }
+
+    // Parse arrays from FormData (FormData sends them as comma-separated strings or multiple fields)
+    const parsedSpecialties = typeof specialties === 'string' ? specialties.split(',').map(s=>s.trim()) : specialties
+    const parsedLanguages = typeof languagesSpoken === 'string' ? languagesSpoken.split(',').map(s=>s.trim()) : languagesSpoken
+
+    const trainer = await Trainer.create([{
+      userId: req.user._id,
+      role: req.user.role,
+      bio,
+      specialties: parsedSpecialties,
+      languagesSpoken: parsedLanguages,
+      experience: experience || 0,
+      pricing: {
+        wellnessMonthly: wellnessPrice || 0,
+        personalTrainingMonthly: personalPrice || 0
+      },
+      profilePhoto: profilePhotoUrl,
+      certifications: certificationsUrls,
+      status: 'pending' 
+    }], { session })
+
+    await session.commitTransaction()
+    session.endSession()
+
     res.status(201).json({ 
       message: 'Trainer profile created. Pending admin approval.',
-      trainer 
+      trainer: trainer[0]
     })
 
   } catch (error) {
+    await session.abortTransaction()
+    session.endSession()
+    res.status(500).json({ message: error.message })
+  }
+}
+
+export const resubmitTrainerRegistration = async (req, res) => {
+  const session = await mongoose.startSession()
+  session.startTransaction()
+  try {
+    const { bio, specialties, languagesSpoken, wellnessPrice, personalPrice, experience } = req.body
+
+    const trainer = await Trainer.findOne({ userId: req.user._id }).session(session)
+    if (!trainer) {
+      await session.abortTransaction()
+      session.endSession()
+      return res.status(404).json({ message: 'Trainer profile not found' })
+    }
+
+    if (trainer.status !== 'rejected') {
+      await session.abortTransaction()
+      session.endSession()
+      return res.status(400).json({ message: 'Only rejected applications can be resubmitted.' })
+    }
+
+    // Handle file uploads (if new files are provided, we append or replace? Let's just replace or add depending on logic, but for simplicity, if files are provided we replace)
+    if (req.files) {
+      if (req.files['profilePhoto'] && req.files['profilePhoto'][0]) {
+        const result = await uploadFile(req.files['profilePhoto'][0], 'profiles')
+        trainer.profilePhoto = result.url
+      }
+      if (req.files['certifications'] && req.files['certifications'].length > 0) {
+        let newCerts = []
+        for (const file of req.files['certifications']) {
+          const result = await uploadFile(file, 'certifications')
+          newCerts.push(result.url)
+        }
+        trainer.certifications = newCerts // overwrite old ones
+      }
+    }
+
+    if (bio) trainer.bio = bio
+    if (experience) trainer.experience = experience
+    if (specialties) trainer.specialties = typeof specialties === 'string' ? specialties.split(',').map(s=>s.trim()) : specialties
+    if (languagesSpoken) trainer.languagesSpoken = typeof languagesSpoken === 'string' ? languagesSpoken.split(',').map(s=>s.trim()) : languagesSpoken
+    if (wellnessPrice) trainer.pricing.wellnessMonthly = wellnessPrice
+    if (personalPrice) trainer.pricing.personalTrainingMonthly = personalPrice
+
+    trainer.status = 'pending'
+    trainer.rejectionReason = '' // clear rejection reason
+    
+    await trainer.save({ session })
+
+    await session.commitTransaction()
+    session.endSession()
+
+    res.json({ message: 'Application resubmitted successfully. Pending admin review.', trainer })
+  } catch (error) {
+    await session.abortTransaction()
+    session.endSession()
     res.status(500).json({ message: error.message })
   }
 }
@@ -98,7 +189,7 @@ export const updateTrainerProfile = async (req, res) => {
     const trainer = await Trainer.findOneAndUpdate(
       { userId: req.user._id }, // find by userId
       { bio, specialties, languagesSpoken, pricing }, // update these fields
-      { new: true } // return updated trainer
+      { new: true, upsert: true } // return updated trainer, and create if it doesn't exist
     )
 
     // If no trainer profile found
@@ -135,5 +226,150 @@ export const getMyTrainerProfile = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ message: error.message })
+  }
+}
+
+
+// ==========================================
+// GET MY CLIENTS (Trainer's Clients)
+// ==========================================
+export const getMyClients = async (req, res) => {
+  try {
+    // 1. Aadyam login cheytha aalude Trainer ID kandupidikkunnu
+    const trainer = await Trainer.findOne({ userId: req.user.id })
+    if (!trainer) {
+      return res.status(404).json({ success: false, message: 'Trainer profile not found' })
+    }
+
+    // 2. Aa Trainer-ne assign cheytha ellla User-neyum database-il ninnu edukkunnu
+    // .select() upayogichu namukku aavashyamulla fields mathram edukkunnu (name, email, bodyMetrics)
+    const clients = await User.find({ assignedTrainer: trainer._id })
+      .select('name email bodyMetrics avatar createdAt')
+
+    res.status(200).json({ success: true, clients })
+  } catch (error) {
+    console.error("Error fetching clients:", error)
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+
+
+// Get real-time dashboard stats for the logged-in trainer
+export const getTrainerDashboardStats = async (req, res) => {
+  try {
+    const userId = req.user.id // Login cheytha trainer-nte User ID
+
+    // AADYAM: Ee user-nte Trainer Profile edukkunnu (Trainer _id kittan)
+    const trainerProfile = await Trainer.findOne({ userId: userId })
+    
+    if (!trainerProfile) {
+      return res.status(404).json({ success: false, message: 'Trainer profile not found' })
+    }
+
+    // 1. Trainer Profile _id vechu active clients-ne count cheyyunnu!
+    const activeClientsCount = await User.countDocuments({
+      assignedTrainer: trainerProfile._id,
+      role: 'user'
+    })
+
+    // 2. Chat messages edukkaan aayi User ID thanne use cheyyunnu
+    const conversations = await Conversation.find({ participants: userId })
+    const conversationIds = conversations.map(c => c._id)
+
+    // 3. Vayikkatha messages count cheyyunnu
+    const unreadMessagesCount = await Message.countDocuments({
+      conversationId: { $in: conversationIds },
+      senderId: { $ne: userId },
+      isRead: false
+    })
+
+    // 4. Dashboard-il kanikkan ulla recent messages
+    const recentMessagesData = await Message.find({
+      conversationId: { $in: conversationIds },
+      senderId: { $ne: userId }
+    })
+    .sort({ createdAt: -1 })
+    .limit(3)
+    .populate('senderId', 'name avatar')
+
+    const stats = {
+      activeClients: activeClientsCount,
+      unreadMessages: unreadMessagesCount, 
+      upcomingSessions: 0, 
+      earnings: 0,
+      recentMessages: recentMessagesData
+    }
+
+    res.status(200).json({ success: true, stats })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+// Get all unread messages for the modal
+export const getUnreadMessages = async (req, res) => {
+  try {
+    const userId = req.user.id
+
+    const conversations = await Conversation.find({ participants: userId })
+    const conversationIds = conversations.map(c => c._id)
+
+    const unreadMessages = await Message.find({
+      conversationId: { $in: conversationIds },
+      senderId: { $ne: userId },
+      isRead: false
+    })
+    .sort({ createdAt: -1 })
+    .populate('senderId', 'name avatar')
+
+    res.status(200).json({ success: true, unreadMessages })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+
+
+
+export const getTrainerEarnings = async (req, res) => {
+  try {
+    const userId = req.user.id
+    const trainerProfile = await Trainer.findOne({ userId })
+    
+    if (!trainerProfile) {
+      return res.status(404).json({ success: false, message: 'Trainer profile not found' })
+    }
+
+    const activeClientsCount = await User.countDocuments({
+      assignedTrainer: trainerProfile._id,
+      role: 'user'
+    })
+
+    const ptPrice = trainerProfile.pricing?.personalTrainingMonthly || 0
+    const currentGross = activeClientsCount * ptPrice
+    const currentNet = Math.round(currentGross * 0.85)
+
+    // Generate historical data based on current earnings for demo purposes
+    // (Until Stripe integration is built)
+    const months = [
+      { month: 'Jul 2026', sessions: activeClientsCount * 4, gross: currentGross, net: currentNet },
+      { month: 'Jun 2026', sessions: 48, gross: 2880, net: 2448 },
+      { month: 'May 2026', sessions: 52, gross: 3120, net: 2652 },
+      { month: 'Apr 2026', sessions: 45, gross: 2700, net: 2295 }
+    ]
+
+    const totalEarned = months.reduce((acc, curr) => acc + curr.net, 0)
+
+    const earningsData = {
+      thisMonth: currentNet,
+      totalEarned: totalEarned,
+      pendingPayout: currentNet, 
+      history: months
+    }
+
+    res.status(200).json({ success: true, earningsData })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
   }
 }

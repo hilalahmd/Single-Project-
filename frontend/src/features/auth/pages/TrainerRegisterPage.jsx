@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../../shared/context/AuthContext'
-import { Link } from 'react-router-dom'
-import { Eye, EyeOff, Upload, X, Check, FileText, ArrowRight, ArrowLeft, Users, TrendingUp, Trophy, Shield } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Eye, EyeOff, Upload, X, Check, FileText, ArrowRight, ArrowLeft, Users, TrendingUp, Trophy, Shield, Loader2 } from 'lucide-react'
+import API from '../../../shared/utils/api'
 
 const SPECIALTIES = [
   'Weight Loss', 'Muscle Building', 'HIIT', 'Yoga',
@@ -10,9 +11,18 @@ const SPECIALTIES = [
 const LANGUAGES = ['Malayalam', 'Hindi', 'Tamil', 'Kannada', 'Telugu', 'English']
 
 export default function TrainerRegisterPage() {
-  const { register, verifyOTP } = useAuth()
+  const { register, verifyOTP, login, user, logout } = useAuth()
   const [step, setStep] = useState(1)
   const [done, setDone] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [userId, setUserId] = useState('')
+
+  useEffect(() => {
+    if (user && user.trainerStatus === null && (user.role === 'trainer' || user.role === 'wellness_coach')) {
+      setUserId(user._id)
+      setStep(3)
+    }
+  }, [user])
   
   // Step 1: Personal Info
   const [form, setForm] = useState({
@@ -23,7 +33,6 @@ export default function TrainerRegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false)
 
   // Step 2: OTP
-  const [userId, setUserId] = useState('')
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [otpError, setOtpError] = useState('')
   const inputRefs = useRef([])
@@ -31,7 +40,10 @@ export default function TrainerRegisterPage() {
   // Step 3: Professional Profile
   const [selectedSpecialties, setSelectedSpecialties] = useState([])
   const [selectedLanguages, setSelectedLanguages] = useState([])
-  const [bioLength, setBioLength] = useState(0)
+  const [bio, setBio] = useState('')
+  const [experience, setExperience] = useState('')
+  const [wellnessPrice, setWellnessPrice] = useState('')
+  const [personalPrice, setPersonalPrice] = useState('')
 
   // Step 4: Documents
   const [files, setFiles] = useState([])
@@ -67,14 +79,50 @@ export default function TrainerRegisterPage() {
   const handleVerifyOTP = async () => {
     const data = await verifyOTP(userId, otp.join(''))
     if (data.message === 'Email verified successfully') {
+      // User is verified, now login to get the JWT token for the next step
+      await login(form.email, form.password)
       setStep(3)
     } else {
       setOtpError(data.message)
     }
   }
 
-  const handleFinalSubmit = () => {
-    setDone(true)
+  const handleFinalSubmit = async () => {
+    if (submitting) return
+    setSubmitting(true)
+    try {
+      const formData = new FormData()
+      formData.append('userId', userId)
+      formData.append('bio', bio)
+      formData.append('experience', experience)
+      formData.append('wellnessPrice', wellnessPrice)
+      formData.append('personalPrice', personalPrice)
+      
+      selectedSpecialties.forEach(s => formData.append('specialties', s))
+      selectedLanguages.forEach(l => formData.append('languagesSpoken', l))
+      
+      files.forEach(f => {
+        formData.append('certifications', f)
+      })
+
+      const res = await fetch(`${API}/trainers/complete-registration`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.message || 'Failed to submit application')
+      }
+      
+      await logout()
+      setDone(true)
+    } catch (error) {
+      alert(error.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (done) {
@@ -304,7 +352,7 @@ export default function TrainerRegisterPage() {
                 <div>
                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Experience (Years Active)</label>
                   <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors w-1/2">
-                    <input type="number" placeholder="e.g. 5" min="0" className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium" />
+                    <input type="number" placeholder="e.g. 5" min="0" value={experience} onChange={e => setExperience(e.target.value)} className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium" />
                   </div>
                 </div>
 
@@ -342,10 +390,10 @@ export default function TrainerRegisterPage() {
                 <div>
                   <div className="flex items-center justify-between mb-2 ml-1">
                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">Short Bio</label>
-                    <span className={`text-[10px] font-bold ${bioLength >= 100 ? 'text-emerald-400' : 'text-gray-500'}`}>{bioLength}/100</span>
+                    <span className={`text-[10px] font-bold ${bio.length >= 100 ? 'text-emerald-400' : 'text-gray-500'}`}>{bio.length}/100</span>
                   </div>
                   <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors">
-                    <textarea rows={3} placeholder="Your training philosophy..." onChange={e => setBioLength(e.target.value.length)} className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium resize-none" />
+                    <textarea rows={3} placeholder="Your training philosophy..." value={bio} onChange={e => setBio(e.target.value)} className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium resize-none" />
                   </div>
                 </div>
 
@@ -369,13 +417,13 @@ export default function TrainerRegisterPage() {
                   <div>
                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Wellness Plan (₹)</label>
                     <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors">
-                      <input type="number" placeholder="999" className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium" />
+                      <input type="number" placeholder="999" value={wellnessPrice} onChange={e => setWellnessPrice(e.target.value)} className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">PT Plan (₹)</label>
                     <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors">
-                      <input type="number" placeholder="2499" className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium" />
+                      <input type="number" placeholder="2499" value={personalPrice} onChange={e => setPersonalPrice(e.target.value)} className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium" />
                     </div>
                   </div>
                 </div>
@@ -411,9 +459,9 @@ export default function TrainerRegisterPage() {
                     <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                     <span>Back</span>
                   </button>
-                  <button onClick={handleFinalSubmit} className="flex-1 py-4 bg-[#F97316] text-white font-bold rounded-2xl hover:bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-all flex items-center justify-center gap-2 group">
-                    <span>Submit</span>
-                    <Check size={16} className="group-hover:scale-110 transition-transform" />
+                  <button onClick={handleFinalSubmit} disabled={submitting} className={`flex-1 py-4 bg-[#F97316] text-white font-bold rounded-2xl hover:bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.3)] transition-all flex items-center justify-center gap-2 group ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <span>{submitting ? 'Submitting...' : 'Submit'}</span>
+                    {submitting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} className="group-hover:scale-110 transition-transform" />}
                   </button>
                 </div>
               </div>

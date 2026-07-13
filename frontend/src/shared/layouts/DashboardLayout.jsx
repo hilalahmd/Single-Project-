@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useLocation, Link, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard,
   Users,
@@ -55,8 +56,7 @@ const clientNav = [
 const trainerNav = [
   { label: 'Dashboard',       to: '/trainer/dashboard',        icon: LayoutDashboard },
   { label: 'My Clients',      to: '/trainer/clients',          icon: Users },
-  { label: 'Workout Plans',   to: '/trainer/plans/workout',    icon: Dumbbell },
-  { label: 'Diet Plans',      to: '/trainer/plans/diet',       icon: Salad },
+
   { label: 'Schedule',        to: '/trainer/schedule',         icon: CalendarDays },
   { label: 'Earnings',        to: '/trainer/earnings',         icon: DollarSign },
   { label: 'Chat',            to: '/trainer/chat',             icon: MessageSquare },
@@ -104,9 +104,9 @@ export default function DashboardLayout() {
 
   const sidebarWidth = collapsed ? 'w-16' : 'w-56'
   const isAdminMode = role === 'admin'
-  const isClientMode = role === 'user'
+  const isPremiumMode = !isAdminMode
 
-  const BackgroundOrbs = () => isClientMode ? (
+  const BackgroundOrbs = () => isPremiumMode ? (
     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#07080C]">
       <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] rounded-full bg-[#F97316]/10 blur-[150px]" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full bg-[#F97316]/10 blur-[150px]" />
@@ -115,29 +115,39 @@ export default function DashboardLayout() {
 
   // Dynamic Theme Classes
   const theme = {
-    layout: isClientMode ? 'bg-[#07080C] text-white' : (isAdminMode ? 'bg-[#F9FAFB] text-black' : 'bg-[#07080C] text-white'),
-    sidebar: isClientMode ? 'bg-[#07080C] border-r border-white/10' : (isAdminMode ? 'bg-white border-gray-200' : 'bg-[#07080C] border-white/10'),
-    header: isClientMode ? 'bg-[#07080C] border-b border-white/10' : (isAdminMode ? 'bg-white border-gray-200' : 'bg-[#07080C] border-white/10'),
-    logo: isClientMode ? 'text-white' : (isAdminMode ? 'text-black' : 'text-white'),
-    btnColor: isClientMode ? 'text-gray-400 hover:text-white' : (isAdminMode ? 'text-gray-500 hover:text-black' : 'text-gray-400 hover:text-white'),
-    searchContainer: isClientMode ? 'bg-[#111318] border-white/10 text-white placeholder-gray-500 focus:border-[#F97316]' : (isAdminMode ? 'bg-gray-50 border-gray-200 text-black placeholder-gray-400 focus:border-black' : 'bg-[#111318] border-white/10 text-white placeholder-gray-500 focus:border-[#F97316]'),
-    searchIcon: isClientMode ? 'text-gray-500' : (isAdminMode ? 'text-gray-400' : 'text-gray-500'),
-    navActive: isClientMode ? 'bg-[#F97316]/10 text-white border-r-4 border-[#F97316]' : (isAdminMode ? 'bg-gray-100 text-black border-r-4 border-black' : 'bg-[#F97316]/10 text-white border-r-4 border-[#F97316]'),
-    navInactive: isClientMode ? 'text-gray-400 hover:text-white hover:bg-white/5' : (isAdminMode ? 'text-gray-500 hover:text-black hover:bg-gray-50' : 'text-gray-400 hover:text-white hover:bg-white/5'),
-    divider: isClientMode ? 'border-white/10' : (isAdminMode ? 'border-gray-200' : 'border-white/10'),
-    avatarBtn: isClientMode ? 'bg-[#F97316]/20 text-white border-[#F97316]/50 hover:bg-[#F97316]/30' : (isAdminMode ? 'bg-black text-white hover:bg-gray-800' : 'bg-[#F97316]/20 text-white border-[#F97316]/50 hover:bg-[#F97316]/30'),
-    bellDot: isClientMode ? 'bg-[#F97316] border-[#07080C]' : (isAdminMode ? 'bg-black border-white' : 'bg-[#F97316] border-[#07080C]'),
+    layout: isPremiumMode ? 'bg-[#07080C] text-white' : 'bg-[#F9FAFB] text-black',
+    sidebar: isPremiumMode ? 'bg-[#07080C] border-r border-white/10' : 'bg-white border-gray-200',
+    header: isPremiumMode ? 'bg-[#07080C] border-b border-white/10' : 'bg-white border-gray-200',
+    logo: isPremiumMode ? 'text-white' : 'text-black',
+    btnColor: isPremiumMode ? 'text-gray-400 hover:text-white transition-all hover:scale-110' : 'text-gray-500 hover:text-black transition-all hover:scale-110',
+    searchContainer: isPremiumMode ? 'bg-[#111318] border-white/10 text-white placeholder-gray-500 focus:border-[#F97316]' : 'bg-gray-50 border-gray-200 text-black placeholder-gray-400 focus:border-black',
+    searchIcon: isPremiumMode ? 'text-gray-500' : 'text-gray-400',
+    navActive: isPremiumMode ? 'bg-[#F97316]/10 text-white border-l-4 border-[#F97316]' : 'bg-gray-100 text-black border-l-4 border-black',
+    navInactive: isPremiumMode ? 'text-gray-400 hover:text-white hover:bg-white/5 border-l-4 border-transparent' : 'text-gray-500 hover:text-black hover:bg-gray-50 border-l-4 border-transparent',
+    divider: isPremiumMode ? 'border-white/10' : 'border-gray-200',
+    avatarBtn: isPremiumMode ? 'bg-[#F97316]/20 text-white border-[#F97316]/50 hover:bg-[#F97316]/30 transition-all hover:scale-105' : 'bg-black text-white hover:bg-gray-800 transition-all hover:scale-105',
+    bellDot: isPremiumMode ? 'bg-[#F97316] border-[#07080C]' : 'bg-black border-white',
   }
 
   const SidebarContent = () => (
-    <div className={`flex flex-col h-full relative z-10 ${isClientMode ? 'bg-[#07080C]' : isAdminMode ? 'bg-white' : 'bg-[#07080C]'}`}>
+    <div className={`flex flex-col h-full relative z-10 ${isPremiumMode ? 'bg-[#07080C]' : 'bg-white'}`}>
       {/* Logo */}
       <div className="flex items-center justify-between px-6 py-5">
-        {!collapsed && (
-          <Link to="/" className={`text-2xl font-black tracking-tight font-['Syne'] ${theme.logo}`}>
-            FITFORGE
-          </Link>
-        )}
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.div
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 'auto' }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden whitespace-nowrap"
+            >
+              <Link to="/" className={`text-2xl font-black tracking-tight font-['Syne'] ${theme.logo}`}>
+                FITFORGE
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <button
           onClick={() => setCollapsed(!collapsed)}
           className={`hidden md:flex items-center justify-center w-7 h-7 rounded transition-colors ml-auto ${theme.btnColor}`}
@@ -157,13 +167,25 @@ export default function DashboardLayout() {
             className={({ isActive }) =>
               `flex items-center gap-4 px-6 py-3 text-[14px] font-bold transition-colors ${
                 isActive ? theme.navActive : theme.navInactive
-              } ${collapsed ? 'justify-center px-0 border-r-0' : ''}`
+              } ${collapsed ? 'justify-center px-0 border-l-0' : ''}`
             }
           >
             {({ isActive }) => (
               <>
-                <Icon size={18} className="shrink-0" strokeWidth={isActive ? 2.5 : 2} />
-                {!collapsed && <span className="truncate">{label}</span>}
+                <Icon size={18} className={`shrink-0 transition-colors ${isActive ? (isPremiumMode ? 'text-[#F97316]' : 'text-black') : ''}`} strokeWidth={isActive ? 2.5 : 2} />
+                <AnimatePresence>
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="truncate whitespace-nowrap"
+                    >
+                      {label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </>
             )}
           </NavLink>
@@ -174,24 +196,38 @@ export default function DashboardLayout() {
       <div className={`p-4 mt-auto border-t ${theme.divider}`}>
         <button onClick={logout} className={`flex items-center gap-4 px-2 py-2 w-full text-[14px] font-bold transition-colors ${theme.btnColor}`}>
           <LogOut size={18} className="shrink-0" />
-          {!collapsed && <span>Sign out</span>}
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.2 }}
+                className="whitespace-nowrap"
+              >
+                Sign out
+              </motion.span>
+            )}
+          </AnimatePresence>
         </button>
       </div>
     </div>
   )
 
-  const themeClass = isClientMode ? (themeMode === 'light' ? 'theme-light' : 'theme-dark') : ''
+  const themeClass = isPremiumMode ? (themeMode === 'light' ? 'theme-light' : 'theme-dark') : ''
 
   return (
     <div className={`flex h-screen overflow-hidden font-['Inter'] relative ${themeClass} ${theme.layout}`}>
       <BackgroundOrbs />
       {/* ── Desktop Sidebar ── */}
-      <aside
-        className={`hidden md:flex flex-col ${sidebarWidth} border-r shrink-0 transition-all duration-200 ease-in-out ${theme.sidebar}`}
+      <motion.aside
+        initial={false}
+        animate={{ width: collapsed ? 64 : 224 }}
+        transition={{ duration: 0.25, ease: 'easeInOut' }}
+        className={`hidden md:flex flex-col border-r shrink-0 overflow-hidden ${theme.sidebar}`}
       >
         <SidebarContent />
-      </aside>
-
+      </motion.aside>
 
       {/* ── Content area ── */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden bg-transparent">
@@ -202,10 +238,9 @@ export default function DashboardLayout() {
             FITFORGE
           </Link>
 
-
           {/* Right actions */}
           <div className="flex items-center gap-4 ml-auto">
-            {isClientMode && (
+            {isPremiumMode && (
               <button 
                 onClick={toggleTheme}
                 className={`flex items-center justify-center w-8 h-8 rounded-xl border transition-all cursor-pointer ${
@@ -220,11 +255,19 @@ export default function DashboardLayout() {
             )}
             <button className={`relative flex items-center justify-center transition-colors ${theme.btnColor}`}>
               <Bell size={20} />
-              <span className={`absolute top-0 right-0 w-2 h-2 rounded-full border-2 ${theme.bellDot}`} />
+              <motion.span 
+                initial={{ scale: 0 }}
+                animate={{ scale: [0, 1.5, 1] }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className={`absolute top-0 right-0 w-2 h-2 rounded-full border-2 ${theme.bellDot}`} 
+              />
             </button>
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border shadow-sm cursor-pointer transition-colors ${theme.avatarBtn}`}>
+            <Link 
+              to={isPremiumMode && !isAdminMode ? '/dashboard/profile' : (isAdminMode ? '/admin' : '/trainer/profile')}
+              className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border shadow-sm cursor-pointer transition-all ${theme.avatarBtn}`}
+            >
               {user?.name?.charAt(0) || 'U'}
-            </div>
+            </Link>
           </div>
         </header>
 
@@ -235,7 +278,7 @@ export default function DashboardLayout() {
       </div>
 
       {/* ── Mobile Bottom Navigation ── */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center gap-6 overflow-x-auto px-6 py-3 border-t ${theme.sidebar} ${isClientMode ? 'bg-[#07080C]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]' : 'backdrop-blur-xl bg-opacity-95 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]'}`}>
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center gap-6 overflow-x-auto px-6 py-3 border-t ${theme.sidebar} ${isPremiumMode ? 'bg-[#07080C]/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]' : 'backdrop-blur-xl bg-opacity-95 shadow-[0_-4px_20px_rgba(0,0,0,0.5)]'}`}>
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -243,7 +286,7 @@ export default function DashboardLayout() {
             end={to === '/dashboard' || to === '/trainer/dashboard' || to === '/admin'}
             className={({ isActive }) =>
               `flex flex-col items-center gap-1 shrink-0 min-w-[3.5rem] transition-colors ${
-                isActive ? (isClientMode ? 'text-[#F97316]' : (isAdminMode ? 'text-black' : 'text-[#F97316]')) : (isClientMode ? 'text-gray-400 hover:text-white' : (isAdminMode ? 'text-gray-500 hover:text-black' : 'text-gray-500 hover:text-gray-300'))
+                isActive ? (isPremiumMode ? 'text-[#F97316]' : 'text-black') : (isPremiumMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-black')
               }`
             }
           >
@@ -258,7 +301,7 @@ export default function DashboardLayout() {
         {/* Mobile Logout Button */}
         <button 
           onClick={logout} 
-          className={`flex flex-col items-center gap-1 shrink-0 min-w-[3.5rem] transition-colors ${isClientMode ? 'text-red-400 hover:text-red-300' : (isAdminMode ? 'text-red-500 hover:text-red-600' : 'text-red-400 hover:text-red-300')}`}
+          className={`flex flex-col items-center gap-1 shrink-0 min-w-[3.5rem] transition-colors ${isPremiumMode ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-600'}`}
         >
           <LogOut size={20} strokeWidth={2} />
           <span className="text-[10px] font-bold opacity-80">Logout</span>

@@ -1,18 +1,33 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, MoreVertical, Activity, Plus, TrendingUp, MessageSquare } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import API from '../../../shared/utils/api' // Backend vilikkan ulla API tool
 
 export default function ClientListPage() {
   const [search, setSearch] = useState('')
+  // Dummy data-kku pakaram useState array kodukkunnu (Real data store cheyyan)
+  const [clients, setClients] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const clients = [
-    { id: 1, name: 'David Kim', goal: 'Muscle Gain', weight: '76 kg', status: 'Active', planStatus: 'Needs Update' },
-    { id: 2, name: 'Anita Rao', goal: 'Weight Loss', weight: '65 kg', status: 'Active', planStatus: 'Up to date' },
-    { id: 3, name: 'Tom Morris', goal: 'Endurance', weight: '82 kg', status: 'Inactive', planStatus: 'Expired' },
-    { id: 4, name: 'Lisa Park', goal: 'General Fitness', weight: '58 kg', status: 'Active', planStatus: 'Up to date' },
-    { id: 5, name: 'James Chen', goal: 'Weight Loss', weight: '90 kg', status: 'Active', planStatus: 'Needs Update' },
-  ]
+  // Page load aakumbol backend-il ninnu data fetch cheyyan ulla useEffect
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const res = await fetch(`${API}/trainers/clients`, { credentials: 'include' })
+        const data = await res.json()
+        if (data.success) {
+          setClients(data.clients)
+        }
+      } catch (error) {
+        console.error("Error loading clients:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchClients()
+  }, [])
 
+  // Search filter (User type cheyyunnathinu anusarichu filter aavan)
   const filtered = clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
 
   return (
@@ -25,24 +40,18 @@ export default function ClientListPage() {
         </div>
       </div>
 
-      {/* Status Disclaimer Banner */}
-      <div className="bg-[#2563EB]/10 border border-[#2563EB]/30 rounded-[16px] p-4 flex items-center gap-3 text-sm font-bold text-[#2563EB]">
-        <Activity size={18} className="shrink-0 animate-pulse" />
-        <p>Demo Mode — These are pre-loaded demo clients for previewing your profile layout. You can click "Update Plan" on any client to view the custom plan builder tool.</p>
+      <div className="relative">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+        <input 
+          type="text"
+          placeholder="Search clients..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full sm:w-64 bg-[#111827] border border-[#1E293B] rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[#2563EB] transition-colors"
+        />
       </div>
-        
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-          <input 
-            type="text"
-            placeholder="Search clients..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64 bg-[#111827] border border-[#1E293B] rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[#2563EB] transition-colors"
-          />
-        </div>
 
-      {/* Clients Table / List */}
+      {/* Clients Table */}
       <div className="bg-[#111827] border border-[#1E293B] rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-400">
@@ -51,71 +60,83 @@ export default function ClientListPage() {
                 <th className="px-6 py-4">Client</th>
                 <th className="px-6 py-4">Current Goal</th>
                 <th className="px-6 py-4">Latest Weight</th>
-                <th className="px-6 py-4">Plan Status</th>
+                <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1E293B]">
-              {filtered.map(client => (
-                <tr key={client.id} className="hover:bg-[#0F172A]/50 transition-colors group">
+              
+              {/* Loading spinner */}
+              {isLoading && (
+                <tr>
+                  <td colSpan="5" className="px-6 py-12 text-center text-[#2563EB]">
+                    Loading clients...
+                  </td>
+                </tr>
+              )}
+
+              {/* Data vannal oro client-neyum map cheythu table row aaki matunnu */}
+              {!isLoading && filtered.map(client => (
+                <tr key={client._id} className="hover:bg-[#0F172A]/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-[#1E293B] flex items-center justify-center text-white font-bold border border-gray-700">
-                        {client.name.charAt(0)}
+                        {client.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <p className="font-semibold text-white text-[15px]">{client.name}</p>
-                        <p className="text-[12px] flex items-center gap-1 mt-0.5">
-                          <span className={`w-1.5 h-1.5 rounded-full ${client.status === 'Active' ? 'bg-[#22C55E]' : 'bg-red-500'}`}></span>
-                          {client.status}
+                        <p className="text-[12px] flex items-center gap-1 mt-0.5 text-gray-400">
+                          {client.email}
                         </p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 font-medium text-gray-300">
-                    {client.goal}
+                  
+                  {/* Database-il ninnulla real Goal */}
+                  <td className="px-6 py-4 font-medium text-gray-300 capitalize">
+                    {client.bodyMetrics?.goal?.replace('_', ' ') || 'Not Set'}
                   </td>
+                  
+                  {/* Database-il ninnulla real Weight */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <TrendingUp size={14} className="text-gray-500" />
-                      <span className="font-semibold text-white">{client.weight}</span>
+                      <span className="font-semibold text-white">
+                        {client.bodyMetrics?.weight ? `${client.bodyMetrics.weight} kg` : 'N/A'}
+                      </span>
                     </div>
                   </td>
+
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${
-                      client.planStatus === 'Up to date' ? 'bg-[#22C55E]/10 text-[#22C55E]' : 
-                      client.planStatus === 'Needs Update' ? 'bg-[#F59E0B]/10 text-[#F59E0B]' : 'bg-red-500/10 text-red-500'
-                    }`}>
-                      {client.planStatus}
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-[#22C55E]/10 text-[#22C55E]">
+                      Active
                     </span>
                   </td>
+                  
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Link 
-                        to={`/trainer/plans/build/${client.id}`}
+                        to={`/trainer/plans/build/${client._id}`}
                         className="px-3 py-1.5 bg-[#2563EB]/10 hover:bg-[#2563EB]/20 text-[#2563EB] border border-[#2563EB]/20 rounded-lg text-[12px] font-bold transition-colors flex items-center gap-1.5"
                       >
                         <Activity size={14} /> Update Plan
                       </Link>
                       <Link 
-                        to={`/trainer/chat/${client.id}`}
+                        to={`/trainer/chat/${client._id}`}
                         className="px-3 py-1.5 bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/20 rounded-lg text-[12px] font-bold transition-colors flex items-center gap-1.5"
                         title="Message Client"
                       >
                         <MessageSquare size={14} /> Chat
                       </Link>
-                      <button className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-[#1E293B] transition-colors">
-                        <MoreVertical size={16} />
-                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
               
-              {filtered.length === 0 && (
+              {!isLoading && filtered.length === 0 && (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center">
-                    <p className="text-gray-500 text-sm">No clients found matching your search.</p>
+                    <p className="text-gray-500 text-sm">No clients found.</p>
                   </td>
                 </tr>
               )}

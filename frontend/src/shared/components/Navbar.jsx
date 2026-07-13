@@ -1,18 +1,28 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Sun, Moon, User } from 'lucide-react'
+import { Menu, X, Sun, Moon, User, LogOut } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 
-const getNavLinks = (user, subscriptionTier) => {
-  const hasCoach = user && subscriptionTier !== 'free'
+const getNavLinks = (user, role, subscriptionTier) => {
+  if (user && role === 'user') {
+    return [
+      { label: 'Home', to: '/' },
+      { label: 'Today', to: '/dashboard' },
+      { label: 'Plan', to: '/dashboard/plans' },
+      { label: 'Coach', to: '/dashboard/coach' },
+      { label: 'Nutrition', to: '/dashboard/nutrition' },
+      { label: 'Food AI', to: '/dashboard/food-ai' },
+      { label: 'Progress', to: '/dashboard/progress' }
+    ]
+  }
+
+  // Not logged in, or not a client role (trainers/admins might still have their own sidebar dashboard)
   return [
     { label: 'Home', to: '/' },
-    hasCoach
-      ? { label: 'My Coach', to: '/dashboard/coach' }
-      : { label: 'Find Coach', to: '/trainers' },
+    { label: 'Find Coach', to: '/trainers' },
     { label: 'Plans',  to: '/plans' },
-    { label: 'Diet',   to: '/free-diet-plan' },
+    { label: 'Nutrition', to: '/free-diet-plan' },
   ]
 }
 
@@ -23,8 +33,20 @@ export default function Navbar() {
   
   const location = useLocation()
   const navigate = useNavigate()
-  const { user, role, subscriptionTier } = useAuth()
+  const { user, role, subscriptionTier, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileDropdownRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => {
     let lastScrollY = window.scrollY
@@ -62,36 +84,40 @@ export default function Navbar() {
             FITFORGE
           </Link>
 
-          {/* Right side: Nav + Auth */}
-          <div className="hidden md:flex items-center gap-6">
-            
-            <nav className="flex items-center gap-6 mr-2">
-              {getNavLinks(user, subscriptionTier).map(({ label, to }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className={({ isActive }) =>
-                    `relative py-1 text-[11px] font-bold uppercase tracking-widest transition-colors 
-                     after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#F97316] 
-                     after:rounded-full after:origin-center after:transition-transform after:duration-300 
-                     ${isActive ? 'text-[#F97316] after:scale-x-100' : `${isHome ? 'text-gray-300' : 'text-[#64748B]'} hover:text-[#F97316] after:scale-x-0 hover:after:scale-x-100 hover:after:bg-[#F97316]`}`
-                  }
-                >
-                  {label}
-                </NavLink>
-              ))}
-            </nav>
+          {/* Center: Nav */}
+          <nav className="hidden lg:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+            {getNavLinks(user, role, subscriptionTier).map(({ label, to }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/dashboard' || to === '/'}
+                className={({ isActive }) =>
+                  `relative py-1 text-[11px] font-bold uppercase tracking-widest transition-colors 
+                   after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#F97316] 
+                   after:rounded-full after:origin-center after:transition-transform after:duration-300 
+                   ${isActive ? 'text-[#F97316] after:scale-x-100' : `${isHome ? 'text-gray-300' : 'text-[#64748B]'} hover:text-[#F97316] after:scale-x-0 hover:after:scale-x-100 hover:after:bg-[#F97316]`}`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* Right side: Actions + Profile */}
+          <div className="hidden md:flex items-center justify-end gap-6 flex-1">
 
             {user ? (
-              <button
-                onClick={() => {
-                  const dashboardUrl = role === 'admin' ? '/admin' : (role === 'trainer' || role === 'wellness_coach' ? '/trainer/dashboard' : '/dashboard')
-                  navigate(dashboardUrl)
-                }}
-                className="bg-[#F97316] text-white px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:bg-[#EA580C] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-              >
-                DASHBOARD
-              </button>
+              role !== 'user' ? (
+                <button
+                  onClick={() => {
+                    const dashboardUrl = role === 'admin' ? '/admin' : '/trainer/dashboard'
+                    navigate(dashboardUrl)
+                  }}
+                  className="bg-[#F97316] text-white px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:bg-[#EA580C] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                >
+                  DASHBOARD
+                </button>
+              ) : null
             ) : (
               <>
                 <Link
@@ -124,13 +150,52 @@ export default function Navbar() {
 
             {/* Profile avatar — only when logged in */}
             {user && (
-              <button
-                onClick={() => navigate('/dashboard/profile')}
-                className="relative flex items-center justify-center w-9 h-9 rounded-full bg-transparent text-gray-300 hover:text-[#F97316] border border-white/15 hover:border-[#F97316]/50 transition-all duration-300 cursor-pointer"
-                title="My Profile"
-              >
-                <User size={18} />
-              </button>
+              <div className="relative" ref={profileDropdownRef}>
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="relative flex items-center justify-center w-9 h-9 rounded-full bg-transparent text-gray-300 hover:text-[#F97316] border border-white/15 hover:border-[#F97316]/50 transition-all duration-300 cursor-pointer"
+                  title="My Profile"
+                >
+                  <User size={18} />
+                </button>
+
+                {profileOpen && (
+                  <div className={`absolute top-[120%] right-0 w-56 border rounded-2xl shadow-2xl overflow-hidden py-2 animate-in fade-in slide-in-from-top-4 z-50 ${isHome ? 'bg-[#111318] border-white/10 text-white' : 'bg-white border-gray-100 text-[#0F172A]'}`}>
+                    <div className={`px-4 py-3 border-b mb-2 ${isHome ? 'border-white/10' : 'border-gray-100'}`}>
+                      <p className="font-bold truncate">{user?.name || 'User'}</p>
+                      <p className={`text-xs truncate ${isHome ? 'text-gray-400' : 'text-gray-500'}`}>{user?.email}</p>
+                    </div>
+                    
+                    <Link
+                      to={role === 'trainer' || role === 'wellness_coach' ? '/trainer/profile' : role === 'admin' ? '/admin' : '/dashboard/profile'}
+                      onClick={() => setProfileOpen(false)}
+                      className={`flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isHome ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-[#0F172A] hover:bg-gray-50'}`}
+                    >
+                      <User size={16} /> My Profile
+                    </Link>
+
+                    {role !== 'user' && (
+                      <button onClick={() => {
+                        setProfileOpen(false);
+                        const dashboardUrl = role === 'admin' ? '/admin' : '/trainer/dashboard';
+                        navigate(dashboardUrl)
+                      }} className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${isHome ? 'text-gray-300 hover:text-white hover:bg-white/5' : 'text-gray-600 hover:text-[#0F172A] hover:bg-gray-50'}`}>
+                        Dashboard
+                      </button>
+                    )}
+                    
+                    <div className={`h-px my-2 ${isHome ? 'bg-white/10' : 'bg-gray-100'}`} />
+                    
+                    <button onClick={async () => {
+                      setProfileOpen(false);
+                      await logout();
+                      navigate('/');
+                    }} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:text-red-500 hover:bg-red-400/10 transition-colors">
+                      <LogOut size={16} /> Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -150,7 +215,7 @@ export default function Navbar() {
       {menuOpen && (
          <div className={`md:hidden absolute top-full left-0 w-full p-4 flex flex-col gap-4 border-b ${isHome ? 'bg-[#07080C] border-white/10' : 'bg-white shadow-sm border-gray-100'}`}>
             {/* Nav Links */}
-            {getNavLinks(user, subscriptionTier).map(({ label, to }) => (
+            {getNavLinks(user, role, subscriptionTier).map(({ label, to }) => (
                <NavLink 
                  key={to} 
                  to={to} 
@@ -181,16 +246,18 @@ export default function Navbar() {
             </div>
             
             {user ? (
-              <button 
-                onClick={() => {
-                  setMenuOpen(false)
-                  const dashboardUrl = role === 'admin' ? '/admin' : (role === 'trainer' || role === 'wellness_coach' ? '/trainer/dashboard' : '/dashboard')
-                  navigate(dashboardUrl)
-                }} 
-                className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] transition-colors duration-200 cursor-pointer"
-              >
-                Dashboard
-              </button>
+              role !== 'user' ? (
+                <button 
+                  onClick={() => {
+                    setMenuOpen(false)
+                    const dashboardUrl = role === 'admin' ? '/admin' : '/trainer/dashboard'
+                    navigate(dashboardUrl)
+                  }} 
+                  className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] transition-colors duration-200 cursor-pointer"
+                >
+                  Dashboard
+                </button>
+              ) : null
             ) : (
               <>
                 <Link to="/auth/login" onClick={() => setMenuOpen(false)} className={`text-sm font-bold uppercase tracking-widest ${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}>

@@ -1,13 +1,78 @@
-import { useState, useEffect } from 'react' // useEffect puthiyathayi add cheythu
-import { Calendar as CalendarIcon, Check, Sparkles, ArrowRight, Salad, Target, UserCheck, Dumbbell, Flame, TrendingUp, MessageSquare } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Calendar as CalendarIcon, Check, Sparkles, ArrowRight, Salad, Target, UserCheck, Dumbbell, Flame, TrendingUp, MessageSquare, Zap } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../../shared/context/AuthContext'
-import API from '../../../shared/utils/api' // Backend URL edukkan vendi puthiyathayi add cheythu
+import { getDailyLog } from '../services/nutrition.service'
+import API from '../../../shared/utils/api'
+import { calculateDynamicTargets } from '../../../shared/utils/nutritionCalculator'
 
+// ─── Animated stat counter ─────────────────────────────────────────────
+function AnimatedStat({ target, duration = 900, delay = 0 }) {
+  const [current, setCurrent] = useState(0)
+  const rafRef = useRef(null)
+  const [nextSession, setNextSession] = useState(null)
+
+  
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (target === 0) { setCurrent(0); return }
+      const start = performance.now()
+      const tick = (now) => {
+        const progress = Math.min((now - start) / duration, 1)
+        const eased = 1 - Math.pow(1 - progress, 3)
+        setCurrent(Math.round(target * eased))
+        if (progress < 1) rafRef.current = requestAnimationFrame(tick)
+      }
+      rafRef.current = requestAnimationFrame(tick)
+    }, delay)
+    return () => { clearTimeout(t); cancelAnimationFrame(rafRef.current) }
+  }, [target, duration, delay])
+  
+  return <>{current}</>
+}
+
+// ─── Animated Circle Ring ─────────────────────────────────────────────
+function AnimatedRing({ percent, size = 64, strokeWidth = 5 }) {
+  const [currentPercent, setCurrentPercent] = useState(0)
+  
+  useEffect(() => {
+    const t = setTimeout(() => setCurrentPercent(percent), 300)
+    return () => clearTimeout(t)
+  }, [percent])
+
+  const radius = (size - strokeWidth) / 2
+  const circumference = radius * 2 * Math.PI
+  const offset = circumference - (currentPercent / 100) * circumference
+
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg className="absolute inset-0 rotate-[-90deg]" width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(196,241,53,0.1)" strokeWidth={strokeWidth} />
+        <circle 
+          cx={size / 2} cy={size / 2} r={radius} 
+          fill="none" stroke="#C4F135" strokeWidth={strokeWidth} strokeLinecap="round"
+          strokeDasharray={circumference} 
+          strokeDashoffset={offset}
+          style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1)' }}
+        />
+      </svg>
+      <span className="text-[13px] font-black" style={{ color: '#C4F135' }}>
+        <AnimatedStat target={percent} duration={1200} delay={300} />%
+      </span>
+    </div>
+  )
+}
 
 export default function ClientDashboardPage() {
   const { user, subscriptionTier } = useAuth()
-  
+
+  // Real Nutrition & Streak States
+  const [todaysNutrition, setTodaysNutrition] = useState({
+    calories: 0, protein: 0, carbs: 0, fat: 0, 
+    targetCalories: 2500, targetProtein: 150, targetCarbs: 250, targetFat: 70
+  })
+  const [streakDays, setStreakDays] = useState(0)
+
   const getGreeting = () => {
     const hour = new Date().getHours()
     if (hour >= 5 && hour < 12) return 'Good morning'
@@ -22,41 +87,129 @@ export default function ClientDashboardPage() {
   
   const [todaysWorkout, setTodaysWorkout] = useState([]) 
   const [workoutTitle, setWorkoutTitle] = useState('Rest Day') 
-  const [workoutId, setWorkoutId] = useState(null) // Added to store workout ID
+  const [workoutId, setWorkoutId] = useState(null)
 
   useEffect(() => {
-    const fetchTodayWorkout = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const res = await fetch(`${API}/workouts/today`, {
-          credentials: 'include' 
-        })
-        const data = await res.json()
+        const todayStr = new Date().toLocaleDateString('en-CA')
+        
+        const [workoutRes, nutritionRes] = await Promise.all([
+          fetch(`${API}/workouts/today`, { credentials: 'include' }).then(res => res.json()),
+          getDailyLog(todayStr)
+        ])
 
-        if (data.success && data.data) { // Backend returns data.data, not data.workout!
-          setTodaysWorkout(data.data.exercises)
-          setWorkoutTitle(data.data.title)
-          setWorkoutId(data.data._id)
+        if (workoutRes.success && workoutRes.data) {
+          setTodaysWorkout(workoutRes.data.exercises)
+          setWorkoutTitle(workoutRes.data.title)
+          setWorkoutId(workoutRes.data._id)
         }
+
+        let baseCals = 0, basePro = 0, baseCrb = 0, baseFat = 0
+        
+        // Use dynamically calculated targets based on user goals (e.g. Muscle Build)
+        let dynamicTargets = calculateDynamicTargets(user)
+
+        // OVERRIDE: If the Trainer explicitly set a Nutrition Goal for this plan, use it!
+        if (workoutRes.success && workoutRes.plan && workoutRes.plan.nutritionTargets) {
+          const pt = workoutRes.plan.nutritionTargets
+          if (pt.calories) dynamicTargets.targetCalories = pt.calories
+          if (pt.protein) dynamicTargets.targetProtein = pt.protein
+          if (pt.carbs) dynamicTargets.targetCarbs = pt.carbs
+          if (pt.fat) dynamicTargets.targetFat = pt.fat
+        }
+
+        let targetCals = dynamicTargets.targetCalories
+        let targetPro = dynamicTargets.targetProtein
+        let targetCrb = dynamicTargets.targetCarbs
+        let targetFat = dynamicTargets.targetFat
+
+        if (nutritionRes.success && nutritionRes.log) {
+          const meals = nutritionRes.log.meals || []
+          baseCals = meals.reduce((sum, m) => sum + m.items.reduce((s, item) => s + (item.calories || 0), 0), 0)
+          basePro = meals.reduce((sum, m) => sum + m.items.reduce((s, item) => s + (item.protein || 0), 0), 0)
+          baseCrb = meals.reduce((sum, m) => sum + m.items.reduce((s, item) => s + (item.carbs || 0), 0), 0)
+          baseFat = meals.reduce((sum, m) => sum + m.items.reduce((s, item) => s + (item.fat || 0), 0), 0)
+          
+          if (nutritionRes.log.targetCalories) targetCals = nutritionRes.log.targetCalories
+          if (nutritionRes.log.targetProtein) targetPro = nutritionRes.log.targetProtein
+          if (nutritionRes.log.targetCarbs) targetCrb = nutritionRes.log.targetCarbs
+          if (nutritionRes.log.targetFat) targetFat = nutritionRes.log.targetFat
+        }
+
+        // Add macros from completed Trainer-assigned meals
+        if (workoutRes.success && workoutRes.diet && workoutRes.diet.meals) {
+          workoutRes.diet.meals.forEach(m => {
+            if (m.isCompleted) {
+              baseCals += m.calories || 0
+              basePro += m.protein || 0
+              baseCrb += m.carbs || 0
+              baseFat += m.fat || 0
+            }
+          })
+        }
+
+
+        // Add this below the existing fetch calls inside fetchDashboardData:
+try {
+  const bookingsRes = await fetch(`${API}/schedule/bookings/my`, { credentials: 'include' })
+  const bookingsData = await bookingsRes.json()
+  
+  if (bookingsData.success && bookingsData.data.length > 0) {
+    // Filter for accepted bookings that are in the future
+    const now = new Date()
+    const upcoming = bookingsData.data
+      .filter(b => b.status === 'accepted' && new Date(b.slotId.startTime) > now)
+      .sort((a, b) => new Date(a.slotId.startTime) - new Date(b.slotId.startTime))
+      
+    if (upcoming.length > 0) {
+      setNextSession(upcoming[0])
+    }
+  }
+} catch (err) {
+  console.error("Failed to fetch bookings:", err)
+}
+
+
+        setTodaysNutrition({
+          calories: baseCals,
+          protein: basePro,
+          carbs: baseCrb,
+          fat: baseFat,
+          targetCalories: targetCals,
+          targetProtein: targetPro,
+          targetCarbs: targetCrb,
+          targetFat: targetFat
+        })
+
       } catch (error) {
-        console.error("Failed to load workout:", error)
+        console.error("Failed to load dashboard data:", error)
       }
     }
-    fetchTodayWorkout()
-  }, []) 
+    fetchDashboardData()
+
+    if (user?.createdAt) {
+      const joinDate = new Date(user.createdAt)
+      const today = new Date()
+      const diffTime = Math.abs(today - joinDate)
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      setStreakDays(diffDays)
+    }
+  }, [user])
 
   const completedCount = todaysWorkout.filter(ex => ex.isCompleted).length
   const totalCount = todaysWorkout.length
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
   
   const toggleExercise = async (exerciseId) => {
-    if (!workoutId) return; // Prevent calling if no workout loaded
+    if (!workoutId) return;
 
     try {
       const res = await fetch(`${API}/workouts/toggle-exercise`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ exerciseId, workoutId }) // Need to send workoutId too
+        body: JSON.stringify({ exerciseId, workoutId })
       })
       const data = await res.json()
 
@@ -70,122 +223,132 @@ export default function ClientDashboardPage() {
     }
   }
 
-
-  
   const today = new Date().toLocaleDateString([], {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric'
+    weekday: 'long', month: 'long', day: 'numeric'
   })
 
-  // Medium-Large Premium Card CSS
-  const glassCard = "bg-white/[0.06] backdrop-blur-2xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-2xl md:rounded-[24px] p-6 md:p-8 transition-all hover:bg-white/[0.08]"
-  
-  // Quick Action Btn (Height ~ 96px)
-  const actionBtn = "flex flex-col items-center justify-center gap-2 p-4 h-24 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] transition-all duration-250 ease-out text-white group"
+  // Shared Styles
+  const actionBtn = "group flex flex-col items-center justify-center gap-2.5 p-4 h-28 rounded-[20px] transition-all duration-300 hover:-translate-y-1"
+  const actionBtnBg = {
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+  }
+  const actionIconBg = {
+    background: 'rgba(196,241,53,0.08)',
+    border: '1px solid rgba(196,241,53,0.15)'
+  }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 md:space-y-7 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pt-4 md:pt-6">
+    <div className="max-w-7xl mx-auto space-y-6 md:space-y-8 relative z-10 pt-4 md:pt-6 pb-20">
       
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(196,241,53,0.03) 0%, transparent 70%)' }} />
+      </div>
+
       {/* Header */}
-      <div>
-        <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight font-['Syne']">{greeting}, {firstName}!</h1>
-        <p className="text-gray-400 font-medium text-sm mt-1">{today} — Let's crush it today.</p>
+      <div className="dashboard-card-1 relative z-10">
+        <h1 className="text-3xl md:text-[34px] font-black text-white tracking-tight font-['Syne']">{greeting}, {firstName}!</h1>
+        <p className="text-gray-500 font-medium text-[15px] mt-1">{today} — Let's crush it today.</p>
       </div>
 
       {isFree ? (
         // ── FREE USER VIEW ──
-        <div className="space-y-6 md:space-y-7">
-          <div className="p-6 md:p-8 rounded-[24px] bg-gradient-to-br from-[#F97316]/10 to-transparent border border-[#F97316]/20 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#F97316]/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/4" />
+        <div className="space-y-6 md:space-y-8 relative z-10">
+          <div className="dashboard-card-2 p-6 md:p-10 rounded-[24px] relative overflow-hidden transition-all duration-300 hover:-translate-y-1"
+            style={{ background: 'linear-gradient(135deg, rgba(196,241,53,0.08) 0%, rgba(255,255,255,0.02) 100%)', border: '1px solid rgba(196,241,53,0.2)' }}>
+            <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/4 pointer-events-none" style={{ background: 'rgba(196,241,53,0.15)' }} />
             <div className="relative z-10 max-w-lg">
-              <h2 className="text-2xl font-black text-white font-['Syne'] mb-2">Welcome to FitForge</h2>
-              <p className="text-gray-300 text-sm leading-relaxed mb-6">Your personal fitness journey starts here. Explore powerful tools designed to get you moving.</p>
-              <Link to="/plans" className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white font-bold rounded-full text-sm transition-colors shadow-md shadow-[#F97316]/10">
-                Unlock Premium Coaching <ArrowRight size={16} />
+              <h2 className="text-2xl md:text-[28px] font-black text-white font-['Syne'] mb-3">Welcome to FitForge</h2>
+              <p className="text-gray-400 text-[15px] leading-relaxed mb-8">
+                Your personal fitness journey starts here. Explore powerful tools designed to get you moving.
+              </p>
+              <Link to="/plans" className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full font-black text-[13px] transition-all duration-200 active:scale-95 hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(196,241,53,0.3)]"
+                style={{ background: 'linear-gradient(135deg, #C4F135, #a3d625)', color: '#0a0a0b' }}>
+                Unlock Premium Coaching <ArrowRight size={14} />
               </Link>
             </div>
           </div>
 
-          <div>
-            <h3 className="text-lg font-bold text-white mb-4 font-['Syne']">Quick Actions</h3>
+          <div className="dashboard-card-3">
+            <h3 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-4">Quick Actions</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              
-              <Link to="/free-diet-plan" className="group flex items-center gap-4 p-5 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] hover:border-[#10b981]/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] transition-all duration-250 ease-out">
-                <div className="w-10 h-10 rounded-full bg-[#10b981]/15 backdrop-blur-md border border-[#10b981]/20 flex items-center justify-center shrink-0">
-                  <Salad size={18} className="text-[#10b981]" />
+              <Link to="/free-diet-plan" className={actionBtn} style={actionBtnBg} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(196,241,53,0.3)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(196,241,53,0.15)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)' }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95" style={actionIconBg}>
+                  <Salad size={20} style={{ color: '#C4F135' }} />
                 </div>
-                <div>
-                  <h4 className="font-bold text-sm text-white group-hover:text-[#10b981] transition-colors">Diet Plan</h4>
-                  <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">Free nutrition strategy</p>
-                </div>
-              </Link>
-
-              <Link to="/dashboard/profile" className="group flex items-center gap-4 p-5 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] hover:border-[#3b82f6]/40 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all duration-250 ease-out">
-                <div className="w-10 h-10 rounded-full bg-[#3b82f6]/15 backdrop-blur-md border border-[#3b82f6]/20 flex items-center justify-center shrink-0">
-                  <Target size={18} className="text-[#3b82f6]" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-white group-hover:text-[#3b82f6] transition-colors">Set Goal</h4>
-                  <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">Update body metrics</p>
+                <div className="text-center">
+                  <h4 className="font-black text-[13px] text-white">Diet Plan</h4>
+                  <p className="text-[11px] text-gray-500 mt-0.5 hidden sm:block">Free nutrition strategy</p>
                 </div>
               </Link>
 
-              <Link to="/trainers" className="group flex items-center gap-4 p-5 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] hover:border-[#a855f7]/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)] transition-all duration-250 ease-out">
-                <div className="w-10 h-10 rounded-full bg-[#a855f7]/15 backdrop-blur-md border border-[#a855f7]/20 flex items-center justify-center shrink-0">
-                  <UserCheck size={18} className="text-[#a855f7]" />
+              <Link to="/dashboard/profile" className={actionBtn} style={actionBtnBg} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(196,241,53,0.3)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(196,241,53,0.15)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)' }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95" style={actionIconBg}>
+                  <Target size={20} style={{ color: '#C4F135' }} />
                 </div>
-                <div>
-                  <h4 className="font-bold text-sm text-white group-hover:text-[#a855f7] transition-colors">Find Coach</h4>
-                  <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">Browse top trainers</p>
-                </div>
-              </Link>
-
-              <Link to="/transform-preview" className="group flex items-center gap-4 p-5 rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:bg-white/[0.1] hover:border-[#F97316]/40 hover:shadow-[0_0_30px_rgba(249,115,22,0.2)] transition-all duration-250 ease-out">
-                <div className="w-10 h-10 rounded-full bg-[#F97316]/15 backdrop-blur-md border border-[#F97316]/20 flex items-center justify-center shrink-0">
-                  <Sparkles size={18} className="text-[#F97316]" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-sm text-white group-hover:text-[#F97316] transition-colors">AI Preview</h4>
-                  <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">See future physique</p>
+                <div className="text-center">
+                  <h4 className="font-black text-[13px] text-white">Set Goal</h4>
+                  <p className="text-[11px] text-gray-500 mt-0.5 hidden sm:block">Update body metrics</p>
                 </div>
               </Link>
 
+              <Link to="/trainers" className={actionBtn} style={actionBtnBg} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(196,241,53,0.3)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(196,241,53,0.15)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)' }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95" style={actionIconBg}>
+                  <UserCheck size={20} style={{ color: '#C4F135' }} />
+                </div>
+                <div className="text-center">
+                  <h4 className="font-black text-[13px] text-white">Find Coach</h4>
+                  <p className="text-[11px] text-gray-500 mt-0.5 hidden sm:block">Browse top trainers</p>
+                </div>
+              </Link>
+
+              <Link to="/transform-preview" className={actionBtn} style={actionBtnBg} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(196,241,53,0.3)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(196,241,53,0.15)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)' }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95" style={actionIconBg}>
+                  <Sparkles size={20} style={{ color: '#C4F135' }} />
+                </div>
+                <div className="text-center">
+                  <h4 className="font-black text-[13px] text-white">AI Preview</h4>
+                  <p className="text-[11px] text-gray-500 mt-0.5 hidden sm:block">See future physique</p>
+                </div>
+              </Link>
             </div>
           </div>
         </div>
       ) : (
         // ── PREMIUM USER VIEW ──
-        <div className="space-y-6 md:space-y-7">
+        <div className="space-y-6 md:space-y-8 relative z-10">
           
-          {/* Quick Actions Grid (Medium Height) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link to="/dashboard/plans" className={`${actionBtn} hover:border-[#3b82f6]/40 hover:shadow-[0_0_30px_rgba(59,130,246,0.2)]`}>
-              <div className="w-10 h-10 rounded-full bg-[#3b82f6]/15 backdrop-blur-md border border-[#3b82f6]/20 flex items-center justify-center group-hover:bg-[#3b82f6]/25 transition-colors">
-                <Dumbbell size={18} className="text-[#3b82f6]" />
+          {/* Quick Actions Grid */}
+          <div className="dashboard-card-2 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Link to="/dashboard/plans" className={actionBtn} style={actionBtnBg} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(196,241,53,0.3)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(196,241,53,0.15)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95" style={actionIconBg}>
+                <Dumbbell size={20} style={{ color: '#C4F135' }} />
               </div>
-              <span className="text-sm font-bold">Start Workout</span>
+              <span className="text-[13px] font-black text-white">Start Workout</span>
             </Link>
-            <Link to="/dashboard/food-ai" className={`${actionBtn} hover:border-[#10b981]/40 hover:shadow-[0_0_30px_rgba(16,185,129,0.2)]`}>
-              <div className="w-10 h-10 rounded-full bg-[#10b981]/15 backdrop-blur-md border border-[#10b981]/20 flex items-center justify-center group-hover:bg-[#10b981]/25 transition-colors">
-                <Salad size={18} className="text-[#10b981]" />
+            <Link to="/dashboard/food-ai" className={actionBtn} style={actionBtnBg} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(196,241,53,0.3)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(196,241,53,0.15)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95" style={actionIconBg}>
+                <Salad size={20} style={{ color: '#C4F135' }} />
               </div>
-              <span className="text-sm font-bold">Log Meal (AI)</span>
+              <span className="text-[13px] font-black text-white">Log Meal (AI)</span>
             </Link>
             <Link 
               to={user?.assignedTrainer ? `/dashboard/chat/${user.assignedTrainer._id || user.assignedTrainer}` : '/dashboard/chat'} 
-              className={`${actionBtn} hover:border-[#a855f7]/40 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)]`}
+              className={actionBtn} style={actionBtnBg} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(196,241,53,0.3)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(196,241,53,0.15)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)' }}
             >
-              <div className="w-10 h-10 rounded-full bg-[#a855f7]/15 backdrop-blur-md border border-[#a855f7]/20 flex items-center justify-center group-hover:bg-[#a855f7]/25 transition-colors">
-                <MessageSquare size={18} className="text-[#a855f7]" />
+              <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95" style={actionIconBg}>
+                <MessageSquare size={20} style={{ color: '#C4F135' }} />
               </div>
-              <span className="text-sm font-bold">Message Coach</span>
+              <span className="text-[13px] font-black text-white">Message Coach</span>
             </Link>
-            <Link to="/dashboard/progress" className={`${actionBtn} hover:border-[#F97316]/40 hover:shadow-[0_0_30px_rgba(249,115,22,0.2)]`}>
-              <div className="w-10 h-10 rounded-full bg-[#F97316]/15 backdrop-blur-md border border-[#F97316]/20 flex items-center justify-center group-hover:bg-[#F97316]/25 transition-colors">
-                <TrendingUp size={18} className="text-[#F97316]" />
+            <Link to="/dashboard/progress" className={actionBtn} style={actionBtnBg} onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(196,241,53,0.3)'; e.currentTarget.style.boxShadow = '0 8px 30px rgba(196,241,53,0.15)' }} onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95" style={actionIconBg}>
+                <TrendingUp size={20} style={{ color: '#C4F135' }} />
               </div>
-              <span className="text-sm font-bold">Log Weight</span>
+              <span className="text-[13px] font-black text-white">Log Weight</span>
             </Link>
           </div>
 
@@ -193,43 +356,66 @@ export default function ClientDashboardPage() {
           <div className="grid lg:grid-cols-3 gap-6">
             
             {/* Today's Workout */}
-            <div className={`${glassCard} lg:col-span-2 flex flex-col relative overflow-hidden`}>
-              <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-[#3b82f6]/10 rounded-full blur-2xl pointer-events-none" />
-              <div className="flex flex-col mb-5 relative z-10 gap-3">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-white font-['Syne']">Today's Workout</h2>
-                  <span className="px-3 py-1 bg-[#3b82f6]/10 text-[#3b82f6] text-[11px] font-bold rounded-md uppercase tracking-wider border border-[#3b82f6]/20">
-                    Upper Body
-                  </span>
+            <div className="dashboard-card-3 lg:col-span-2 flex flex-col relative overflow-hidden rounded-[24px] p-6 md:p-8 transition-all duration-300 hover:-translate-y-0.5"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+              
+              <div className="absolute top-[-20px] right-[-20px] w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(196,241,53,0.05)' }} />
+              
+              <div className="flex flex-col mb-6 relative z-10 gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h2 className="text-[22px] font-black text-white font-['Syne']">{workoutTitle}</h2>
+                  {workoutTitle !== 'Rest Day' && (
+                    <span className="self-start sm:self-auto px-3 py-1.5 text-[11px] font-bold rounded-full uppercase tracking-wider"
+                      style={{ background: 'rgba(196,241,53,0.1)', color: '#C4F135', border: '1px solid rgba(196,241,53,0.2)' }}>
+                      Today's Plan
+                    </span>
+                  )}
                 </div>
+                
                 {/* Progress Bar */}
                 <div className="flex items-center gap-3">
-                  <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#3b82f6] transition-all duration-500 ease-out" style={{ width: `${progressPercent}%` }} />
+                  <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="h-full rounded-full transition-all duration-500 ease-out" 
+                      style={{ width: `${progressPercent}%`, background: 'linear-gradient(90deg, #a3d625, #C4F135)' }} />
                   </div>
-                  <span className="text-xs font-bold text-gray-400">{progressPercent}%</span>
+                  <span className="text-[13px] font-black" style={{ color: '#C4F135' }}>{progressPercent}%</span>
                 </div>
               </div>
               
-              <div className="space-y-3 mb-5 flex-1 relative z-10">
+              <div className="space-y-3 mb-2 flex-1 relative z-10">
                 {todaysWorkout.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-4">No exercises for today! Take a rest.</p>
+                  <div className="flex flex-col items-center justify-center py-10 opacity-70">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                      <Check size={24} className="text-gray-500" />
+                    </div>
+                    <p className="text-gray-400 text-sm font-medium">No exercises for today! Take a well-earned rest.</p>
+                  </div>
                 ) : (
                   todaysWorkout.map((ex) => (
-                    <div key={ex._id} onClick={() => toggleExercise(ex._id)} className={`flex items-center justify-between p-3.5 px-4 rounded-xl border transition-all duration-300 cursor-pointer ${
-                      ex.isCompleted ? 'bg-[#3b82f6]/5 border-[#3b82f6]/20 opacity-50' : 'bg-[#111318]/50 border-white/[0.04] hover:bg-white/[0.04]'
-                    }`}>
+                    <div key={ex._id} onClick={() => toggleExercise(ex._id)} 
+                      className="group flex items-center justify-between p-4 rounded-[16px] transition-all duration-300 cursor-pointer hover:-translate-y-0.5 active:scale-[0.98]"
+                      style={{
+                        background: ex.isCompleted ? 'rgba(196,241,53,0.04)' : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${ex.isCompleted ? 'rgba(196,241,53,0.15)' : 'rgba(255,255,255,0.06)'}`
+                      }}
+                    >
                       <div className="flex items-center gap-4">
-                        <div className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-all duration-300 ${
-                          ex.isCompleted ? 'bg-[#3b82f6] border-[#3b82f6] text-white scale-110' : 'border-white/20'
-                        }`}>
-                          {ex.isCompleted && <Check size={14} strokeWidth={4} />}
+                        {/* Custom Checkbox */}
+                        <div className="w-6 h-6 rounded-[8px] flex items-center justify-center transition-all duration-300 shrink-0"
+                          style={{
+                            background: ex.isCompleted ? '#C4F135' : 'rgba(255,255,255,0.04)',
+                            border: `1px solid ${ex.isCompleted ? '#C4F135' : 'rgba(255,255,255,0.15)'}`
+                          }}
+                        >
+                          {ex.isCompleted && <Check size={14} strokeWidth={4} color="#0a0a0b" className="animate-in zoom-in duration-200" />}
                         </div>
-                        <span className={`text-[15px] font-bold transition-colors ${ex.isCompleted ? 'text-gray-500 line-through' : 'text-white'}`}>
+                        <span className={`text-[15px] font-bold transition-all duration-300 ${ex.isCompleted ? 'text-gray-500 line-through' : 'text-white'}`}>
                           {ex.name}
                         </span>
                       </div>
-                      <span className={`text-[13px] font-medium transition-colors ${ex.isCompleted ? 'text-gray-600' : 'text-gray-400'}`}>{ex.sets}</span>
+                      <span className={`text-[13px] font-bold transition-all duration-300 shrink-0 ${ex.isCompleted ? 'text-gray-600' : 'text-gray-400'}`}>
+                        {ex.sets}
+                      </span>
                     </div>
                   ))
                 )}
@@ -238,73 +424,100 @@ export default function ClientDashboardPage() {
 
             {/* Macros & Streaks */}
             <div className="space-y-6 flex flex-col">
-              {/* Macros Summary */}
-              <div className={`${glassCard} flex-1 flex flex-col justify-center`}>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-white font-['Syne']">Nutrition</h2>
-                  <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-500">Sample</span>
-                </div>
-                <div className="flex items-center justify-between mb-5 opacity-60">
+              
+              {/* Nutrition Summary */}
+              <div className="dashboard-card-4 flex-1 flex flex-col justify-center rounded-[24px] p-6 transition-all duration-300 hover:-translate-y-0.5"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <p className="text-3xl font-bold text-white tracking-tight">1,360</p>
-                    <p className="text-[11px] text-gray-400 uppercase tracking-widest font-bold mt-1">kcal eaten</p>
+                    <p className="text-[32px] font-black text-white font-['Syne'] leading-tight flex items-baseline gap-1">
+                      <AnimatedStat target={todaysNutrition.calories} duration={1200} />
+                      <span className="text-[20px] text-gray-500 font-bold">/ {todaysNutrition.targetCalories}</span>
+                    </p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest mt-1" style={{ color: '#C4F135' }}>kcal eaten</p>
                   </div>
-                  <div className="w-14 h-14 rounded-full border-[4px] border-[#10b981]/80 flex items-center justify-center bg-[#10b981]/5">
-                    <span className="text-xs font-bold text-[#10b981]">68%</span>
-                  </div>
+                  <AnimatedRing percent={Math.min(Math.round((todaysNutrition.calories / todaysNutrition.targetCalories) * 100) || 0, 100)} size={64} strokeWidth={5} />
                 </div>
-                <div className="grid grid-cols-3 gap-3 opacity-60">
-                  <div className="bg-[#111318]/50 p-2.5 rounded-xl border border-white/[0.04] text-center">
-                    <p className="text-[14px] font-bold text-white">98g</p>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Pro</p>
-                  </div>
-                  <div className="bg-[#111318]/50 p-2.5 rounded-xl border border-white/[0.04] text-center">
-                    <p className="text-[14px] font-bold text-white">156g</p>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Carb</p>
-                  </div>
-                  <div className="bg-[#111318]/50 p-2.5 rounded-xl border border-white/[0.04] text-center">
-                    <p className="text-[14px] font-bold text-white">42g</p>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Fat</p>
-                  </div>
+                
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: 'Pro', val: todaysNutrition.protein, target: todaysNutrition.targetProtein, delay: '0.1s' },
+                    { label: 'Carb', val: todaysNutrition.carbs, target: todaysNutrition.targetCarbs, delay: '0.2s' },
+                    { label: 'Fat', val: todaysNutrition.fat, target: todaysNutrition.targetFat, delay: '0.3s' },
+                  ].map((m, i) => (
+                    <div key={i} className="flex flex-col items-center p-3 rounded-[14px] animate-in slide-in-from-bottom-2 fade-in duration-500 fill-mode-both"
+                      style={{ animationDelay: m.delay, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      <span className="text-[15px] font-black text-white flex items-baseline">
+                        <AnimatedStat target={m.val} duration={1000} />
+                        <span className="text-[11px] text-gray-500 font-bold ml-1">/ {m.target}</span><span className="text-[11px] text-gray-500 ml-0.5">g</span>
+                      </span>
+                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">{m.label}</span>
+                    </div>
+                  ))}
                 </div>
-                <Link to="/dashboard/nutrition" className="mt-4 text-[11px] font-bold text-[#10b981] hover:text-[#34d399] transition-colors flex items-center gap-1">
-                  Log today's meals <span aria-hidden>→</span>
+                
+                <Link to="/dashboard/nutrition" className="mt-5 text-[12px] font-bold flex items-center gap-1.5 transition-all duration-200 group w-max" style={{ color: '#C4F135' }}>
+                  Log today's meals <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
 
               {/* Streak */}
-              <div className="bg-gradient-to-r from-[#F97316]/90 to-[#ea580c] rounded-[24px] p-5 relative overflow-hidden shadow-sm shadow-[#F97316]/10 flex items-center justify-between">
-                <Flame size={80} className="absolute right-[-15px] top-[5px] text-white/10 pointer-events-none" />
+              <div className="dashboard-card-4 rounded-[24px] p-6 relative overflow-hidden flex items-center justify-between transition-all duration-300 hover:-translate-y-0.5"
+                style={{ background: 'linear-gradient(135deg, rgba(196,241,53,0.08) 0%, rgba(196,241,53,0.02) 100%)', border: '1px solid rgba(196,241,53,0.2)' }}>
+                <div className="absolute right-0 top-0 w-32 h-32 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(196,241,53,0.15) 0%, transparent 70%)', transform: 'translate(20%, -20%)' }} />
+                
                 <div className="relative z-10">
-                  <p className="text-[11px] font-bold text-white/80 uppercase tracking-widest mb-1">Current Streak</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest mb-1.5" style={{ color: '#C4F135' }}>Current Streak</p>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-black text-white font-['Syne'] leading-none">7</span>
-                    <span className="text-white/90 text-sm font-bold">days</span>
+                    <span className="text-[36px] font-black text-white font-['Syne'] leading-none">
+                      <AnimatedStat target={streakDays} duration={1200} delay={200} />
+                    </span>
+                    <span className="text-gray-400 text-[13px] font-bold">days</span>
                   </div>
-                  <p className="text-[10px] text-white/50 mt-1">(demo — not tracked yet)</p>
+                  <p className="text-[11px] text-gray-500 mt-1 font-medium">active on FitForge</p>
+                </div>
+                
+                <div className="relative z-10 w-16 h-16 rounded-full flex items-center justify-center glow-pulse shrink-0" style={{ background: 'rgba(196,241,53,0.1)', border: '1px solid rgba(196,241,53,0.3)' }}>
+                  <Flame size={28} style={{ color: '#C4F135' }} />
                 </div>
               </div>
             </div>
 
           </div>
 
-          {/* Upcoming Session */}
-          <div className="bg-white/[0.06] backdrop-blur-2xl border border-white/[0.12] border-t-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-[24px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden">
-            <div className="absolute left-[-20px] bottom-[-20px] w-48 h-48 bg-[#a855f7]/5 rounded-full blur-2xl pointer-events-none" />
-            <div className="flex items-center gap-5 relative z-10 w-full md:w-auto">
-              <div className="w-12 h-12 rounded-2xl bg-[#a855f7]/10 text-[#a855f7] flex items-center justify-center shrink-0 border border-[#a855f7]/20">
-                <CalendarIcon size={20} />
+                   {/* Upcoming Session */}
+          {nextSession ? (
+            <div className="dashboard-card-5 rounded-[24px] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden transition-all duration-300"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+              
+              <div className="absolute left-[-20px] bottom-[-20px] w-48 h-48 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(196,241,53,0.05)' }} />
+              
+              <div className="flex items-center gap-5 relative z-10 w-full md:w-auto">
+                <div className="w-14 h-14 rounded-[16px] flex items-center justify-center shrink-0" style={{ background: 'rgba(196,241,53,0.1)', border: '1px solid rgba(196,241,53,0.2)' }}>
+                  <CalendarIcon size={22} style={{ color: '#C4F135' }} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-widest mb-1.5" style={{ color: '#C4F135' }}>Next Session</p>
+                  <h3 className="text-[18px] font-black text-white leading-tight font-['Syne']">
+                    Video Session with Coach
+                  </h3>
+                  <p className="text-[13px] text-gray-400 mt-1">
+                    {new Date(nextSession.slotId.startTime).toLocaleDateString()} at {new Date(nextSession.slotId.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-[11px] font-bold text-[#a855f7] uppercase tracking-widest mb-1">Next Session</p>
-                <h3 className="text-lg font-bold text-white leading-tight font-['Syne']">Strength with Alex Chen</h3>
-                <p className="text-sm text-gray-400 mt-0.5">Today, 6:00 PM (60 min)</p>
-              </div>
+              
+              <Link to={`/dashboard/video/${nextSession.slotId._id}`} className="w-full md:w-auto px-8 py-4 rounded-full font-black text-[13px] transition-all duration-200 text-center active:scale-95 hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(196,241,53,0.3)] glow-pulse"
+                style={{ background: 'linear-gradient(135deg, #C4F135, #a3d625)', color: '#0a0a0b' }}>
+                Join Session
+              </Link>
             </div>
-            <Link to="/dashboard/coach" className="w-full md:w-auto px-6 py-3 bg-[#a855f7]/10 hover:bg-[#a855f7]/20 text-[#a855f7] rounded-xl font-bold text-sm transition-colors text-center border border-[#a855f7]/20 relative z-10 whitespace-nowrap">
-              Join Session
-            </Link>
-          </div>
+          ) : (
+            <div className="dashboard-card-5 rounded-[24px] p-6 text-center opacity-70"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <p className="text-gray-400 text-[14px]">No upcoming sessions scheduled.</p>
+            </div>
+          )}
 
         </div>
       )}

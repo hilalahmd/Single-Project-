@@ -149,9 +149,17 @@ export default function ChatListPage() {
                 <MessageCircle size={24} className="text-[#2563EB]" />
               </div>
               <p className="font-bold text-[16px] text-white mb-1">No conversations yet</p>
-              <p className="text-[13px] text-gray-400">
+              <p className="text-[13px] text-gray-400 mb-6">
                 Your conversations with coaches will appear here.
               </p>
+              
+              {/* Navigate to coach page to start chatting */}
+              <button 
+                onClick={() => navigate(basePath === '/trainer' ? '/trainer/clients' : '/dashboard/coach')}
+                className="px-6 py-3 bg-[#2563EB] hover:bg-blue-500 text-white rounded-xl text-[14px] font-bold shadow-[0_4px_12px_rgba(37,99,235,0.3)] transition-all cursor-pointer"
+              >
+                {basePath === '/trainer' ? 'View My Clients' : 'Go to My Coach'}
+              </button>
             </div>
           )}
         </div>

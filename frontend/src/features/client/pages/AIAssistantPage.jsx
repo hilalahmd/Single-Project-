@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Sparkles, Send, MessageSquare, Plus, Lock } from 'lucide-react'
+import { Sparkles, Send, MessageSquare, Plus, Lock, Loader2 } from 'lucide-react'
 import { useAuth } from '../../../shared/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import API from '../../../shared/utils/api'
 
 export default function AIAssistantPage() {
   const navigate = useNavigate()
@@ -9,10 +10,29 @@ export default function AIAssistantPage() {
   const [input, setInput] = useState('')
   const [started, setStarted] = useState(false)
 
-  const messages = [
-    { text: "Create a diet plan for me", isUser: true },
-    { text: "I'd be happy to help you create a personalized diet plan! To make it effective, could you tell me a bit more about your goals?\n\n1. What is your primary goal? (Weight loss, muscle gain, maintenance)\n2. Do you have any dietary restrictions? (Vegetarian, vegan, gluten-free, etc.)\n3. How many calories do you currently consume, or would you like me to calculate that for you based on your body metrics?", isUser: false }
-  ]
+  const [messages, setMessages] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSendMessage = async (text) => {
+    if (!text.trim() || isLoading) return
+    
+    setStarted(true)
+    const userMessage = text
+    setInput('')
+    
+    setMessages(prev => [...prev, { text: userMessage, isUser: true }])
+    setIsLoading(true)
+
+    try {
+      const res = await API.post('/ai/chat', { message: userMessage })
+      setMessages(prev => [...prev, { text: res.data.answer, isUser: false }])
+    } catch (error) {
+      console.error("AI Assistant Error:", error)
+      setMessages(prev => [...prev, { text: "Sorry, I'm having trouble connecting right now.", isUser: false }])
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const isFree = subscriptionTier === 'free'
 
@@ -91,7 +111,7 @@ export default function AIAssistantPage() {
                 {["Create a diet plan for me", "How many calories in puttu?", "Best exercises for weight loss", "Explain progressive overload"].map((chip, i) => (
                   <button 
                     key={i}
-                    onClick={() => setStarted(true)}
+                    onClick={() => handleSendMessage(chip)}
                     className="p-4 text-sm font-medium text-left border border-white/10 rounded-xl hover:border-[#F97316] hover:bg-[#F97316]/10 hover:text-[#F97316] transition-all text-gray-300 bg-white/5"
                   >
                     {chip}
@@ -113,6 +133,18 @@ export default function AIAssistantPage() {
                   </div>
                 </div>
               ))}
+              {isLoading && (
+                <div className="flex gap-4 max-w-[85%]">
+                  <div className="w-8 h-8 bg-[#F97316] rounded-lg flex items-center justify-center shrink-0 mt-1 shadow-[0_4px_8px_rgba(249,115,22,0.3)]">
+                    <Loader2 size={14} className="text-white animate-spin" />
+                  </div>
+                  <div className="px-5 py-3.5 text-sm bg-white/5 border border-white/10 text-gray-200 rounded-2xl rounded-tl-sm flex items-center gap-1">
+                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -128,7 +160,7 @@ export default function AIAssistantPage() {
                 onChange={(e) => setInput(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl pl-5 pr-14 py-4 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#F97316] focus:ring-1 focus:ring-[#F97316] transition-all resize-none max-h-32"
               />
-              <button onClick={() => setStarted(true)} className="absolute right-2 bottom-2 p-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white rounded-xl transition-colors shadow-[0_4px_12px_rgba(249,115,22,0.3)]"><Send size={18}/></button>
+              <button onClick={() => handleSendMessage(input)} disabled={isLoading} className="absolute right-2 bottom-2 p-2.5 bg-[#F97316] hover:bg-[#EA580C] text-white rounded-xl transition-colors shadow-[0_4px_12px_rgba(249,115,22,0.3)] disabled:opacity-50"><Send size={18}/></button>
             </div>
             <div className="mt-3 flex items-center justify-center gap-2">
               <span className="text-xs font-bold text-gray-500 bg-white/5 border border-white/10 px-3 py-1 rounded-full">3/3 AI diet plans used this month. <a href="#" className="text-[#F97316] hover:text-orange-300 ml-1 underline">Upgrade for unlimited.</a></span>

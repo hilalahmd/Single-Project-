@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Camera, Plus, X } from 'lucide-react'
 import API from '../../../shared/utils/api'
+import { useAuth } from '../../../shared/context/AuthContext'
 
 export default function TrainerProfileEditPage() {
+  const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -21,7 +23,10 @@ export default function TrainerProfileEditPage() {
         const res = await fetch(`${API}/trainers/me/profile`, {
           credentials: 'include'
         })
-        if (!res.ok) throw new Error('Failed to load profile')
+        if (!res.ok) {
+          if (res.status === 404) return // It's a new trainer without a profile yet
+          throw new Error('Failed to load profile')
+        }
         const data = await res.json()
 
         setBio(data.bio || '')
@@ -83,14 +88,17 @@ export default function TrainerProfileEditPage() {
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-sm">
         <div className="flex items-center gap-6 mb-8">
           <div className="relative">
-            <div className="w-24 h-24 bg-[#1E293B] text-gray-400 flex items-center justify-center text-[32px] font-bold rounded-full border border-white/10">A</div>
+            <div className="w-24 h-24 bg-[#1E293B] text-gray-400 flex items-center justify-center text-[32px] font-bold rounded-full border border-white/10 uppercase">
+              {user?.name?.charAt(0) || 'U'}
+            </div>
             <button className="absolute bottom-0 right-0 w-8 h-8 bg-[#2563EB] text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg border border-[#0F172A]">
               <Camera size={14} />
             </button>
           </div>
           <div>
-            <p className="text-[16px] font-semibold text-white">Profile Photo</p>
-            <p className="text-[14px] text-gray-400 mt-1">JPG or PNG, max 2MB</p>
+            <p className="text-[20px] font-bold text-white">{user?.name || 'Trainer Name'}</p>
+            <p className="text-[14px] text-gray-400 mt-1">{user?.email || 'trainer@example.com'}</p>
+            <p className="text-[12px] text-gray-500 mt-2">JPG or PNG, max 2MB (Click camera to update photo)</p>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Eye, EyeOff, Users, TrendingUp, Trophy, Shield } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, Users, TrendingUp, Trophy, Shield, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../../shared/context/AuthContext'
 
 export default function TrainerLoginPage() {
@@ -8,9 +8,15 @@ export default function TrainerLoginPage() {
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const [toast, setToast] = useState(null)
+  const { login, logout } = useAuth()
 
   const trackRef = useRef(null)
+
+  const showToast = (msg) => {
+    setToast(msg)
+    setTimeout(() => setToast(null), 3000)
+  }
 
   useEffect(() => {
     let ticking = false
@@ -32,28 +38,46 @@ export default function TrainerLoginPage() {
   }, [])
 
   const handleLogin = async () => {
-  if (!email || !password) return
-  setLoading(true)
-  try {
-    const data = await login(email, password)
-    if (data.user) {
-      if (data.user.role === 'trainer' || data.user.role === 'wellness_coach') {
-        window.location.href = '/trainer/dashboard'
+    if (!email || !password) return
+    setLoading(true)
+    try {
+      const data = await login(email, password)
+      if (data.user) {
+        if (data.user.role === 'trainer' || data.user.role === 'wellness_coach') {
+          if (data.user.trainerStatus === 'rejected') {
+            if (data.user.rejectionReason) sessionStorage.setItem('rejectionReason', data.user.rejectionReason)
+            window.location.href = '/auth/trainer-resubmit'
+          } else if (data.user.trainerStatus === null || data.user.trainerStatus === 'pending') {
+            await logout()
+            showToast('Admin approval is pending')
+          } else {
+            window.location.href = '/trainer/dashboard'
+          }
+        } else {
+          showToast('This account is not a trainer account')
+        }
       } else {
-        alert('This account is not a trainer account')
+        showToast(data.message)
       }
-    } else {
-      alert(data.message)
+    } catch (err) {
+      showToast('Login failed. Try again.')
+    } finally {
+      setLoading(false)
     }
-  } catch (err) {
-    alert('Login failed. Try again.')
-  } finally {
-    setLoading(false)
   }
-}
 
   return (
     <div className="min-h-screen bg-[#07080C] flex flex-col text-white font-['Inter'] selection:bg-[#F97316] selection:text-white relative overflow-x-hidden">
+      
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+          <div className="bg-orange-500 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-orange-500/20 flex items-center gap-2 text-sm">
+            <AlertCircle size={16} />
+            {toast}
+          </div>
+        </div>
+      )}
 
       {/* GLOBAL FIXED BACKGROUND — matches trainer-register */}
       <div className="fixed inset-0 z-0 pointer-events-none will-change-transform transform-gpu">

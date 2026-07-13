@@ -1,25 +1,25 @@
 import { useState, useEffect } from 'react'
-import { Check, X, FileText, Loader2 } from 'lucide-react'
+import { Check, X, FileText, Loader2, Search, Filter, Ban, AlertCircle } from 'lucide-react'
 import API from '../../../shared/utils/api'
 
 export default function TrainerApprovalsPage() {
   const [activeTab, setActiveTab] = useState('pending')
-  const [rejectModal, setRejectModal] = useState(false)
+  const [rejectModal, setRejectModal] = useState({ open: false, trainerId: null, isSuspend: false })
+  const [reason, setReason] = useState('')
   
   const [trainers, setTrainers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Filters
+  const [searchQuery, setSearchQuery] = useState('')
+  const [specialtyFilter, setSpecialtyFilter] = useState('')
+
   const fetchTrainers = async () => {
     try {
       setLoading(true)
-      // Ippo nammal credentials (cookies) vazhiyanu auth cheyyunnath
-      const res = await fetch(`${API}/admin/trainers`, {
-        credentials: 'include' 
-      })
-      
+      const res = await fetch(`${API}/admin/trainers`, { credentials: 'include' })
       if (!res.ok) throw new Error('Failed to load trainers')
-      
       const data = await res.json()
       setTrainers(data)
     } catch (err) {
@@ -35,11 +35,10 @@ export default function TrainerApprovalsPage() {
 
   const handleApprove = async (trainerId) => {
     try {
-      const res = await fetch(`${API}/admin/approve/${trainerId}`, {
+      const res = await fetch(`${API}/admin/trainers/${trainerId}/approve`, {
         method: 'PUT',
         credentials: 'include'
       })
-      
       if (!res.ok) throw new Error('Failed to approve trainer')
       fetchTrainers()
     } catch (err) {
@@ -47,25 +46,85 @@ export default function TrainerApprovalsPage() {
     }
   }
 
+  const handleAction = async () => {
+    if (!reason.trim()) return alert('Reason is required')
+    try {
+      const endpoint = rejectModal.isSuspend ? `/admin/trainers/${rejectModal.trainerId}/suspend` : `/admin/trainers/${rejectModal.trainerId}/reject`
+      const res = await fetch(`${API}${endpoint}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason })
+      })
+      if (!res.ok) throw new Error(`Failed to ${rejectModal.isSuspend ? 'suspend' : 'reject'} trainer`)
+      setRejectModal({ open: false, trainerId: null, isSuspend: false })
+      setReason('')
+      fetchTrainers()
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
   const filteredTrainers = trainers.filter(t => {
-    if (activeTab === 'pending') return !t.isApproved
-    if (activeTab === 'approved') return t.isApproved
-    return false 
+    if (t.status !== activeTab) return false
+    
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      const name = t.userId?.name?.toLowerCase() || ''
+      const email = t.userId?.email?.toLowerCase() || ''
+      if (!name.includes(query) && !email.includes(query)) return false
+    }
+
+    // Specialty filter
+    if (specialtyFilter) {
+      if (!t.specialties || !t.specialties.includes(specialtyFilter)) return false
+    }
+
+    return true
   })
+
+  // Extract all unique specialties for the filter dropdown
+  const allSpecialties = Array.from(new Set(trainers.flatMap(t => t.specialties || [])))
 
   if (loading) {
     return <div className="flex justify-center items-center h-64"><Loader2 className="animate-spin text-gray-500" size={32} /></div>
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8 pb-12">
       <div>
         <h1 className="text-3xl font-bold text-black tracking-tight">Trainer Approvals</h1>
-        <p className="text-gray-500 mt-1 font-medium">Review and manage trainer applications.</p>
+        <p className="text-gray-500 mt-1 font-medium">Review, approve, and manage trainer applications.</p>
+      </div>
+
+      {/* Filters and Search */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-gray-200">
+        <div className="relative flex-1 w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <input 
+            type="text" 
+            placeholder="Search by name or email..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-sm font-medium"
+          />
+        </div>
+        <div className="relative w-full sm:w-auto">
+          <select 
+            value={specialtyFilter}
+            onChange={(e) => setSpecialtyFilter(e.target.value)}
+            className="w-full sm:w-auto pl-10 pr-8 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-black text-sm font-medium appearance-none"
+          >
+            <option value="">All Specialties</option>
+            {allSpecialties.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+        </div>
       </div>
 
       <div className="border-b border-gray-200 flex gap-8">
-        {['pending', 'approved', 'rejected'].map(tab => (
+        {['pending', 'approved', 'rejected', 'suspended'].map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={`pb-4 text-sm font-bold capitalize transition-colors relative ${activeTab === tab ? 'text-black' : 'text-gray-400 hover:text-black'}`}>
             {tab}
@@ -78,16 +137,16 @@ export default function TrainerApprovalsPage() {
 
       {filteredTrainers.length === 0 ? (
         <div className="text-center py-12 text-gray-500 border border-gray-200 rounded-2xl bg-gray-50">
-          No {activeTab} trainers found.
+          No {activeTab} trainers match your filters.
         </div>
       ) : (
         <div className="grid lg:grid-cols-2 gap-6">
           {filteredTrainers.map(t => (
-            <div key={t._id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div key={t._id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col">
               <div className="flex justify-between items-start mb-6">
                 <div className="flex gap-4">
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-xl font-bold text-black border border-gray-200 uppercase">
-                    {t.userId?.name ? t.userId.name.substring(0, 2) : 'TR'}
+                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-xl font-bold text-black border border-gray-200 uppercase overflow-hidden">
+                    {t.profilePhoto ? <img src={t.profilePhoto} alt="Profile" className="w-full h-full object-cover" /> : (t.userId?.name ? t.userId.name.substring(0, 2) : 'TR')}
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-black">{t.userId?.name || 'Unknown User'}</h2>
@@ -99,45 +158,69 @@ export default function TrainerApprovalsPage() {
               
               <div className="grid sm:grid-cols-2 gap-4 mb-6 text-sm">
                 <div>
-                  <p className="font-bold text-gray-400 mb-2 uppercase tracking-wider text-[10px]">Specialties</p>
-                  <div className="flex flex-wrap gap-1">
-                    {t.specialties && t.specialties.length > 0 ? t.specialties.map(s => <span key={s} className="px-2 py-1 bg-white border border-gray-200 text-gray-700 text-[11px] font-bold rounded">{s}</span>) : <span className="text-gray-400 text-xs">Not specified</span>}
-                  </div>
+                  <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-1">Pricing (Monthly)</p>
+                  <p className="font-bold text-black">₹{t.pricing?.wellnessMonthly || 0} Wellness</p>
+                  <p className="font-bold text-black mt-1">₹{t.pricing?.personalTrainingMonthly || 0} PT</p>
                 </div>
                 <div>
-                  <p className="font-bold text-gray-400 mb-2 uppercase tracking-wider text-[10px]">Languages</p>
-                  <div className="flex flex-wrap gap-1">
-                    {t.languagesSpoken && t.languagesSpoken.length > 0 ? t.languagesSpoken.map(l => <span key={l} className="px-2 py-1 bg-gray-100 border border-gray-200 text-black text-[11px] font-bold rounded">{l}</span>) : <span className="text-gray-400 text-xs">Not specified</span>}
-                  </div>
+                  <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-1">Experience</p>
+                  <p className="font-bold text-black">{t.experience || 0} Years</p>
                 </div>
-                <div>
-                  <p className="font-bold text-gray-400 mb-1 uppercase tracking-wider text-[10px]">Role</p>
-                  <p className="font-bold text-black capitalize">{t.role.replace('_', ' ')}</p>
-                </div>
-              </div>
-              
-              <div className="mb-6">
-                <p className="font-bold text-gray-400 mb-2 uppercase tracking-wider text-[10px]">Bio</p>
-                <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100 font-medium">{t.bio || 'No bio provided.'}</p>
-              </div>
-              
-              <div className="mb-6">
-                <p className="font-bold text-gray-400 mb-2 uppercase tracking-wider text-[10px]">Certificates</p>
-                {t.certifications && t.certifications.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {t.certifications.map((cert, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm font-bold text-black bg-white border border-gray-200 w-max px-4 py-2.5 rounded-xl shadow-sm"><FileText size={16} /> {cert}</div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-400">No certificates uploaded.</p>
-                )}
               </div>
 
+              <div className="mb-6 flex-1">
+                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-2">Specialties</p>
+                <div className="flex flex-wrap gap-2">
+                  {t.specialties?.length ? t.specialties.map((s, i) => (
+                    <span key={i} className="px-2 py-1 bg-gray-100 text-black text-xs font-bold rounded-md">
+                      {s}
+                    </span>
+                  )) : <span className="text-xs text-gray-400">None</span>}
+                </div>
+              </div>
+
+              <div className="mb-6 flex-1">
+                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-2">Certifications</p>
+                <div className="space-y-2">
+                  {t.certifications?.length ? t.certifications.map((c, i) => (
+                    <div key={i} className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
+                      <FileText size={14} className="text-gray-400 shrink-0" />
+                      <span className="text-xs font-bold text-black truncate flex-1">Certificate {i+1}</span>
+                      <a href={c} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 font-bold hover:underline">View</a>
+                    </div>
+                  )) : <p className="text-xs text-gray-400">No documents uploaded</p>}
+                </div>
+              </div>
+
+              {(t.rejectionReason || t.reason) && (
+                <div className="mb-6 bg-red-50 p-3 rounded-lg border border-red-100 flex gap-2 items-start">
+                  <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-red-500">Reason for {t.status}</p>
+                    <p className="text-xs text-red-400 mt-0.5">{t.rejectionReason || t.reason}</p>
+                  </div>
+                </div>
+              )}
+
               {activeTab === 'pending' && (
-                <div className="flex gap-3 pt-6 border-t border-gray-100">
-                  <button onClick={() => handleApprove(t._id)} className="flex-1 py-3 bg-black text-white rounded-xl text-sm font-bold flex items-center justify-center hover:bg-gray-800 transition-colors shadow-sm"><Check size={16} className="mr-2" /> Approve</button>
-                  <button onClick={() => setRejectModal(true)} className="flex-1 py-3 bg-white border border-red-200 text-red-600 rounded-xl text-sm font-bold flex items-center justify-center hover:bg-red-50 transition-colors shadow-sm"><X size={16} className="mr-2" /> Reject</button>
+                <div className="flex gap-3 pt-6 border-t border-gray-100 mt-auto">
+                  <button onClick={() => setRejectModal({ open: true, trainerId: t._id, isSuspend: false })} className="flex-1 py-3 bg-red-50 text-red-600 font-bold text-sm rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
+                    <X size={16} />
+                    Reject
+                  </button>
+                  <button onClick={() => handleApprove(t._id)} className="flex-1 py-3 bg-black text-white font-bold text-sm rounded-xl hover:bg-gray-900 transition-colors flex items-center justify-center gap-2">
+                    <Check size={16} />
+                    Approve
+                  </button>
+                </div>
+              )}
+
+              {activeTab === 'approved' && (
+                <div className="flex gap-3 pt-6 border-t border-gray-100 mt-auto">
+                  <button onClick={() => setRejectModal({ open: true, trainerId: t._id, isSuspend: true })} className="flex-1 py-3 bg-orange-50 text-orange-600 font-bold text-sm rounded-xl hover:bg-orange-100 transition-colors flex items-center justify-center gap-2">
+                    <Ban size={16} />
+                    Suspend
+                  </button>
                 </div>
               )}
             </div>
@@ -145,19 +228,32 @@ export default function TrainerApprovalsPage() {
         </div>
       )}
 
-      {/* Modal - Unchanged */}
-      {rejectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setRejectModal(false)}></div>
-          <div className="relative bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-gray-100"><h2 className="text-xl font-bold text-black">Reject Application</h2></div>
-            <div className="p-6 space-y-4">
-              <p className="text-sm text-gray-500 font-medium">Please provide a reason for rejecting this trainer application.</p>
-              <textarea rows="4" placeholder="Reason for rejection..." className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black resize-none bg-white text-black placeholder-gray-400"></textarea>
-            </div>
-            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
-              <button onClick={() => setRejectModal(false)} className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:text-black transition-colors">Cancel</button>
-              <button onClick={() => setRejectModal(false)} className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-bold rounded-xl shadow-sm transition-colors">Confirm Rejection</button>
+      {/* Reject / Suspend Modal */}
+      {rejectModal.open && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full animate-in zoom-in-95 duration-200 shadow-2xl">
+            <h3 className="text-2xl font-bold text-black tracking-tight mb-2">
+              {rejectModal.isSuspend ? 'Suspend Trainer' : 'Reject Application'}
+            </h3>
+            <p className="text-gray-500 text-sm font-medium mb-6">
+              Please provide a reason. This will be visible to the trainer.
+            </p>
+            
+            <textarea 
+              rows={4}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="e.g. Incomplete certifications, invalid ID..."
+              className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:border-black text-sm font-medium resize-none mb-6"
+            />
+            
+            <div className="flex gap-3">
+              <button onClick={() => { setRejectModal({ open: false, trainerId: null, isSuspend: false }); setReason(''); }} className="flex-1 py-3 border border-gray-200 text-black font-bold text-sm rounded-xl hover:bg-gray-50 transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleAction} className={`flex-1 py-3 text-white font-bold text-sm rounded-xl transition-colors ${rejectModal.isSuspend ? 'bg-orange-500 hover:bg-orange-600' : 'bg-red-500 hover:bg-red-600'}`}>
+                Confirm {rejectModal.isSuspend ? 'Suspend' : 'Reject'}
+              </button>
             </div>
           </div>
         </div>
