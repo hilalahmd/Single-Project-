@@ -30,7 +30,8 @@ import {
   User,
   Sun,
   Moon,
-  Sparkles
+  Sparkles,
+  Activity
 } from 'lucide-react'
 
 import { useAuth } from '../context/AuthContext'
@@ -73,10 +74,20 @@ const adminNav = [
   { label: 'Payouts',       to: '/admin/payouts',            icon: DollarSign },
   { label: 'Revenue',       to: '/admin/revenue',            icon: BarChart3 },
   { label: 'Subscriptions', to: '/admin/subscriptions',      icon: Layers },
+  { label: 'Audit Logs',    to: '/admin/audit-logs',         icon: Shield },
+]
+
+const managerNav = [
+  { label: 'Dashboard',     to: '/manager/dashboard',        icon: LayoutDashboard },
+  { label: 'Approvals',     to: '/manager/approvals',        icon: CheckSquare },
+  { label: 'Monitor',       to: '/manager/monitor',          icon: Activity },
+  { label: 'Reports',       to: '/manager/reports',          icon: Shield },
+  { label: 'Users',         to: '/manager/users',            icon: Users },
 ]
 
 function useNavItems(role, subscriptionTier = 'free') {
   if (role === 'admin')   return adminNav
+  if (role === 'manager') return managerNav
   if (role === 'trainer' || role === 'wellness_coach') return trainerNav
   return clientNav
 }
@@ -103,7 +114,7 @@ export default function DashboardLayout() {
   }
 
   const sidebarWidth = collapsed ? 'w-16' : 'w-56'
-  const isAdminMode = role === 'admin'
+  const isAdminMode = role === 'admin' || role === 'manager'
   const isPremiumMode = !isAdminMode
 
   const BackgroundOrbs = () => isPremiumMode ? (

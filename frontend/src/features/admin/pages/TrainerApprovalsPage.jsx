@@ -151,7 +151,15 @@ export default function TrainerApprovalsPage() {
                   <div>
                     <h2 className="text-xl font-bold text-black">{t.userId?.name || 'Unknown User'}</h2>
                     <p className="text-sm text-gray-500 font-medium">{t.userId?.email}</p>
-                    <p className="text-xs text-gray-400 mt-1 font-medium">Applied: {new Date(t.createdAt).toLocaleDateString()}</p>
+                    <div className="flex items-center gap-3 mt-1">
+                      <p className="text-xs text-gray-400 font-medium">Applied: {new Date(t.createdAt).toLocaleDateString()}</p>
+                      {t.rating > 0 && (
+                        <div className="flex items-center gap-1 text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">
+                          <span>★ {t.rating}</span>
+                          <span className="text-yellow-400 font-medium">({t.reviewCount})</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

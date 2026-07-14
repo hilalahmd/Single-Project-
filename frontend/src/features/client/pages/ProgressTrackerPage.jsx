@@ -681,9 +681,9 @@ export default function ProgressTrackerPage() {
                       <div className="mb-6 px-1 flex-1">
                         <div className="flex gap-3 items-end h-40">
                           <div className="flex flex-col justify-between h-full pb-1 text-[10px] font-bold text-gray-500 text-right w-10 shrink-0">
-                            <span>{(Math.max(...weightHistory.map(d => d.value)) + 0.5).toFixed(1)}</span>
-                            <span>{((Math.max(...weightHistory.map(d => d.value)) + Math.min(...weightHistory.map(d => d.value))) / 2).toFixed(1)}</span>
-                            <span>{(Math.min(...weightHistory.map(d => d.value)) - 0.5).toFixed(1)}</span>
+                            <span>{weightHistory.length > 0 ? (Math.max(...weightHistory.map(d => d.value)) + 0.5).toFixed(1) : "0.0"}</span>
+                            <span>{weightHistory.length > 0 ? ((Math.max(...weightHistory.map(d => d.value)) + Math.min(...weightHistory.map(d => d.value))) / 2).toFixed(1) : "0.0"}</span>
+                            <span>{weightHistory.length > 0 ? (Math.min(...weightHistory.map(d => d.value)) - 0.5).toFixed(1) : "0.0"}</span>
                           </div>
                           <div className="flex-1 relative h-full">
                             {[0, 50, 100].map(p => (
@@ -767,8 +767,8 @@ export default function ProgressTrackerPage() {
                       <div className="mb-6 px-1 flex-1">
                         <div className="flex gap-3 items-end h-40">
                           <div className="flex flex-col justify-between h-full pb-1 text-[10px] font-bold text-gray-500 text-right w-10 shrink-0">
-                            <span>{(Math.max(...strengthData.map(d => d.value)) * 1.05).toFixed(0)}</span>
-                            <span>{(Math.max(...strengthData.map(d => d.value)) * 0.5).toFixed(0)}</span>
+                            <span>{strengthData.length > 0 ? (Math.max(...strengthData.map(d => d.value)) * 1.05).toFixed(0) : "0"}</span>
+                            <span>{strengthData.length > 0 ? (Math.max(...strengthData.map(d => d.value)) * 0.5).toFixed(0) : "0"}</span>
                             <span>0</span>
                           </div>
                           <div className="flex-1 relative h-full">

@@ -234,7 +234,7 @@ export default function ClientAppLayout() {
         </button>
       </nav>
 
-      {/* ── Mobile More Menu Overlay ── */}
+      {/* Mobile More Menu Overlay */}
       {mobileMoreOpen && (
         <div className="md:hidden fixed inset-0 z-40 flex flex-col justify-end bg-black/60 backdrop-blur-sm animate-in fade-in" onClick={() => setMobileMoreOpen(false)}>
           <div 
@@ -265,6 +265,17 @@ export default function ClientAppLayout() {
           </div>
         </div>
       )}
+
+      {/* ── Floating AI Support Widget ── */}
+      <Link
+        to="/dashboard/ai"
+        className="fixed bottom-24 md:bottom-8 right-4 md:right-8 z-50 flex items-center justify-center w-[60px] h-[60px] rounded-full shadow-2xl transition-all duration-300 hover:scale-110 hover:-translate-y-1 group"
+        style={{ background: 'linear-gradient(135deg, #C4F135, #3b82f6)', boxShadow: '0 8px 32px rgba(196,241,53,0.3)' }}
+        title="Ask FitForge AI"
+      >
+        <div className="absolute inset-0 rounded-full animate-ping opacity-30" style={{ background: '#C4F135' }} />
+        <Bot size={28} className="text-[#0a0a0b] group-hover:rotate-12 transition-transform duration-300" />
+      </Link>
     </div>
   )
 }

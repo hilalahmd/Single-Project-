@@ -69,12 +69,8 @@ export default function TrainerDashboardPage() {
     { label: 'Earnings Balance', value: `$${dashboardStats.earnings}`, icon: DollarSign, color: 'text-emerald-400' },
   ]
 
-  // Ithu randum ippozhathekku dummy aayi thanne irikkatte (Next step-il idh namukku real aakkam)
-  const upcomingSessions = [
-    { client: 'David Kim', time: '9:00 AM', duration: '60 min', type: 'Strength Training' },
-    { client: 'Anita Rao', time: '11:00 AM', duration: '45 min', type: 'Form Review' },
-    { client: 'Tom Morris', time: '2:00 PM', duration: '60 min', type: 'HIIT Session' },
-  ]
+  const upcomingSessions = dashboardStats.upcomingSessionsList || []
+
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">

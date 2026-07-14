@@ -20,6 +20,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
   if (allowedRoles && !allowedRoles.includes(userRole)) {
     // Logged in but doesn't have the right role
     if (userRole === 'admin') return <Navigate to="/admin" replace />;
+    if (userRole === 'manager') return <Navigate to="/manager/dashboard" replace />;
     if (userRole === 'trainer' || userRole === 'wellness_coach') return <Navigate to="/trainer/dashboard" replace />;
     return <Navigate to="/dashboard" replace />;
   }

@@ -16,7 +16,7 @@ export const createSlots = async (req, res) => {
 
     // ── Step 0: SECURITY: Trainer Approval Check ────────────────────────────
     const trainer = await Trainer.findOne({ userId: req.user._id })
-    if (!trainer || trainer.status !== 'active') {
+    if (!trainer || trainer.status !== 'approved') {
       return res.status(403).json({
         success: false,
         message: 'Only approved (active) trainers can create schedule slots.'

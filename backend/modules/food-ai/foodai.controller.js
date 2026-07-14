@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import User from '../users/user.model.js'
 import { getGenAI } from '../../config/gemini.js'
 import MealLog from './meallog.model.js'
+import { uploadFile } from '../../shared/services/storage.service.js'
 
 
 const MONTHLY_LIMIT = 51;
@@ -348,7 +349,6 @@ export const generateFreeDietPlan = async (req, res) => {
   }
 }
 
-console.log("KEY LOADED:", process.env.GEMINI_API_KEY ? "yes, length " + process.env.GEMINI_API_KEY.length : "MISSING");
 
 export const analyzeFoodImage = async (req, res) => {
   try {
@@ -364,6 +364,18 @@ export const analyzeFoodImage = async (req, res) => {
 
     const mimeType = matches[1]
     const data = matches[2]
+
+        // Base64 string-ne oru File pole aakkunnu
+    const buffer = Buffer.from(data, 'base64')
+    const fileObj = { buffer }
+    
+    // Cloudinary-lekku upload cheyyunnu!
+    const uploadResult = await uploadFile(fileObj, 'food-scans')
+    
+    // Ippo namukku image-nte URL kitti: uploadResult.url
+    // Njan ithu print cheythu kanikkan parayam
+    console.log("Image saved in Cloudinary! URL:", uploadResult.url)
+
 
     const genAI = getGenAI()
     const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })

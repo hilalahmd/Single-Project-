@@ -7,6 +7,9 @@ export default function UserManagementPage() {
   const [selectedUser, setSelectedUser] = useState(null)
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [roleFilter, setRoleFilter] = useState('All Roles')
+  const [statusFilter, setStatusFilter] = useState('All Statuses')
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -24,7 +27,60 @@ export default function UserManagementPage() {
     }
     fetchUsers()
   }, [])
+  const handleSuspend = async (userId, currentStatus) => {
+    if (!window.confirm(`Are you sure you want to ${currentStatus === 'active' ? 'suspend' : 'activate'} this user?`)) return
+    try {
+      const res = await fetch(`${API}/admin/users/${userId}/suspend`, {
+        method: 'PUT',
+        credentials: 'include'
+      })
+      if (res.ok) {
+        // Refresh users list
+        const updatedUsers = await fetch(`${API}/admin/users`, { credentials: 'include' }).then(r => r.json())
+        setUsers(updatedUsers)
+        if (selectedUser && selectedUser._id === userId) {
+          setSelectedUser(updatedUsers.find(u => u._id === userId))
+        }
+      }
+    } catch (err) {
+      console.error("Failed to suspend user", err)
+    }
+  }
 
+  const handleDelete = async (userId) => {
+    if (!window.confirm('Are you sure you want to delete this user completely?')) return
+    try {
+      const res = await fetch(`${API}/admin/users/${userId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      if (res.ok) {
+        setUsers(prev => prev.filter(u => u._id !== userId))
+        if (selectedUser && selectedUser._id === userId) {
+          setSelectedUser(null)
+        }
+      }
+    } catch (err) {
+      console.error("Failed to delete user", err)
+    }
+  }
+
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = (u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase()))
+    
+    let matchesRole = true
+    if (roleFilter !== 'All Roles') {
+      const targetRole = roleFilter.toLowerCase() === 'client' ? 'user' : roleFilter.toLowerCase()
+      matchesRole = u.role === targetRole
+    }
+    
+    let matchesStatus = true
+    if (statusFilter !== 'All Statuses') {
+      matchesStatus = u.status === statusFilter.toLowerCase()
+    }
+    
+    return matchesSearch && matchesRole && matchesStatus
+  })
 
   return (
     <div className="max-w-7xl mx-auto relative overflow-hidden flex h-[calc(100vh-6rem)] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 bg-[#F9FAFB]">
@@ -37,12 +93,26 @@ export default function UserManagementPage() {
         <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex-1 relative">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input type="text" placeholder="Search by name or email..." className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors" />
+            <input 
+              type="text" 
+              placeholder="Search by name or email..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors" 
+            />
           </div>
-          <select className="px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none bg-white">
+          <select 
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none bg-white cursor-pointer"
+          >
             <option>All Roles</option><option>Client</option><option>Trainer</option>
           </select>
-          <select className="px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none bg-white">
+          <select 
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none bg-white cursor-pointer"
+          >
             <option>All Statuses</option><option>Active</option><option>Suspended</option>
           </select>
         </div>
@@ -58,7 +128,13 @@ export default function UserManagementPage() {
                 </tr>
               </thead>
                           <tbody className="divide-y divide-gray-100">
-                {users.map((row) => (
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center text-gray-500 font-medium">
+                      No users match your filters.
+                    </td>
+                  </tr>
+                ) : filteredUsers.map((row) => (
                   <tr key={row._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -82,8 +158,8 @@ export default function UserManagementPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <button onClick={() => setSelectedUser(row)} className="p-1.5 text-gray-400 hover:text-black transition-colors rounded hover:bg-gray-100"><Eye size={16} /></button>
-                        <button className="p-1.5 text-gray-400 hover:text-amber-500 transition-colors rounded hover:bg-amber-50"><Ban size={16} /></button>
-                        <button className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded hover:bg-red-50"><Trash2 size={16} /></button>
+                        <button onClick={() => handleSuspend(row._id, row.status)} className="p-1.5 text-gray-400 hover:text-amber-500 transition-colors rounded hover:bg-amber-50" title={row.status === 'active' ? 'Suspend' : 'Activate'}><Ban size={16} /></button>
+                        <button onClick={() => handleDelete(row._id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors rounded hover:bg-red-50" title="Delete"><Trash2 size={16} /></button>
                       </div>
                     </td>
                   </tr>
@@ -141,8 +217,12 @@ export default function UserManagementPage() {
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex gap-3 bg-gray-50">
-              <button className="flex-1 py-2.5 border border-amber-200 bg-amber-50 text-amber-700 font-bold text-sm rounded-lg hover:bg-amber-100 transition-colors">Suspend</button>
-              <button className="flex-1 py-2.5 border border-red-200 bg-red-50 text-red-700 font-bold text-sm rounded-lg hover:bg-red-100 transition-colors">Delete</button>
+              <button onClick={() => handleSuspend(selectedUser._id, selectedUser.status)} className="flex-1 py-2.5 border border-amber-200 bg-amber-50 text-amber-700 font-bold text-sm rounded-lg hover:bg-amber-100 transition-colors">
+                {selectedUser.status === 'active' ? 'Suspend' : 'Activate'}
+              </button>
+              <button onClick={() => handleDelete(selectedUser._id)} className="flex-1 py-2.5 border border-red-200 bg-red-50 text-red-700 font-bold text-sm rounded-lg hover:bg-red-100 transition-colors">
+                Delete
+              </button>
             </div>
           </>
         )}

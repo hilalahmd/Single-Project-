@@ -7,15 +7,13 @@ import User from '../users/user.model.js'
 // @access  Private (Client)
 export const getAvailableSlots = async (req, res) => {
   try {
-    console.log("getAvailableSlots hit by user:", req.user?.id)
-    const user = await User.findById(req.user.id)
-    console.log("Found user:", user?.name)
-    
-    // For testing purposes, if no trainer is assigned, we use a dummy trainer ID 
-    // In production, we would use user.assignedTrainer
-    const trainerId = user.assignedTrainer || '66810b407fcfab399f6b9999'
+    const user = await User.findById(req.user.id).select('assignedTrainer').lean()
+    if (!user?.assignedTrainer) {
+      return res.status(404).json({ success: false, message: 'No trainer assigned to your account.' })
+    }
 
-    
+    const trainerId = user.assignedTrainer
+
     // Smart Logic: Generate dynamic 3 days of slots (10 AM, 2 PM, 4 PM)
     const availableSlots = []
     let slotId = 1
@@ -68,14 +66,19 @@ export const bookSession = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Start time is required to book a session.' })
     }
 
-    const user = await User.findById(req.user.id)
+    const user = await User.findById(req.user.id).select('assignedTrainer').lean()
     
-    // Testing fallback
-    const trainerId = user.assignedTrainer || '66810b407fcfab399f6b9999'
-    const startDate = new Date(startTime)
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000) // 1 Hour session default
+    // No longer falls back to a hardcoded test ID — that caused bookings to be created
+    // against a non-existent trainer, which broke the trainer dashboard.
+    if (!user?.assignedTrainer) {
+      return res.status(400).json({ success: false, message: 'You must be assigned to a trainer before booking a session.' })
+    }
 
-    // Professional touch: Double Booking Prevention
+    const trainerId = user.assignedTrainer
+    const startDate = new Date(startTime)
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000) // 1 hour
+
+    // Double booking prevention
     const existingSession = await Session.findOne({
       trainerId,
       startTime: startDate,

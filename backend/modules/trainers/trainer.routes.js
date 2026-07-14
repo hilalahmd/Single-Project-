@@ -8,7 +8,9 @@ import {
   getMyClients,
   resubmitTrainerRegistration,
   getTrainerDashboardStats,
-  getUnreadMessages
+  getUnreadMessages,
+  getTrainerEarnings,
+  addReview
 } from './trainer.controller.js'
 import { protect } from '../../middleware/authenticate.js'
 import { restrictTo } from '../../middleware/authorize.js'
@@ -62,8 +64,8 @@ router.get('/earnings', protect, restrictTo('trainer'), getTrainerEarnings)
 router.put(
   '/resubmit',
   trainerLimiter,
-  protect,
-  restrictTo('trainer', 'wellness_coach'),
+  protect, 
+  restrictTo('trainer', 'wellness_coach'), 
   upload.fields([
     { name: 'profilePhoto', maxCount: 1 },
     { name: 'certifications', maxCount: 5 }
@@ -73,5 +75,7 @@ router.put(
 
 
 router.put('/profile', protect, restrictTo('trainer', 'wellness_coach'), updateTrainerProfile)
+
+router.post('/:id/review', protect, restrictTo('user'), addReview)
 
 export default router

@@ -52,6 +52,18 @@ export default function MyCoachPage() {
   const [sessions, setSessions] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
+  // Reporting State
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [reportReason, setReportReason] = useState('Unprofessional behavior')
+  const [reportDetails, setReportDetails] = useState('')
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false)
+
+  // Rating State
+  const [showRatingModal, setShowRatingModal] = useState(false)
+  const [rating, setRating] = useState(5)
+  const [ratingComment, setRatingComment] = useState('')
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false)
+
   let assignedCoach = {
     name: user?.assignedTrainer?.name || 'Awaiting Assignment',
     role: subscriptionTier === 'wellness' ? 'Wellness Coach' : 'Personal Trainer'
@@ -115,7 +127,67 @@ export default function MyCoachPage() {
       }
     } catch (error) {
       console.error(error)
+      console.error(error)
       setRequestStatus('idle')
+    }
+  }
+
+  const handleReportSubmit = async (e) => {
+    e.preventDefault()
+    if (!reportDetails.trim()) return alert("Please provide details for the report.")
+    
+    setIsSubmittingReport(true)
+    try {
+      const res = await fetch(`${API}/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          reportedTrainer: user.assignedTrainer._id,
+          reason: reportReason,
+          details: reportDetails
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert("Report submitted successfully. Our managers will review it shortly.")
+        setShowReportModal(false)
+        setReportDetails('')
+      } else {
+        alert(data.message || "Failed to submit report")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("An error occurred while submitting the report.")
+    } finally {
+      setIsSubmittingReport(false)
+    }
+  }
+
+  const handleRatingSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubmittingRating(true)
+    try {
+      const res = await fetch(`${API}/trainers/${user.assignedTrainer._id}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ rating, comment: ratingComment })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        alert("Thank you! Your rating has been submitted.")
+        setShowRatingModal(false)
+        setRatingComment('')
+        setRating(5)
+      } else {
+        alert(data.message || "Failed to submit rating")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("An error occurred while submitting your rating.")
+    } finally {
+      setIsSubmittingRating(false)
     }
   }
 
@@ -248,20 +320,36 @@ export default function MyCoachPage() {
                 aria-label="Message your coach"
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-black transition-all duration-200 active:scale-95 shrink-0 ${
                   subscriptionTier === 'free'
-                    ? 'opacity-40 cursor-not-allowed'
-                    : 'hover:-translate-y-0.5'
+                    ? 'bg-[#111318] text-gray-400 border border-white/10'
+                    : 'bg-[#C4F135] text-black hover:bg-[#a3d625] shadow-[0_4px_20px_rgba(196,241,53,0.3)]'
                 }`}
-                style={{
-                  background: subscriptionTier === 'free'
-                    ? 'rgba(255,255,255,0.06)'
-                    : 'linear-gradient(135deg, #C4F135, #a3d625)',
-                  color: subscriptionTier === 'free' ? '#6b7280' : '#0a0a0b',
-                  boxShadow: subscriptionTier === 'free' ? 'none' : '0 4px 16px rgba(196,241,53,0.3)',
-                }}
               >
-                <MessageSquare size={14} />
+                {subscriptionTier === 'free' ? <Lock size={16} /> : <MessageSquare size={16} />}
                 Message Coach
               </button>
+
+              {/* Rate Coach */}
+              {!isAwaitingCoach && subscriptionTier !== 'free' && (
+                <button
+                  onClick={() => setShowRatingModal(true)}
+                  aria-label="Rate your coach"
+                  className="p-2.5 text-yellow-500 hover:text-yellow-400 bg-[#111318] hover:bg-white/5 border border-white/10 rounded-full transition-all shrink-0 group"
+                  title="Rate Coach"
+                >
+                  <Sparkles size={16} className="group-hover:scale-110 transition-transform" />
+                </button>
+              )}
+
+              {/* Report Coach */}
+              {!isAwaitingCoach && subscriptionTier !== 'free' && (
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-black transition-all duration-200 active:scale-95 shrink-0 bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500/20"
+                >
+                  <AlertCircle size={16} />
+                  Report
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -631,6 +719,116 @@ export default function MyCoachPage() {
         )}
 
       </div>
+
+      {/* ── Report Modal ── */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#111318] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-xl font-bold text-white mb-2">Report Trainer</h2>
+            <p className="text-sm text-gray-400 mb-6">If you're experiencing issues with your coach, please let us know. Our managers will review your report.</p>
+            
+            <form onSubmit={handleReportSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">Reason</label>
+                <select 
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className="w-full bg-[#0a0a0b] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#C4F135]"
+                >
+                  <option>Unprofessional behavior</option>
+                  <option>Inappropriate language or content</option>
+                  <option>Not responding or late</option>
+                  <option>Spam or advertising</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-bold text-gray-300 mb-2">Details</label>
+                <textarea 
+                  required
+                  value={reportDetails}
+                  onChange={(e) => setReportDetails(e.target.value)}
+                  placeholder="Please provide specific details..."
+                  className="w-full h-32 bg-[#0a0a0b] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#C4F135] resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+                <button 
+                  type="button"
+                  onClick={() => setShowReportModal(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-bold text-gray-400 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmittingReport}
+                  className="px-4 py-2 rounded-lg text-sm font-bold bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
+                >
+                  {isSubmittingReport ? 'Submitting...' : 'Submit Report'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Rate Coach Modal ── */}
+      {showRatingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#111318] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl p-6 relative">
+            <h3 className="text-xl font-bold text-white mb-2 font-['Syne']">Rate Your Coach</h3>
+            <p className="text-sm text-gray-400 mb-6">How was your experience with {assignedCoach.name}?</p>
+            
+            <form onSubmit={handleRatingSubmit} className="space-y-4">
+              <div className="flex items-center justify-center gap-2 mb-6">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setRating(star)}
+                    className={`p-2 transition-all hover:scale-110 ${rating >= star ? 'text-yellow-400' : 'text-gray-600'}`}
+                  >
+                    <Sparkles size={32} />
+                  </button>
+                ))}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Review (Optional)</label>
+                <textarea 
+                  value={ratingComment}
+                  onChange={e => setRatingComment(e.target.value)}
+                  placeholder="Share your thoughts..."
+                  rows={4}
+                  className="w-full bg-[#0a0a0b] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#C4F135] resize-none"
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setShowRatingModal(false)}
+                  className="px-5 py-2.5 text-sm font-bold text-gray-400 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmittingRating}
+                  className="px-6 py-2.5 rounded-xl text-sm font-black transition-all active:scale-95 disabled:opacity-50"
+                  style={{ background: '#C4F135', color: '#0a0a0b' }}
+                >
+                  {isSubmittingRating ? 'Submitting...' : 'Submit Rating'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

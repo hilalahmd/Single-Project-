@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Search, Plus, MoreVertical, Edit, Trash2, Loader2, AlertCircle, X } from 'lucide-react'
+import { Search, Plus, MoreVertical, Edit, Trash2, Loader2, AlertCircle, X, Eye, EyeOff } from 'lucide-react'
 import Modal from '../../../shared/components/Modal'
 import Toast from '../../../shared/components/Toast'
 import API from '../../../shared/utils/api'
@@ -16,7 +16,8 @@ export default function ManagerManagementPage() {
   // Form State
   const [formName, setFormName] = useState('')
   const [formEmail, setFormEmail] = useState('')
-  const [formAdminRole, setFormAdminRole] = useState('Support Manager')
+  const [formPassword, setFormPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [formStatus, setFormStatus] = useState('active')
   const [submitting, setSubmitting] = useState(false)
   const [toastMsg, setToastMsg] = useState(null)
@@ -24,7 +25,7 @@ export default function ManagerManagementPage() {
   const fetchManagers = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await fetch(`${API}/admin/managers`, { credentials: 'include' })
+      const res = await fetch(`${API}/managers`, { credentials: 'include' })
       const data = await res.json()
       if (res.ok) {
         setManagers(data)
@@ -46,7 +47,7 @@ export default function ManagerManagementPage() {
     setEditingManager(null)
     setFormName('')
     setFormEmail('')
-    setFormAdminRole('Support Manager')
+    setFormPassword('')
     setFormStatus('active')
     setModalOpen(true)
   }
@@ -55,7 +56,7 @@ export default function ManagerManagementPage() {
     setEditingManager(manager)
     setFormName(manager.name)
     setFormEmail(manager.email)
-    setFormAdminRole(manager.adminRole || 'Support Manager')
+    setFormPassword('') // Not editing password here
     setFormStatus(manager.status || 'active')
     setModalOpen(true)
   }
@@ -67,13 +68,12 @@ export default function ManagerManagementPage() {
     try {
       if (editingManager) {
         // Update
-        const res = await fetch(`${API}/admin/managers/${editingManager._id}`, {
+        const res = await fetch(`${API}/managers/${editingManager._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
-            status: formStatus,
-            adminRole: formAdminRole
+            status: formStatus
           })
         })
         const data = await res.json()
@@ -86,14 +86,14 @@ export default function ManagerManagementPage() {
         }
       } else {
         // Create
-        const res = await fetch(`${API}/admin/managers`, {
+        const res = await fetch(`${API}/managers`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
           body: JSON.stringify({
             name: formName,
             email: formEmail,
-            adminRole: formAdminRole
+            password: formPassword
           })
         })
         const data = await res.json()
@@ -116,7 +116,7 @@ export default function ManagerManagementPage() {
     if (!window.confirm('Are you sure you want to delete this manager?')) return
     
     try {
-      const res = await fetch(`${API}/admin/managers/${id}`, {
+      const res = await fetch(`${API}/managers/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       })
@@ -133,10 +133,8 @@ export default function ManagerManagementPage() {
   }
 
   const filteredManagers = managers.filter(m => {
-    const matchesSearch = m.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          m.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = roleFilter === 'All Roles' || m.adminRole === roleFilter
-    return matchesSearch && matchesRole
+    return m.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+           m.email?.toLowerCase().includes(searchTerm.toLowerCase())
   })
 
   return (
@@ -165,16 +163,6 @@ export default function ManagerManagementPage() {
             className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors" 
           />
         </div>
-        <select 
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-          className="px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-bold focus:outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none bg-white min-w-[150px] cursor-pointer"
-        >
-          <option>All Roles</option>
-          <option>Super Admin</option>
-          <option>Support Manager</option>
-          <option>Finance Manager</option>
-        </select>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden min-h-[400px]">
@@ -194,7 +182,7 @@ export default function ManagerManagementPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
-                  {['Name', 'Role', 'Added On', 'Status', 'Actions'].map(h => (
+                  {['Name', 'Added On', 'Status', 'Actions'].map(h => (
                     <th key={h} className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -213,7 +201,6 @@ export default function ManagerManagementPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-bold text-gray-700">{m.adminRole || 'Support Manager'}</td>
                     <td className="px-6 py-4 text-gray-500 font-medium">
                       {new Date(m.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
@@ -264,21 +251,28 @@ export default function ManagerManagementPage() {
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
+                <div className="relative">
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    required 
+                    value={formPassword}
+                    onChange={(e) => setFormPassword(e.target.value)}
+                    placeholder="Set initial password"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black pr-10"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
             </>
           )}
-
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">Admin Role</label>
-            <select 
-              value={formAdminRole}
-              onChange={(e) => setFormAdminRole(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-black focus:ring-1 focus:ring-black appearance-none bg-white cursor-pointer"
-            >
-              <option>Super Admin</option>
-              <option>Support Manager</option>
-              <option>Finance Manager</option>
-            </select>
-          </div>
 
           {editingManager && (
             <div>

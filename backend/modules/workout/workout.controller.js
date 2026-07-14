@@ -1,16 +1,26 @@
 import Plan from '../plans/plan.model.js'
 import Workout from './workout.model.js'
 import Diet from '../plans/diet.model.js'
-// 1. Create a new plan with workouts (Trainer use cheyyunnathu)
+import Trainer from '../trainers/trainer.model.js'
+import User from '../users/user.model.js'
+
+/**
+ * createPlan — trainer creates a training plan for a client.
+ * Validates required fields before writing to the DB.
+ */
 export const createPlan = async (req, res) => {
   try {
     const { clientId, title, description, type, startDate, workouts, nutritionTargets } = req.body
-    const trainerId = req.user.id // Token-il ninnum edukkunnu
+    const trainerId = req.user._id
 
-    // Pazhaya active plans inactive aakkunnu
+    // Validate required fields — Mongoose 'required' returns raw 500 without this
+    if (!clientId || !title || !type || !startDate) {
+      return res.status(400).json({ success: false, message: 'clientId, title, type, and startDate are required.' })
+    }
+
+    // Deactivate any existing active plans for this client
     await Plan.updateMany({ clientId, isActive: true }, { $set: { isActive: false } })
 
-    // Adhyam Plan create cheyyunnu
     const newPlan = await Plan.create({
       trainerId,
       clientId,
@@ -21,7 +31,6 @@ export const createPlan = async (req, res) => {
       nutritionTargets
     })
 
-    // Plan-nu ullile workouts save cheyyunnu
     if (workouts && workouts.length > 0) {
       const workoutDocs = workouts.map(w => ({
         planId: newPlan._id,
@@ -30,10 +39,9 @@ export const createPlan = async (req, res) => {
         dayNumber: w.dayNumber,
         exercises: w.exercises
       }))
-      await Workout.insertMany(workoutDocs) // Orupadu workouts orumichu save cheyyan
+      await Workout.insertMany(workoutDocs)
     }
 
-    // Diets save cheyyunnu (if provided)
     if (req.body.diets && req.body.diets.length > 0) {
       const dietDocs = req.body.diets.map(d => ({
         planId: newPlan._id,
@@ -54,7 +62,7 @@ export const createPlan = async (req, res) => {
 // 2. Get today's workout for a client (Client Dashboard-il kanikkan)
 export const getTodaysWorkout = async (req, res) => {
   try {
-    const clientId = req.user.id
+    const clientId = req.user._id
     
     // Client-nte active aayulla plan edukka
     const plan = await Plan.findOne({ clientId, isActive: true })
@@ -128,10 +136,10 @@ export const toggleMealStatus = async (req, res) => {
 // Client-nu full plan edukkaan ulla API (Client dashboard)
 export const getFullPlan = async (req, res) => {
   try {
-    const clientId = req.user.id;
+    const clientId = req.user._id;
     const plan = await Plan.findOne({ clientId, isActive: true }).sort({ createdAt: -1 });
     
-    if (!plan) return res.status(404).json({ success: false, message: 'No active plan found' });
+    if (!plan) return res.status(200).json({ success: true, plan: null, workouts: [], diets: [] });
 
     // Ee plan-ile ella workouts-um edukkunnu
     const workouts = await Workout.find({ planId: plan._id }).sort({ dayNumber: 1 });
@@ -145,17 +153,34 @@ export const getFullPlan = async (req, res) => {
   }
 }
 
-// Get full plan by client ID (Trainer's view)
+/**
+ * getClientPlan — trainer views a specific client's active plan.
+ * SECURITY: verifies the trainer actually has this client assigned,
+ * preventing horizontal privilege escalation (trainer A viewing trainer B's client).
+ */
 export const getClientPlan = async (req, res) => {
   try {
     const { clientId } = req.params;
-    // req.user.id is the trainer (we could optionally verify they are assigned, but for now we just fetch)
-    const plan = await Plan.findOne({ clientId, isActive: true }).sort({ createdAt: -1 });
-    
+    const trainerId = req.user._id
+
+    // Verify this client is actually assigned to the requesting trainer
+    // WHY: without this check, any trainer could view any client's plan by guessing a clientId
+    const trainerProfile = await Trainer.findOne({ userId: trainerId }).select('_id').lean()
+    if (!trainerProfile) {
+      return res.status(403).json({ success: false, message: 'Trainer profile not found.' })
+    }
+    const client = await User.findById(clientId).select('assignedTrainer').lean()
+    if (!client || client.assignedTrainer?.toString() !== trainerProfile._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Access denied: this client is not assigned to you.' })
+    }
+
+    const plan = await Plan.findOne({ clientId, isActive: true }).sort({ createdAt: -1 }).lean();
     if (!plan) return res.status(200).json({ success: true, data: null });
 
-    const workouts = await Workout.find({ planId: plan._id }).sort({ dayNumber: 1 });
-    const diets = await Diet.find({ planId: plan._id }).sort({ dayNumber: 1 });
+    const [workouts, diets] = await Promise.all([
+      Workout.find({ planId: plan._id }).sort({ dayNumber: 1 }).lean(),
+      Diet.find({ planId: plan._id }).sort({ dayNumber: 1 }).lean()
+    ])
     
     res.status(200).json({ success: true, data: { plan, workouts, diets } });
   } catch (error) {

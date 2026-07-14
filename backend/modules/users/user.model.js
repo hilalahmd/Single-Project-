@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   role: { 
     type: String, 
-    enum: ['user', 'trainer', 'wellness_coach', 'admin'],
+    enum: ['user', 'trainer', 'wellness_coach', 'manager', 'admin'],
     default: 'user'
   },
   adminRole: {
@@ -39,6 +39,11 @@ const userSchema = new mongoose.Schema({
     calorieTarget: Number
   },
 
+  weightHistory: [{
+    date: { type: Date, default: Date.now },
+    weight: { type: Number, required: true }
+  }],
+
   // ── NEW: Country for regional diet plans ──
   country: { type: String, default: '' },
 
@@ -57,6 +62,7 @@ const userSchema = new mongoose.Schema({
 
   dietGenerationCount: { type: Number, default: 0 },
   dietGenerationResetDate: { type: Date, default: Date.now },
+  lastActive: { type: Date, default: Date.now },
   isVerified: { type: Boolean, default: false },
   otp: { type: String },
   otpExpiry: { type: Date },
@@ -64,4 +70,11 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpiry: { type: Date }
 }, { timestamps: true })
 
-export default mongoose.model('User', userSchema)
+// Index on assignedTrainer — queried on every trainer dashboard load to count/list clients.
+// Without this, MongoDB scans all users to find which ones belong to a trainer.
+userSchema.index({ assignedTrainer: 1 })
+
+// Index on role — used in admin getAllUsers, countDocuments by role, etc.
+userSchema.index({ role: 1 })
+
+export default mongoose.model('User', userSchema)

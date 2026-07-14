@@ -3,6 +3,8 @@ import User from '../users/user.model.js'
 import mongoose from 'mongoose'
 import { uploadFile } from '../../shared/services/storage.service.js'
 import { Conversation, Message } from '../chat/chat.model.js'
+import Session from '../video/session.model.js'
+
 
 
 export const getTrainers = async (req, res) => {
@@ -90,6 +92,8 @@ export const completeTrainerRegistration = async (req, res) => {
 
     const trainer = await Trainer.create([{
       userId: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
       role: req.user.role,
       bio,
       specialties: parsedSpecialties,
@@ -230,89 +234,124 @@ export const getMyTrainerProfile = async (req, res) => {
 }
 
 
-// ==========================================
-// GET MY CLIENTS (Trainer's Clients)
-// ==========================================
+/**
+ * getMyClients — returns all clients assigned to the logged-in trainer.
+ * Uses .lean() since we only display data — no .save() needed on results.
+ */
 export const getMyClients = async (req, res) => {
   try {
-    // 1. Aadyam login cheytha aalude Trainer ID kandupidikkunnu
-    const trainer = await Trainer.findOne({ userId: req.user.id })
+    const trainer = await Trainer.findOne({ userId: req.user.id }).lean()
     if (!trainer) {
       return res.status(404).json({ success: false, message: 'Trainer profile not found' })
     }
 
-    // 2. Aa Trainer-ne assign cheytha ellla User-neyum database-il ninnu edukkunnu
-    // .select() upayogichu namukku aavashyamulla fields mathram edukkunnu (name, email, bodyMetrics)
     const clients = await User.find({ assignedTrainer: trainer._id })
       .select('name email bodyMetrics avatar createdAt')
+      .lean()
 
     res.status(200).json({ success: true, clients })
   } catch (error) {
-    console.error("Error fetching clients:", error)
     res.status(500).json({ success: false, message: error.message })
   }
 }
 
 
 
-// Get real-time dashboard stats for the logged-in trainer
+/**
+ * getTrainerDashboardStats — returns summary stats for the trainer's home screen.
+ *
+ * BEFORE: fetched all conversations, extracted IDs in JS, then queried messages.
+ * Two separate DB round-trips could be avoided but the approach is acceptable here
+ * because the conversation IDs are needed to scope the message queries correctly.
+ * 
+ * FIXED: Added .lean() to all read-only queries for performance.
+ * Removed console.error (debug artifact). 
+ */
 export const getTrainerDashboardStats = async (req, res) => {
   try {
-    const userId = req.user.id // Login cheytha trainer-nte User ID
+    const userId = req.user.id
 
-    // AADYAM: Ee user-nte Trainer Profile edukkunnu (Trainer _id kittan)
-    const trainerProfile = await Trainer.findOne({ userId: userId })
-    
+    // Find trainer profile (lean — read only)
+    const trainerProfile = await Trainer.findOne({ userId }).lean()
     if (!trainerProfile) {
       return res.status(404).json({ success: false, message: 'Trainer profile not found' })
     }
 
-    // 1. Trainer Profile _id vechu active clients-ne count cheyyunnu!
+    // Count active clients assigned to this trainer
     const activeClientsCount = await User.countDocuments({
       assignedTrainer: trainerProfile._id,
       role: 'user'
     })
 
-    // 2. Chat messages edukkaan aayi User ID thanne use cheyyunnu
-    const conversations = await Conversation.find({ participants: userId })
+    // Fetch conversation IDs for this trainer
+    const conversations = await Conversation.find({ participants: userId }).select('_id').lean()
     const conversationIds = conversations.map(c => c._id)
 
-    // 3. Vayikkatha messages count cheyyunnu
-    const unreadMessagesCount = await Message.countDocuments({
-      conversationId: { $in: conversationIds },
-      senderId: { $ne: userId },
-      isRead: false
+    // Count and fetch unread messages in one step each (no extra loop needed)
+    const [unreadMessagesCount, recentMessagesData] = await Promise.all([
+      Message.countDocuments({
+        conversationId: { $in: conversationIds },
+        senderId: { $ne: userId },
+        isRead: false
+      }),
+      Message.find({
+        conversationId: { $in: conversationIds },
+        senderId: { $ne: userId }
+      })
+        .sort({ createdAt: -1 })
+        .limit(3)
+        .populate('senderId', 'name avatar')
+        .lean()
+    ])
+
+    // Fetch upcoming sessions for this trainer
+    const upcomingSessionsData = await Session.find({
+      trainerId: trainerProfile._id,
+      status: 'scheduled'
+    })
+      .populate('clientId', 'name')
+      .sort({ startTime: 1 })
+      .limit(3)
+      .lean()
+
+    const upcomingSessionsList = upcomingSessionsData.map(session => {
+      const start = new Date(session.startTime);
+      const end = new Date(session.endTime);
+      const durationMin = Math.round((end - start) / 60000);
+
+      return {
+        client: session.clientId?.name || 'Client',
+        time: start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        duration: `${durationMin} min`,
+        type: session.sessionType
+      }
     })
 
-    // 4. Dashboard-il kanikkan ulla recent messages
-    const recentMessagesData = await Message.find({
-      conversationId: { $in: conversationIds },
-      senderId: { $ne: userId }
+    res.status(200).json({
+      success: true,
+      stats: {
+        activeClients: activeClientsCount,
+        unreadMessages: unreadMessagesCount,
+        upcomingSessions: upcomingSessionsData.length,
+        upcomingSessionsList,
+        earnings: 0,
+        recentMessages: recentMessagesData
+      }
     })
-    .sort({ createdAt: -1 })
-    .limit(3)
-    .populate('senderId', 'name avatar')
-
-    const stats = {
-      activeClients: activeClientsCount,
-      unreadMessages: unreadMessagesCount, 
-      upcomingSessions: 0, 
-      earnings: 0,
-      recentMessages: recentMessagesData
-    }
-
-    res.status(200).json({ success: true, stats })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
 }
 
-// Get all unread messages for the modal
+/**
+ * getUnreadMessages — fetches all unread messages for the trainer's notification modal.
+ * Added .lean() for performance — we only read data, never call .save().
+ */
 export const getUnreadMessages = async (req, res) => {
   try {
     const userId = req.user.id
 
-    const conversations = await Conversation.find({ participants: userId })
+    const conversations = await Conversation.find({ participants: userId }).select('_id').lean()
     const conversationIds = conversations.map(c => c._id)
 
     const unreadMessages = await Message.find({
@@ -320,8 +359,9 @@ export const getUnreadMessages = async (req, res) => {
       senderId: { $ne: userId },
       isRead: false
     })
-    .sort({ createdAt: -1 })
-    .populate('senderId', 'name avatar')
+      .sort({ createdAt: -1 })
+      .populate('senderId', 'name avatar')
+      .lean()
 
     res.status(200).json({ success: true, unreadMessages })
   } catch (error) {
@@ -371,5 +411,44 @@ export const getTrainerEarnings = async (req, res) => {
     res.status(200).json({ success: true, earningsData })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
+  }
+}
+
+export const addReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+
+    const trainer = await Trainer.findById(id);
+    if (!trainer) {
+      return res.status(404).json({ message: 'Trainer not found' });
+    }
+
+    // Check if the user has already reviewed the trainer
+    const alreadyReviewed = trainer.reviews.find(
+      (r) => r.client.toString() === req.user._id.toString()
+    );
+
+    if (alreadyReviewed) {
+      return res.status(400).json({ message: 'You have already reviewed this coach' });
+    }
+
+    const review = {
+      client: req.user._id,
+      rating: Number(rating),
+      comment: comment || '',
+      date: new Date()
+    };
+
+    trainer.reviews.push(review);
+    trainer.reviewCount = trainer.reviews.length;
+    trainer.rating =
+      trainer.reviews.reduce((acc, item) => item.rating + acc, 0) /
+      trainer.reviews.length;
+
+    await trainer.save();
+    res.status(201).json({ message: 'Review added successfully', trainer });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 }

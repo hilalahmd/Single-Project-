@@ -24,7 +24,7 @@ function cosineSimilarity(vecA, vecB) {
 // 3. Get Embedding API
 async function getEmbedding(text) {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  const model = genAI.getGenerativeModel({ model: "embedding-001" }) 
+  const model = genAI.getGenerativeModel({ model: "gemini-embedding-2" }) 
   const result = await model.embedContent(text)
   return result.embedding.values
 }
@@ -85,7 +85,7 @@ User Question: ${query}
 Answer:`
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) 
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }) 
   const result = await model.generateContent(prompt)
   return result.response.text()
 }

@@ -1,6 +1,17 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { v2 as cloudinary } from 'cloudinary'
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+// Cloudinary config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -23,37 +34,32 @@ if (!fs.existsSync(UPLOAD_DIR)) {
  * @param {String} folder - The folder name (e.g. 'certifications')
  * @returns {Promise<Object>} - Contains secure URL and publicId
  */
-export const uploadFile = async (file, folder = 'misc') => {
+   export const uploadFile = async (file, folder = 'misc') => {
   try {
-    // Generate unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    const ext = path.extname(file.originalname)
-    const filename = `${folder}-${uniqueSuffix}${ext}`
-    
-    // Target path
-    const targetPath = path.join(UPLOAD_DIR, filename)
-    
-    // If multer uses MemoryStorage, file.buffer exists
-    // If DiskStorage, we can just move/rename it, but we'll enforce MemoryStorage for security/validation before saving
-    if (file.buffer) {
-      fs.writeFileSync(targetPath, file.buffer)
-    } else {
-      // In case we used diskStorage
-      fs.copyFileSync(file.path, targetPath)
-    }
-
-    // Return a cloud-like structure
-    return {
-      url: `/api/trainers/secure-files/${filename}`, // Secure internal URL
-      public_id: filename,
-      format: ext.replace('.', ''),
-      bytes: file.size || (file.buffer ? file.buffer.length : 0)
-    }
+    return new Promise((resolve, reject) => {
+      // Memory-il ninnulla file cloudinary-lekku stream cheyyunnu
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: folder },
+        (error, result) => {
+          if (error) return reject(error);
+          
+          resolve({
+            url: result.secure_url, // Ithanu namukku vendathu!
+            public_id: result.public_id,
+            format: result.format,
+            bytes: result.bytes
+          });
+        }
+      );
+      
+      uploadStream.end(file.buffer);
+    });
   } catch (error) {
-    console.error('Storage Upload Error:', error)
-    throw new Error('Failed to upload file to storage')
+    console.error('Cloudinary Upload Error:', error)
+    throw new Error('Failed to upload file to Cloudinary')
   }
 }
+
 
 /**
  * Deletes a file from the storage provider

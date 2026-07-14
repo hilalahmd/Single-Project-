@@ -61,8 +61,11 @@ export const SocketProvider = ({ children }) => {
     requestNotificationPermission()
   }, [])
 
+  // Only reconnect when the user's ID changes (login/logout), not on every user object update.
+  // WHY: if we depend on the full `user` object, any field update (e.g. subscriptionTier)
+  //      causes the socket to disconnect and reconnect, interrupting live messages.
   useEffect(() => {
-    if (!user) return
+    if (!user?._id) return
 
     const newSocket = io('http://localhost:5000', {
       withCredentials: true
@@ -70,7 +73,6 @@ export const SocketProvider = ({ children }) => {
     setSocket(newSocket)
 
     newSocket.on('connect', () => {
-      console.log('Socket connected! Emitting setup_user for', user._id)
       newSocket.emit('setup_user', user._id)
     })
 
@@ -110,7 +112,7 @@ export const SocketProvider = ({ children }) => {
     })
 
     return () => newSocket.disconnect()
-  }, [user])
+  }, [user?._id]) // Only reconnect when user ID changes, not on every user object update
 
   return (
     <SocketContext.Provider value={socket}>

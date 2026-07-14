@@ -32,3 +32,40 @@
 ## Trainer Guidelines
 20. Trainers on FitForge are highly vetted professionals. They can create custom diet plans, assign workout routines, and track the real-time progress of their clients using the Trainer Dashboard.
 21. If a client misses a video session, the trainer can reschedule it or send a message via the built-in chat.
+
+## About the Codebase (README)
+# React + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+
+
+## Live Database Context (Trainers)
+Trainer Name: Hilal Ahmed. Role: trainer. Specialties: Weight Loss, Muscle Building, HIIT. Languages: Malayalam, English. Bio: Certified personal trainer with 5 years experience. Rating: 0 stars. Price: 999 INR.
+Trainer Name: Test Trainer. Role: trainer. Specialties: . Languages: . Bio: . Rating: 0 stars. Price: 0 INR.
+Trainer Name: realtrainertesess. Role: trainer. Specialties: Weight Loss, Muscle Building. Languages: . Bio: 123. Rating: 0 stars. Price: 9999 INR.
+
+## Live Database Context (Users)
+The FitForge platform currently has 27 active users registered.
+
+
+Founder / CEO of the fitforge is HILAL .
+
+
+instagram of ceo 
+
+

@@ -1,10 +1,11 @@
 import express from 'express'
 import http from 'http'
 import { Server } from 'socket.io'
-
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
+import morgan from 'morgan'
+import helmet from 'helmet'
 import connectDB from './config/db.js'
 import jwt from 'jsonwebtoken'
 import { Conversation } from './modules/chat/chat.model.js'
@@ -12,6 +13,8 @@ import authRoutes from './modules/auth/auth.routes.js'
 import userRoutes from './modules/users/user.routes.js'
 import trainerRoutes from './modules/trainers/trainer.routes.js'
 import adminRoutes from './modules/admin/admin.routes.js'
+import managerRoutes from './modules/manager/manager.routes.js'
+import reportRoutes from './modules/reports/report.routes.js'
 import foodAiRoutes from './modules/food-ai/foodai.routes.js'
 import transformationRoutes from './modules/transformation/transformation.routes.js'
 import sessionRoutes from './modules/video/session.routes.js'
@@ -22,28 +25,29 @@ import progressRoutes from './modules/progress/progress.routes.js'
 import scheduleRoutes from './modules/schedule/schedule.routes.js'
 import ragRoutes from './modules/rag/rag.routes.js'
 import { initializeRAG } from './modules/rag/rag.service.js'
-
-
-
-
 import dns from 'node:dns'
-import fs from 'fs'
 
 dns.setDefaultResultOrder('ipv4first')
 
 dotenv.config()
-console.log("TESTING ENV LOAD: HUGGINGFACE_API_KEY exists?", !!process.env.HUGGINGFACE_API_KEY);
 connectDB()
 
 const app = express()
 
+// helmet — sets ~15 security HTTP headers automatically:
+// X-Content-Type-Options, X-Frame-Options, HSTS, Content-Security-Policy, etc.
+// WHY: without these headers the browser has no instructions to prevent
+//      clickjacking, MIME sniffing, and cross-origin data leaks.
+// helmet was already installed (in package.json) but was never imported or used.
+app.use(helmet({ contentSecurityPolicy: false })) // CSP disabled: frontend and API share localhost in dev
+app.use(morgan('dev')) // HTTP request logging — shows method, path, status, response time
 app.use(cors({
   origin: ["http://localhost:5173", "http://localhost:5174"],
   credentials: true
 }))
 
 
-app.use(express.json({ limit: '50mb' }))
+app.use(express.json({ limit: '10mb' }))
 app.use(cookieParser())
 
 // io object-ne every request-ilum available aakkunnu
@@ -54,6 +58,8 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/trainers', trainerRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/managers', managerRoutes)
+app.use('/api/reports', reportRoutes)
 app.use('/api/food-ai', foodAiRoutes)
 app.use('/api/transformation', transformationRoutes)
 app.use('/api/sessions', sessionRoutes)
@@ -66,33 +72,24 @@ app.use('/api/ai', ragRoutes)
 
 
 
-app.get('/api/debug-init-chat', async (req, res) => {
-  try {
-    const mongoose = await import('mongoose')
-    const User = mongoose.model('User')
-    const Chat = mongoose.model('Chat')
-    
-    // Find any 2 users in the DB
-    const users = await User.find().limit(2)
-    if (users.length < 2) {
-      return res.json({ success: false, error: 'Need at least 2 users' })
-    }
-    
-    const participants = [users[0]._id, users[1]._id]
-    const existing = await Chat.findOne({ participants: { $all: participants } })
-    
-    if (!existing) {
-      await Chat.create({ participants, lastMessage: { text: 'Hello', senderId: users[0]._id } })
-    }
-    
-    return res.json({ success: true, clientId: users[0]._id, trainerId: users[1]._id })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
 app.get('/', (req, res) => {
   res.json({ message: 'FitForge API running 🔥' })
+})
+
+// 404 handler — catches any route that doesn't match above
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' })
+})
+
+// Global error handler — NEVER sends stack traces to the client in production
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  const isDev = process.env.NODE_ENV !== 'production'
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || 'Internal server error',
+    ...(isDev && { stack: err.stack }) // Only expose stack in development
+  })
 })
 
 // ==========================================
@@ -105,7 +102,8 @@ const server = http.createServer(app)
 const io = new Server(server, {
   cors: {
     origin: ["http://localhost:5173", "http://localhost:5174"],
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
+    credentials: true
   }
 })
 
@@ -139,8 +137,8 @@ io.on('connection', (socket) => {
   socket.on('join_chat', async (chatId) => {
     try {
       // Validate that the user is actually a participant of this chat room
-      const conversation = await Conversation.findById(chatId)
-      if (!conversation || !conversation.participants.includes(socket.user.userId)) {
+      // Our chat room ID is generated as "id1_id2", so we can just check if it contains the user's ID
+      if (!chatId || typeof chatId !== 'string' || !chatId.includes(socket.user.userId)) {
         return socket.emit('error_message', { message: 'Unauthorized to join this room' })
       }
       

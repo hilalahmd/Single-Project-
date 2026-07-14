@@ -2,6 +2,8 @@ import mongoose from 'mongoose'
 
 const trainerSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  name: { type: String, default: '' },
+  email: { type: String, default: '' },
   role: { type: String, enum: ['trainer', 'wellness_coach'], default: 'trainer' },
   bio: { type: String, default: '' },
   specialties: [String],
@@ -35,7 +37,20 @@ const trainerSchema = new mongoose.Schema({
     withdrawn: { type: Number, default: 0 }
   },
   rating: { type: Number, default: 0 },
-  reviewCount: { type: Number, default: 0 }
+  reviewCount: { type: Number, default: 0 },
+  reviews: [{
+    client: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    rating: { type: Number, required: true },
+    comment: { type: String, default: '' },
+    date: { type: Date, default: Date.now }
+  }]
 }, { timestamps: true })
 
-export default mongoose.model('Trainer', trainerSchema)
+// Index on userId — most frequent query: findOne({ userId: req.user._id })
+// Used by getMyTrainerProfile, getTrainerDashboardStats, schedule auth checks
+trainerSchema.index({ userId: 1 }, { unique: true })
+
+// Index on status — admin panel and checkout page both filter by status: 'approved'
+trainerSchema.index({ status: 1 })
+
+export default mongoose.model('Trainer', trainerSchema)

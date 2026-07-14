@@ -10,7 +10,6 @@ import { calculateDynamicTargets } from '../../../shared/utils/nutritionCalculat
 function AnimatedStat({ target, duration = 900, delay = 0 }) {
   const [current, setCurrent] = useState(0)
   const rafRef = useRef(null)
-  const [nextSession, setNextSession] = useState(null)
 
   
   useEffect(() => {
@@ -72,6 +71,7 @@ export default function ClientDashboardPage() {
     targetCalories: 2500, targetProtein: 150, targetCarbs: 250, targetFat: 70
   })
   const [streakDays, setStreakDays] = useState(0)
+  const [nextSession, setNextSession] = useState(null)
 
   const getGreeting = () => {
     const hour = new Date().getHours()

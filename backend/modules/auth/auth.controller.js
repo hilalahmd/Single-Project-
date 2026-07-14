@@ -5,26 +5,39 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { generateOTP, sendOTPEmail } from './auth.service.js'
 
+/**
+ * register — creates a new user account and sends an OTP email for verification.
+ * Validates required fields and email format before touching the DB.
+ */
 export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body
+
+    // Validate required fields with clean 400 errors
+    // WHY: Mongoose 'required' throws raw 500 errors without this check
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'name, email, and password are required.' })
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format.' })
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' })
+    }
 
     const existingUser = await User.findOne({ email })
     if (existingUser) {
       return res.status(400).json({ message: 'Email already exists' })
     }
 
-
-
-
     const otp = generateOTP()
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000)
 
-   const hashedPassword = await bcrypt.hash(password, 10)
+    const hashedPassword = await bcrypt.hash(password, 10)
 
-  const user = await User.create({
-  name, email, password: hashedPassword, role, otp, otpExpiry
-  })
+    const user = await User.create({
+      name, email, password: hashedPassword, role, otp, otpExpiry
+    })
 
     await sendOTPEmail(email, otp)
 
@@ -122,14 +135,21 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body
 
-    const user = await User.findOne({ email })
+    let user = await User.findOne({ email })
+    let isManagerUser = false
+    
     if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' })
+      const Manager = (await import('../manager/manager.model.js')).default
+      user = await Manager.findOne({ email })
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' })
+      }
+      isManagerUser = true
     }
 
-    // if (!user.isVerified) {
-    //   return res.status(401).json({ message: 'Please verify your email first' })
-    // }
+    if (!isManagerUser && !user.isVerified) {
+      return res.status(401).json({ message: 'Please verify your email first' })
+    }
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) {
@@ -216,10 +236,21 @@ export const logout = (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password -otp -otpExpiry')
+    let user = await User.findById(req.user._id).select('-password -otp -otpExpiry')
+    
+    if (!user) {
+      const Manager = (await import('../manager/manager.model.js')).default
+      user = await Manager.findById(req.user._id).select('-password')
+      if (!user) return res.status(404).json({ message: 'User not found' })
+    }
     
     // Convert to plain object to attach custom assignedTrainerData
     const userObj = user.toObject()
+
+    if (user.role && user.role !== 'manager' && user.role !== 'admin') {
+      user.lastActive = new Date()
+      await user.save({ validateModifiedOnly: true }).catch(err => console.error('Failed to update lastActive:', err))
+    }
 
     if (user.assignedTrainer) {
       const Trainer = (await import('../trainers/trainer.model.js')).default

@@ -1,32 +1,47 @@
 import { Conversation, Message } from './chat.model.js'
 import User from '../users/user.model.js'
 
-// 1. Oru Message ayakkan ulla API
+/**
+ * sendMessage — saves a new chat message and links it to a conversation.
+ * Validates receiverId and text before writing to DB.
+ * WHY: without length limits, a user could send multi-MB messages,
+ *      inflating the DB and potentially causing slow chat loads.
+ */
 export const sendMessage = async (req, res) => {
   try {
     const { receiverId, text } = req.body
     const senderId = req.user.id
 
-    // Aadyam ivar thammil mumb chat cheythittundo ennu nokkunnu
+    if (!receiverId) {
+      return res.status(400).json({ success: false, message: 'receiverId is required.' })
+    }
+    if (!text || text.trim() === '') {
+      return res.status(400).json({ success: false, message: 'Message text cannot be empty.' })
+    }
+    if (text.length > 2000) {
+      return res.status(400).json({ success: false, message: 'Message cannot exceed 2000 characters.' })
+    }
+    // Prevent sending a message to yourself
+    if (senderId.toString() === receiverId.toString()) {
+      return res.status(400).json({ success: false, message: 'Cannot send a message to yourself.' })
+    }
+
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId], $size: 2 }
     })
 
-    // Illenkil puthiya oru chat history undakkunnu
     if (!conversation) {
       conversation = await Conversation.create({
         participants: [senderId, receiverId]
       })
     }
 
-    // Message save cheyyunnu
     const newMessage = await Message.create({
       conversationId: conversation._id,
       senderId,
-      text
+      text: text.trim()
     })
 
-    // Conversation table-il 'lastMessage' update cheyyunnu (Home screen-il kanikkan)
     conversation.lastMessage = newMessage._id
     await conversation.save()
 

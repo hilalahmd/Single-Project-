@@ -105,3 +105,25 @@ export const updateBodyMetrics = async (req, res) => {
     res.status(500).json({ message: error.message })
   }
 }
+
+export const logWeight = async (req, res) => {
+  try {
+    const { weight } = req.body
+    if (!weight) return res.status(400).json({ message: 'Weight is required' })
+
+    const user = await User.findById(req.user._id)
+    if (!user) return res.status(404).json({ message: 'User not found' })
+
+    // Also update the current bodyMetrics.weight
+    if (!user.bodyMetrics) user.bodyMetrics = {}
+    user.bodyMetrics.weight = weight
+
+    // Add to history
+    user.weightHistory.push({ weight, date: new Date() })
+    await user.save()
+
+    res.json({ message: 'Weight logged successfully', weightHistory: user.weightHistory })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}

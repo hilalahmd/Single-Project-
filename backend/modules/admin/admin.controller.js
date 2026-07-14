@@ -1,6 +1,7 @@
 import Trainer from "../trainers/trainer.model.js";
 import User from '../users/user.model.js';
 import bcrypt from 'bcryptjs';
+import { logAuditAction } from '../../shared/utils/audit.logger.js';
 
 export const approveTrainer = async (req, res) => {
   try {
@@ -12,6 +13,8 @@ export const approveTrainer = async (req, res) => {
     trainer.approvedBy = req.user._id
     trainer.approvedAt = new Date()
     await trainer.save()
+
+    await logAuditAction('APPROVE_TRAINER', req.user._id, trainer.userId, 'Approved trainer application')
 
     res.json({ message: 'Trainer approved', trainer })
   } catch (error) {
@@ -34,6 +37,8 @@ export const rejectTrainer = async (req, res) => {
     trainer.reviewedAt = new Date()
     await trainer.save()
 
+    await logAuditAction('REJECT_TRAINER', req.user._id, trainer.userId, `Rejected trainer application. Reason: ${reason}`)
+
     res.json({ message: 'Trainer rejected', trainer })
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -55,37 +60,45 @@ export const suspendTrainer = async (req, res) => {
     trainer.suspendedAt = new Date()
     await trainer.save()
 
+    await logAuditAction('SUSPEND_TRAINER', req.user._id, trainer.userId, `Suspended trainer. Reason: ${reason}`)
+
     res.json({ message: 'Trainer suspended', trainer })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
 }
 
+/**
+ * getAllTrainers — returns all trainer applications for the admin panel.
+ * Uses .lean() since we only read data, never call .save() on the results.
+ */
 export const getAllTrainers = async (req, res) => {
   try {
     const trainers = await Trainer.find()
       .populate('userId', 'name email avatar')
       .sort({ createdAt: -1 })
+      .lean()
     res.json(trainers)
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
 }
 
+/**
+ * getAdminDashboardStats — returns key platform metrics for the admin home screen.
+ * Uses .lean() on read-only queries for performance.
+ */
 export const getAdminDashboardStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments({ role: 'user' })
     const activeTrainers = await Trainer.countDocuments({ status: 'approved' })
-    
-    // Since we don't have Stripe yet, we calculate a mock revenue 
-    // assuming an average of ₹2000 per user. We will change this later!
-    const monthlyRevenue = totalUsers * 2000 
+    const monthlyRevenue = totalUsers * 2000 // Mock until Stripe is integrated
 
-    // Fetch the 5 newest users who registered
     const recentRegistrations = await User.find()
       .sort({ createdAt: -1 })
       .limit(5)
       .select('name role createdAt status')
+      .lean()
 
     res.json({
       totalUsers,
@@ -97,6 +110,7 @@ export const getAdminDashboardStats = async (req, res) => {
     res.status(500).json({ message: error.message })
   }
 }
+
 export const getAllUsers = async (req, res) => {
   try {
     // Fetch all users (both clients and trainers) except superadmins
@@ -109,115 +123,86 @@ export const getAllUsers = async (req, res) => {
   }
 }
 
-// ── MANAGER MANAGEMENT ──
-
-export const getAllManagers = async (req, res) => {
-  try {
-    const managers = await User.find({ role: 'admin' }).select('-password').sort({ createdAt: -1 })
-    res.json(managers)
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const createManager = async (req, res) => {
-  try {
-    const { name, email, adminRole } = req.body
-    
-    const existing = await User.findOne({ email })
-    if (existing) return res.status(400).json({ message: 'Email already exists' })
-
-    const hashedPassword = await bcrypt.hash('defaultPassword123!', 10)
-
-    const newManager = new User({
-      name,
-      email,
-      password: hashedPassword, // Provide a hashed default password for new managers
-      role: 'admin',
-      adminRole: adminRole || 'Support Manager',
-      status: 'active'
-    })
-
-    await newManager.save()
-    res.json({ message: 'Manager created successfully', manager: newManager })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const updateManagerStatus = async (req, res) => {
-  try {
-    const { id } = req.params
-    const { status, adminRole } = req.body
-    
-    // Prevent self-suspension/modification if needed
-    if (req.user._id.toString() === id) {
-      return res.status(400).json({ message: 'You cannot modify your own admin account.' })
-    }
-
-    const manager = await User.findById(id)
-    if (!manager || manager.role !== 'admin') {
-      return res.status(404).json({ message: 'Manager not found' })
-    }
-
-    if (status) manager.status = status
-    if (adminRole) manager.adminRole = adminRole
-
-    await manager.save()
-    res.json({ message: 'Manager updated successfully', manager })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
-export const deleteManager = async (req, res) => {
-  try {
-    const { id } = req.params
-    
-    if (req.user._id.toString() === id) {
-      return res.status(400).json({ message: 'You cannot delete your own admin account.' })
-    }
-
-    const manager = await User.findByIdAndDelete(id)
-    if (!manager) {
-      return res.status(404).json({ message: 'Manager not found' })
-    }
-
-    res.json({ message: 'Manager deleted successfully' })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
-}
-
+/**
+ * getPendingPayouts — returns trainer payout data for the admin panel.
+ */
 export const getPendingPayouts = async (req, res) => {
   try {
-    const activeTrainers = await Trainer.find({ status: 'approved' }).populate('userId', 'name email')
-    
-    const payouts = []
-    
-    for (let trainer of activeTrainers) {
-      const activeClientsCount = await User.countDocuments({
-        assignedTrainer: trainer._id,
-        role: 'user'
-      })
-      
-      const ptPrice = trainer.pricing?.personalTrainingMonthly || 0
-      const currentGross = activeClientsCount * ptPrice
-      const currentNet = Math.round(currentGross * 0.85)
+    const approvedTrainers = await Trainer.find({ status: 'approved' })
+      .populate('userId', 'name email')
+      .lean()
 
-      if (currentNet > 0) {
-        payouts.push({
+    if (!approvedTrainers.length) {
+      return res.json([])
+    }
+
+    const trainerIds = approvedTrainers.map(t => t._id)
+    const clientCounts = await User.aggregate([
+      { $match: { assignedTrainer: { $in: trainerIds }, role: 'user' } },
+      { $group: { _id: '$assignedTrainer', count: { $sum: 1 } } }
+    ])
+
+    const countMap = {}
+    for (const row of clientCounts) {
+      countMap[row._id.toString()] = row.count
+    }
+
+    const payouts = approvedTrainers
+      .map(trainer => {
+        const activeClientsCount = countMap[trainer._id.toString()] || 0
+        const ptPrice = trainer.pricing?.personalTrainingMonthly || 0
+        const currentGross = activeClientsCount * ptPrice
+        const currentNet = Math.round(currentGross * 0.85)
+        if (currentNet <= 0) return null
+        return {
           _id: trainer._id,
           name: trainer.userId?.name || 'Unknown',
           req: currentNet,
           bank: 'Bank on File',
           status: 'Pending',
           date: new Date().toLocaleDateString()
-        })
-      }
-    }
+        }
+      })
+      .filter(Boolean)
 
     res.json(payouts)
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+export const suspendUser = async (req, res) => {
+  try {
+    const { id } = req.params
+    const user = await User.findById(id)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+    
+    // Toggle status
+    user.status = user.status === 'active' ? 'suspended' : 'active'
+    await user.save()
+    
+    const actionName = user.status === 'suspended' ? 'SUSPEND_USER' : 'ACTIVATE_USER'
+    await logAuditAction(actionName, req.user._id, user._id, `Changed user status to ${user.status}`)
+
+    res.json({ message: `User ${user.status} successfully`, user })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params
+    const user = await User.findByIdAndDelete(id)
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+    
+    await logAuditAction('SUSPEND_USER', req.user._id, user._id, 'Deleted user account')
+
+    res.json({ message: 'User deleted successfully' })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
