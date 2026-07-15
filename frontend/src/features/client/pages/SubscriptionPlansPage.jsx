@@ -1,13 +1,16 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ChevronDown, Check } from 'lucide-react'
 import { useAuth } from '../../../shared/context/AuthContext'
+import API from '../../../shared/utils/api'
 
 export default function SubscriptionPlansPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, updateSubscription } = useAuth()
   const [isAnnual, setIsAnnual] = useState(false)
   const [openFaq, setOpenFaq] = useState(null)
+  const [loadingTrainer, setLoadingTrainer] = useState(false)
 
   const faqs = [
     { q: 'Can I switch trainers later?', a: 'Yes, you can request a change of coach at any time from your dashboard.' },
@@ -16,13 +19,45 @@ export default function SubscriptionPlansPage() {
     { q: 'What happens if I miss a live session?', a: 'Sessions can be rescheduled up to 24 hours in advance without penalty.' },
   ]
 
-  const pricing = {
+  const [pricing, setPricing] = useState({
     free: { mo: 0, yr: 0 },
     wellness: { mo: 999, yr: 999 * 12 * 0.8 },
     personal_training: { mo: 2499, yr: 2499 * 12 * 0.8 }
-  }
+  })
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const trainerId = params.get('trainerId')
+    
+    if (trainerId) {
+      const fetchTrainer = async () => {
+        try {
+          setLoadingTrainer(true)
+          const res = await fetch(`${API}/trainers/${trainerId}`)
+          if (res.ok) {
+            const data = await res.json()
+            const wPrice = data.pricing?.wellnessMonthly || 999
+            const ptPrice = data.pricing?.personalTrainingMonthly || 2499
+            
+            setPricing({
+              free: { mo: 0, yr: 0 },
+              wellness: { mo: wPrice, yr: wPrice * 12 * 0.8 },
+              personal_training: { mo: ptPrice, yr: ptPrice * 12 * 0.8 }
+            })
+          }
+        } catch (err) {
+          console.error(err)
+        } finally {
+          setLoadingTrainer(false)
+        }
+      }
+      fetchTrainer()
+    }
+  }, [location.search])
 
   const handleSelectPlan = (planName) => {
+    const params = new URLSearchParams(location.search)
+    const trainerId = params.get('trainerId')
     if (planName === 'free') {
       if (user) {
         updateSubscription('free')
@@ -32,7 +67,7 @@ export default function SubscriptionPlansPage() {
       }
     } else {
       if (user) {
-        navigate('/dashboard/subscription', { state: { plan: planName } })
+        navigate('/dashboard/subscription', { state: { plan: planName, trainerId } })
       } else {
         navigate('/auth/register')
       }

@@ -10,7 +10,7 @@ import User from '../users/user.model.js'
 export const sendMessage = async (req, res) => {
   try {
     const { receiverId, text } = req.body
-    const senderId = req.user.id
+    const senderId = req.user._id
 
     if (!receiverId) {
       return res.status(400).json({ success: false, message: 'receiverId is required.' })
@@ -54,12 +54,25 @@ export const sendMessage = async (req, res) => {
 // 2. Oru User-nte muzhuvan Chat List edukkaan ulla API (WhatsApp Home Screen pole)
 export const getConversations = async (req, res) => {
   try {
-    const userId = req.user.id
+    const userId = req.user._id
 
     const conversations = await Conversation.find({ participants: userId })
       .populate('participants', 'name email role avatar') // Chat cheyyunna aalude peru kittan
       .populate('lastMessage') // Avasanathe message kittan
-      .sort({ updatedAt: -1 }) // Ettavum puthiya chat aadyam varan
+      .sort({ updatedAt: -1 })
+      .lean() // Ettavum puthiya chat aadyam varan
+
+    const Trainer = (await import('../trainers/trainer.model.js')).default
+    for (let conv of conversations) {
+      for (let p of conv.participants) {
+        if (p.role === 'trainer' || p.role === 'wellness_coach') {
+          const trainerRecord = await Trainer.findOne({ userId: p._id }).select('profilePhoto')
+          if (trainerRecord && trainerRecord.profilePhoto) {
+            p.profilePhoto = trainerRecord.profilePhoto
+          }
+        }
+      }
+    }
 
     res.status(200).json({ success: true, data: conversations })
   } catch (error) {
@@ -71,7 +84,7 @@ export const getConversations = async (req, res) => {
 export const getMessages = async (req, res) => {
   try {
     const { otherUserId } = req.params
-    const myId = req.user.id
+    const myId = req.user._id
     
     // Pagination varubol URL-il ninnu page-um limit-um edukkunnu (eg: ?page=1&limit=20)
     const page = parseInt(req.query.page) || 1
@@ -82,7 +95,15 @@ export const getMessages = async (req, res) => {
       participants: { $all: [myId, otherUserId], $size: 2 }
     })
 
-    const contactInfo = await User.findById(otherUserId).select('name email role avatar')
+    let contactInfo = await User.findById(otherUserId).select('name email role avatar').lean()
+
+    if (contactInfo && (contactInfo.role === 'trainer' || contactInfo.role === 'wellness_coach')) {
+      const Trainer = (await import('../trainers/trainer.model.js')).default
+      const trainerRecord = await Trainer.findOne({ userId: otherUserId }).select('profilePhoto')
+      if (trainerRecord && trainerRecord.profilePhoto) {
+        contactInfo.profilePhoto = trainerRecord.profilePhoto
+      }
+    }
 
     if (!conversation) {
       return res.status(200).json({ success: true, data: [], contact: contactInfo }) 
@@ -105,7 +126,7 @@ export const getMessages = async (req, res) => {
 export const logCall = async (req, res) => {
   try {
     const { receiverId, type } = req.body
-    const senderId = req.user.id
+    const senderId = req.user._id
 
     if (!['call_declined', 'call_missed'].includes(type)) {
       return res.status(400).json({ success: false, message: 'Invalid call log type' })
@@ -143,7 +164,7 @@ export const logCall = async (req, res) => {
 export const markChatAsRead = async (req, res) => {
   try {
     const senderId = req.params.senderId // Client-nte ID
-    const myId = req.user.id // Ente (Trainer-nte) ID
+    const myId = req.user._id // Ente (Trainer-nte) ID
 
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, myId], $size: 2 }

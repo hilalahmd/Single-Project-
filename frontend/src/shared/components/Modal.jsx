@@ -26,7 +26,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
       />
 
       {/* Panel — CinematicHero glass style */}
-      <div className={`relative w-full ${sizes[size]} bg-[#0D0E14]/95 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden`}>
+      <div className={`relative w-full ${sizes[size]} bg-[#0D0E14]/95 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]`}>
         {/* Top gloss */}
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
@@ -46,7 +46,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
         )}
 
         {/* Body */}
-        <div className="px-6 py-6">{children}</div>
+        <div className="px-6 py-6 overflow-y-auto">{children}</div>
       </div>
     </div>
   )

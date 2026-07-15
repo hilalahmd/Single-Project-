@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, Search, Clock, LogOut, Check, X, Eye } from 'lucide-react'
+import { CheckCircle, XCircle, Search, Clock, LogOut, Check, X, Eye, FileText } from 'lucide-react'
 import { useAuth } from '../../../shared/context/AuthContext'
 import API from '../../../shared/utils/api'
 
@@ -83,6 +83,7 @@ export default function ManagerApprovalsPage() {
                 <th className="px-6 py-4">Trainer Name</th>
                 <th className="px-6 py-4">Specialties</th>
                 <th className="px-6 py-4">Experience</th>
+                <th className="px-6 py-4">Certifications</th>
                 <th className="px-6 py-4">Rating</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
@@ -123,7 +124,47 @@ export default function ManagerApprovalsPage() {
                       {t.specialties?.length ? t.specialties.join(', ') : 'Not specified'}
                     </td>
                     <td className="px-6 py-4 text-gray-600 font-medium">
-                      {t.experienceYears ? `${t.experienceYears} Years` : 'Not specified'}
+                      {t.experience || t.experienceYears ? `${t.experience || t.experienceYears} Years` : 'Not specified'}
+                    </td>
+                    <td className="px-6 py-4">
+                      {t.certifications?.length ? (
+                        <div className="flex gap-2">
+                          {t.certifications.map((url, i) => {
+                            const isPdf = url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/')
+                            return (
+                              <a
+                                key={i}
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={`Certificate ${i + 1} — Click to view`}
+                                className="relative group block w-12 h-12 rounded-lg overflow-hidden border border-gray-200 hover:border-black transition-all shadow-sm"
+                              >
+                                {isPdf ? (
+                                  <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center">
+                                    <FileText size={16} className="text-red-500" />
+                                    <span className="text-[7px] font-bold text-red-500 mt-0.5">PDF</span>
+                                  </div>
+                                ) : (
+                                  <img
+                                    src={url}
+                                    alt={`Cert ${i + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.target.parentElement.innerHTML = '<div class="w-full h-full bg-gray-100 flex items-center justify-center"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#9ca3af\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\' ry=\'2\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/></svg></div>'
+                                    }}
+                                  />
+                                )}
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <span className="text-white text-[8px] font-bold">View</span>
+                                </div>
+                              </a>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-red-400 font-semibold">None</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       {t.rating ? (

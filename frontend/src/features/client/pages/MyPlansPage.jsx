@@ -5,7 +5,7 @@ import { useAuth } from '../../../shared/context/AuthContext'
 import API from '../../../shared/utils/api'
 
 export default function MyPlansPage() {
-  const { subscriptionTier } = useAuth()
+  const { user, subscriptionTier } = useAuth()
   const [activeTab, setActiveTab] = useState('workout')
   const [activeWeek, setActiveWeek] = useState(1)
   const [activeDietDay, setActiveDietDay] = useState('Mon')
@@ -187,9 +187,10 @@ export default function MyPlansPage() {
   const currentDietDay = assignedDiets.find(d => d.dayNumber === activeDietDayNumber)
 
   // Determine coach assign label
-  const coachLabel = subscriptionTier === 'personal_training'
-    ? 'Assigned by Coach Arjun Menon' 
-    : (subscriptionTier === 'wellness' ? 'Assigned by Coach Priya Nair' : 'Self-Assigned Program')
+  const coachName = user?.assignedTrainer?.userId?.name || user?.assignedTrainer?.name || 'Awaiting Assignment'
+  const coachLabel = (subscriptionTier === 'personal_training' || subscriptionTier === 'wellness') && user?.assignedTrainer
+    ? `Assigned by Coach ${coachName}`
+    : 'Self-Assigned Program'
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 relative z-10 pb-20 pt-4 md:pt-6">

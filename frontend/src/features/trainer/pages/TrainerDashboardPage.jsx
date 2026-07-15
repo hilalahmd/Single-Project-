@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Users, DollarSign, CalendarDays, MessageSquare, Video, ArrowRight, TrendingUp, X, Reply, CheckCircle2 } from 'lucide-react'
 import API from '../../../shared/utils/api'
+import { useAuth } from '../../../shared/context/AuthContext'
 
 export default function TrainerDashboardPage() {
   const navigate = useNavigate()
+  const { role } = useAuth()
   // Real stats store cheyyan ulla state
   const [dashboardStats, setDashboardStats] = useState({
     activeClients: 0,
@@ -65,7 +67,7 @@ export default function TrainerDashboardPage() {
   const stats = [
     { label: 'Active Clients', value: dashboardStats.activeClients.toString(), icon: Users, color: 'text-orange-500' },
     { label: 'Unread Messages', value: dashboardStats.unreadMessages.toString(), icon: MessageSquare, color: 'text-amber-500' },
-    { label: 'Upcoming Sessions', value: dashboardStats.upcomingSessions.toString(), icon: Video, color: 'text-green-500' },
+    ...(role !== 'wellness_coach' ? [{ label: 'Upcoming Sessions', value: dashboardStats.upcomingSessions.toString(), icon: Video, color: 'text-green-500' }] : []),
     { label: 'Earnings Balance', value: `$${dashboardStats.earnings}`, icon: DollarSign, color: 'text-emerald-400' },
   ]
 
@@ -103,43 +105,45 @@ export default function TrainerDashboardPage() {
       </div>
 
       {/* Two Column Layout for Sessions and Messages */}
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className={`grid lg:grid-cols-${role === 'wellness_coach' ? '1' : '2'} gap-8`}>
         
         {/* Upcoming Video Sessions */}
-        <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 flex flex-col">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-[20px] font-semibold text-white">Today's Video Sessions</h2>
-            <Link to="/trainer/schedule" className="text-sm font-semibold text-[#F97316] hover:text-orange-400 flex items-center gap-1 transition-colors">
-              View Schedule <ArrowRight size={16} />
-            </Link>
-          </div>
-          
-          <div className="space-y-4 flex-1">
-            {upcomingSessions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-gray-500 py-12">
-                <CalendarDays size={40} className="mb-3 opacity-50" />
-                <p className="font-medium">No upcoming sessions</p>
-              </div>
-            ) : (
-              upcomingSessions.map((session, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#1E293B] hover:border-gray-700 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-[#F97316]/10 text-[#F97316] font-bold rounded-full flex items-center justify-center">
-                      {session.time.split(':')[0]}
-                    </div>
-                    <div>
-                      <h3 className="text-white font-bold">{session.client}</h3>
-                      <p className="text-sm text-gray-400 mt-0.5">{session.type} • {session.duration}</p>
-                    </div>
-                  </div>
-                  <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-semibold rounded-lg transition-colors">
-                    Join
-                  </button>
+        {role !== 'wellness_coach' && (
+          <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-[20px] font-semibold text-white">Today's Video Sessions</h2>
+              <Link to="/trainer/schedule" className="text-sm font-semibold text-[#F97316] hover:text-orange-400 flex items-center gap-1 transition-colors">
+                View Schedule <ArrowRight size={16} />
+              </Link>
+            </div>
+            
+            <div className="space-y-4 flex-1">
+              {upcomingSessions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-gray-500 py-12">
+                  <CalendarDays size={40} className="mb-3 opacity-50" />
+                  <p className="font-medium">No upcoming sessions</p>
                 </div>
-              ))
-            )}
+              ) : (
+                upcomingSessions.map((session, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-[#1E293B] hover:border-gray-700 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-[#F97316]/10 text-[#F97316] font-bold rounded-full flex items-center justify-center">
+                        {session.time.split(':')[0]}
+                      </div>
+                      <div>
+                        <h3 className="text-white font-bold">{session.client}</h3>
+                        <p className="text-sm text-gray-400 mt-0.5">{session.type} • {session.duration}</p>
+                      </div>
+                    </div>
+                    <button className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-semibold rounded-lg transition-colors">
+                      Join
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Unread Messages */}
         <div className="bg-[#111827] border border-[#1E293B] rounded-2xl p-6 flex flex-col">

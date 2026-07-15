@@ -5,16 +5,23 @@ import Card from '../../../shared/components/Card'
 import Button from '../../../shared/components/Button'
 import Badge from '../../../shared/components/Badge'
 import API from '../../../shared/utils/api'
+import { useAuth } from '../../../context/AuthContext'
 
 export default function ClientProfilePage() {
+  const { user, login } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [avatarLoading, setAvatarLoading] = useState(false)
+  const [toastMessage, setToastMessage] = useState(null)
+  const fileInputRef = useRef(null)
 
   const [profile, setProfile] = useState({
     name: '',
     email: '',
     preferredLanguage: 'English',
+    languagesSpoken: 'English',
+    avatar: '',
     bio: ''
   })
 
@@ -38,9 +45,11 @@ export default function ClientProfilePage() {
         const data = await res.json()
 
         setProfile({
-          name: data.name || '',
-          email: data.email || '',
-          preferredLanguage: data.preferredLanguage || 'English',
+          name: data.profile.name,
+          email: data.profile.email,
+          preferredLanguage: data.profile.preferredLanguage,
+          languagesSpoken: data.profile.languagesSpoken ? data.profile.languagesSpoken.join(', ') : '',
+          avatar: data.profile.avatar || '',
           bio: data.bio || ''
         })
 
@@ -102,6 +111,32 @@ export default function ClientProfilePage() {
     }
   }
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('avatar', file)
+
+    setAvatarLoading(true)
+    try {
+      const res = await api.post('/users/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      if (res.data.success) {
+        setProfile(prev => ({ ...prev, avatar: res.data.user.avatar }))
+        // Update global auth state if needed, or simply let the local state reflect it
+        login(res.data.user, localStorage.getItem('token')) // Re-login with updated user
+        setToastMessage('Avatar updated successfully')
+      }
+    } catch (error) {
+      console.error(error)
+      setToastMessage('Failed to upload avatar')
+    } finally {
+      setAvatarLoading(false)
+    }
+  }
+
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div>
@@ -113,16 +148,29 @@ export default function ClientProfilePage() {
         <Card>
           <h2 className="text-[20px] font-semibold text-white mb-6">Personal Details</h2>
           <div className="flex items-center gap-6 mb-8">
-            <div className="w-24 h-24 bg-[#0F172A] rounded-full flex items-center justify-center text-[32px] font-bold text-gray-400 border border-[#1E293B]">H</div>
+            {profile.avatar ? (
+              <img src={profile.avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover border border-[#1E293B]" />
+            ) : (
+              <div className="w-24 h-24 bg-[#0F172A] rounded-full flex items-center justify-center text-[32px] font-bold text-gray-400 border border-[#1E293B]">
+                {profile.name ? profile.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+            )}
             <div className="space-y-2">
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleAvatarUpload} 
+                accept="image/jpeg, image/png, image/gif" 
+                className="hidden" 
+              />
               <button
-                disabled
-                title="Avatar upload coming soon"
-                className="px-4 py-2 border border-[#1E293B] text-gray-500 rounded-lg text-[14px] font-semibold cursor-not-allowed opacity-50 select-none"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={avatarLoading}
+                className="px-4 py-2 border border-[#2563EB] text-[#2563EB] hover:bg-[#2563EB]/10 transition-colors rounded-lg text-[14px] font-semibold cursor-pointer"
               >
-                Change Avatar
+                {avatarLoading ? 'Uploading...' : 'Change Avatar'}
               </button>
-              <p className="text-[12px] text-gray-500">Avatar upload <span className="text-amber-400 font-semibold">coming soon</span>. JPG, GIF or PNG. Max 2MB.</p>
+              <p className="text-[12px] text-gray-500">JPG, GIF or PNG. Max 5MB.</p>
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-6">

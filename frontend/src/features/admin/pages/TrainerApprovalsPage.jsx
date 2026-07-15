@@ -188,16 +188,45 @@ export default function TrainerApprovalsPage() {
               </div>
 
               <div className="mb-6 flex-1">
-                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-2">Certifications</p>
-                <div className="space-y-2">
-                  {t.certifications?.length ? t.certifications.map((c, i) => (
-                    <div key={i} className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      <FileText size={14} className="text-gray-400 shrink-0" />
-                      <span className="text-xs font-bold text-black truncate flex-1">Certificate {i+1}</span>
-                      <a href={c} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 font-bold hover:underline">View</a>
-                    </div>
-                  )) : <p className="text-xs text-gray-400">No documents uploaded</p>}
-                </div>
+                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mb-2">Certifications ({t.certifications?.length || 0})</p>
+                {t.certifications?.length ? (
+                  <div className="flex flex-wrap gap-3">
+                    {t.certifications.map((url, i) => {
+                      const isPdf = url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/')
+                      return (
+                        <a
+                          key={i}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={`Certificate ${i + 1} — Click to view`}
+                          className="relative group block w-20 h-20 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-black transition-all shadow-sm"
+                        >
+                          {isPdf ? (
+                            <div className="w-full h-full bg-red-50 flex flex-col items-center justify-center">
+                              <FileText size={22} className="text-red-500" />
+                              <span className="text-[9px] font-bold text-red-500 mt-1">PDF</span>
+                            </div>
+                          ) : (
+                            <img
+                              src={url}
+                              alt={`Certificate ${i + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.parentElement.innerHTML = '<div class="w-full h-full bg-gray-100 flex flex-col items-center justify-center"><svg xmlns=\'http://www.w3.org/2000/svg\' width=\'22\' height=\'22\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'#9ca3af\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\' ry=\'2\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/></svg></div>'
+                              }}
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span className="text-white text-[10px] font-bold">View</span>
+                          </div>
+                        </a>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-red-400 font-semibold">⚠ No certificates uploaded</p>
+                )}
               </div>
 
               {(t.rejectionReason || t.reason) && (

@@ -57,6 +57,8 @@ const clientNav = [
 const trainerNav = [
   { label: 'Dashboard',       to: '/trainer/dashboard',        icon: LayoutDashboard },
   { label: 'My Clients',      to: '/trainer/clients',          icon: Users },
+  { label: 'Workouts',        to: '/trainer/workout-plans',    icon: Dumbbell },
+  { label: 'Diets',           to: '/trainer/diet-plans',       icon: Salad },
 
   { label: 'Schedule',        to: '/trainer/schedule',         icon: CalendarDays },
   { label: 'Earnings',        to: '/trainer/earnings',         icon: DollarSign },
@@ -88,7 +90,10 @@ const managerNav = [
 function useNavItems(role, subscriptionTier = 'free') {
   if (role === 'admin')   return adminNav
   if (role === 'manager') return managerNav
-  if (role === 'trainer' || role === 'wellness_coach') return trainerNav
+  if (role === 'wellness_coach') {
+    return trainerNav.filter(nav => nav.label !== 'Schedule' && nav.label !== 'Video')
+  }
+  if (role === 'trainer') return trainerNav
   return clientNav
 }
 

@@ -361,6 +361,15 @@ export default function FoodAIPage() {
               }}>
 
               {/* Result header bar */}
+              {result.name === "Failed to analyze food. Please try again." && (
+                <div className="bg-amber-500/10 border-b border-amber-500/20 p-4 flex items-start gap-3">
+                  <AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-amber-500 text-sm font-bold">AI Service Unavailable</p>
+                    <p className="text-amber-400/80 text-xs mt-1">Displaying a static fallback result so you can test the UI. This is not a real analysis of your photo.</p>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center justify-between px-6 py-3.5"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)' }}>
                 <div className="flex items-center gap-2">

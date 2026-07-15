@@ -54,6 +54,7 @@ Unlike standard fitness apps, FitForge features a custom **Retrieval-Augmented G
 
 ### **AI & Cloud Integrations**
 - **Google Gemini API** (Vision & Text Generation)
+- **Custom RAG Engine** (Vector Embeddings & Contextual Chat)
 - **Cloudinary** (Cloud Media Storage)
 - **JWT & bcrypt** (Security)
 

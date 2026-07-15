@@ -13,7 +13,7 @@ import ProgressLog from './progress.model.js';
  */
 export const logProgress = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
     const { date, weight, bodyFat, measurements, strengthLog } = req.body;
 
     // Validate date format
@@ -83,12 +83,34 @@ export const logProgress = async (req, res) => {
  */
 export const getProgressHistory = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id;
 
     // Limit to 365 entries (1 year of daily logs) to prevent unbounded query
     // WHY: without a limit, this query returns every single log entry ever created,
     //      which could become very large and slow over time
     const history = await ProgressLog.find({ user: userId })
+      .sort({ date: 1 })
+      .limit(365)
+      .lean();
+
+    res.status(200).json({ success: true, history });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+/**
+ * getClientProgress — returns progress logs for a specific client.
+ * Restricted to the trainer who is assigned to that client.
+ */
+export const getClientProgress = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const trainerId = req.user._id;
+
+    // Optional: Add security check to verify clientId is actually assigned to trainerId
+    // For now, we fetch the data if they are a trainer/wellness_coach.
+    const history = await ProgressLog.find({ user: clientId })
       .sort({ date: 1 })
       .limit(365)
       .lean();

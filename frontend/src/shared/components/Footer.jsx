@@ -1,6 +1,11 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from './../../shared/context/AuthContext'
 
 export default function Footer() {
+  const { user, role } = useAuth()
+  
+  const dashboardLink = role === 'admin' ? '/admin' : (role === 'trainer' || role === 'wellness_coach') ? '/trainer/dashboard' : '/dashboard'
+
   return (
     <footer className="bg-[#07080C]/80 backdrop-blur-xl border-t border-white/10 py-12">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -22,7 +27,7 @@ export default function Footer() {
               { label: 'Trainers', to: '/trainers' },
               { label: 'Plans', to: '/plans' },
               { label: 'Diet', to: '/free-diet-plan' },
-              { label: 'Login', to: '/auth/login' },
+              { label: user ? 'Dashboard' : 'Login', to: user ? dashboardLink : '/auth/login' },
             ].map(({ label, to }) => (
               <Link
                 key={to}

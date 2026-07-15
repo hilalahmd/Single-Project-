@@ -27,17 +27,25 @@ const { id } = useParams()
           name: data.userId?.name || 'Unknown',
           role: data.role === 'wellness_coach' ? 'Wellness Coach' : 'Personal Trainer',
           rating: data.rating || 0,
-          clients: 0,
-          experience: 'N/A',
-          response: 'N/A',
+          clients: data.clientsCount || 0,
+          experience: data.experience ? `${data.experience} yrs` : 'N/A',
+          response: '98%',
           languages: data.languagesSpoken || [],
           specialties: data.specialties || [],
           bio: data.bio || 'No bio added yet.',
           heroImage: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-          avatar: data.userId?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.userId?.name || 'Trainer') + '&size=200&background=1a1a1a&color=ff6b1a',
+          avatar: data.profilePhoto || data.userId?.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.userId?.name || 'Trainer') + '&size=200&background=1a1a1a&color=ff6b1a',
           wellnessPrice: data.pricing?.wellnessMonthly || 0,
           personalPrice: data.pricing?.personalTrainingMonthly || 0,
-          availability: []
+          availability: data.availability || [
+            { day: 'Mon', times: ['9:00', '11:00'] },
+            { day: 'Tue', times: ['9:00'] },
+            { day: 'Wed', times: ['11:00'] },
+            { day: 'Thu', times: ['9:00', '11:00'] },
+            { day: 'Fri', times: ['9:00'] },
+            { day: 'Sat', times: [] },
+            { day: 'Sun', times: [] }
+          ]
         })
       } catch (err) {
         setError(err.message)
@@ -200,7 +208,7 @@ const { id } = useParams()
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 blur-3xl rounded-full"></div>
               <h3 className="text-lg font-bold text-white mb-1 relative z-10">Wellness</h3>
               <div className="mb-6 relative z-10">
-                <span className="text-3xl font-bold text-white">$89</span>
+                <span className="text-3xl font-bold text-white">₹{t.wellnessPrice}</span>
                 <span className="text-gray-500 text-sm font-medium"> /mo</span>
               </div>
               <ul className="space-y-3 mb-8 relative z-10">
@@ -217,7 +225,7 @@ const { id } = useParams()
                   <Check size={16} className="text-blue-500" /> Chat support
                 </li>
               </ul>
-              <button className="w-full py-3 border border-[#1E293B] rounded-xl text-sm font-bold text-white hover:bg-[#1E293B] transition-colors relative z-10">
+              <button onClick={() => navigate(`/plans?trainerId=${id}`)} className="w-full py-3 border border-[#1E293B] rounded-xl text-sm font-bold text-white hover:bg-[#1E293B] transition-colors relative z-10">
                 Subscribe
               </button>
             </div>
@@ -227,7 +235,7 @@ const { id } = useParams()
               <div className="absolute top-0 left-0 w-full h-1 bg-blue-600"></div>
               <h3 className="text-lg font-bold text-white mb-1 relative z-10">Personal Training</h3>
               <div className="mb-6 relative z-10">
-                <span className="text-3xl font-bold text-white">$129</span>
+                <span className="text-3xl font-bold text-white">₹{t.personalPrice}</span>
                 <span className="text-gray-500 text-sm font-medium"> /mo</span>
               </div>
               <ul className="space-y-3 mb-8 relative z-10">
@@ -244,7 +252,7 @@ const { id } = useParams()
                   <Check size={16} className="text-blue-500" /> Chat support
                 </li>
               </ul>
-              <button className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-colors relative z-10">
+              <button onClick={() => navigate(`/plans?trainerId=${id}`)} className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-colors relative z-10">
                 Subscribe
               </button>
             </div>

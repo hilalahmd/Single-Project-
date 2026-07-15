@@ -8,7 +8,6 @@ import morgan from 'morgan'
 import helmet from 'helmet'
 import connectDB from './config/db.js'
 import jwt from 'jsonwebtoken'
-import { Conversation } from './modules/chat/chat.model.js'
 import authRoutes from './modules/auth/auth.routes.js'
 import userRoutes from './modules/users/user.routes.js'
 import trainerRoutes from './modules/trainers/trainer.routes.js'
@@ -23,6 +22,7 @@ import chatRoutes from './modules/chat/chat.routes.js'
 import nutritionRoutes from './modules/nutrition/nutrition.routes.js'
 import progressRoutes from './modules/progress/progress.routes.js'
 import scheduleRoutes from './modules/schedule/schedule.routes.js'
+import paymentRoutes from './modules/payment/payment.routes.js'
 import ragRoutes from './modules/rag/rag.routes.js'
 import { initializeRAG } from './modules/rag/rag.service.js'
 import dns from 'node:dns'
@@ -68,6 +68,7 @@ app.use('/api/chat', chatRoutes)
 app.use('/api/nutrition', nutritionRoutes)
 app.use('/api/progress', progressRoutes)
 app.use('/api/schedule', scheduleRoutes)
+app.use('/api/payment', paymentRoutes)
 app.use('/api/ai', ragRoutes)
 
 

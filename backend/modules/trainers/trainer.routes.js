@@ -19,7 +19,7 @@ import rateLimit from 'express-rate-limit'
 
 const trainerLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 500,
   message: { message: 'Too many requests, please try again later.' }
 })
 
@@ -57,7 +57,7 @@ router.post(
 )
 
 
-router.get('/earnings', protect, restrictTo('trainer'), getTrainerEarnings)
+router.get('/earnings', protect, restrictTo('trainer', 'wellness_coach'), getTrainerEarnings)
 
 
 // Resubmit application
@@ -74,7 +74,7 @@ router.put(
 )
 
 
-router.put('/profile', protect, restrictTo('trainer', 'wellness_coach'), updateTrainerProfile)
+router.put('/profile', protect, restrictTo('trainer', 'wellness_coach'), upload.single('profilePhoto'), updateTrainerProfile)
 
 router.post('/:id/review', protect, restrictTo('user'), addReview)
 

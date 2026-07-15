@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Search, MoreVertical, Activity, Plus, TrendingUp, MessageSquare } from 'lucide-react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { Search, Filter, Mail, Phone, MapPin, Calendar, CheckCircle, Clock, Activity, MessageSquare, TrendingUp, BarChart } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import API from '../../../shared/utils/api' // Backend vilikkan ulla API tool
 
@@ -28,7 +28,14 @@ export default function ClientListPage() {
   }, [])
 
   // Search filter (User type cheyyunnathinu anusarichu filter aavan)
-  const filtered = clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+  const filtered = useMemo(() => {
+    if (!search) return clients
+    return clients.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+  }, [clients, search])
+
+  const handleSearchChange = useCallback((e) => {
+    setSearch(e.target.value)
+  }, [])
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -46,7 +53,7 @@ export default function ClientListPage() {
           type="text"
           placeholder="Search clients..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={handleSearchChange}
           className="w-full sm:w-64 bg-[#111827] border border-[#1E293B] rounded-xl pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-[#2563EB] transition-colors"
         />
       </div>
@@ -127,6 +134,13 @@ export default function ClientListPage() {
                         title="Message Client"
                       >
                         <MessageSquare size={14} /> Chat
+                      </Link>
+                      <Link 
+                        to={`/trainer/analytics/${client._id}`}
+                        className="px-3 py-1.5 bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/20 rounded-lg text-[12px] font-bold transition-colors flex items-center gap-1.5"
+                        title="Analytics Dashboard"
+                      >
+                        <BarChart size={14} /> Analytics
                       </Link>
                     </div>
                   </td>

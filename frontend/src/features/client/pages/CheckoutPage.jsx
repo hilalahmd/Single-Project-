@@ -10,7 +10,7 @@ import API from '../../../shared/utils/api'
 export default function CheckoutPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { updateSubscription, setUser } = useAuth()
+  const { user, updateSubscription, setUser } = useAuth()
   const [loading, setLoading] = useState(false)
   const [toastMessage, setToastMessage] = useState(null)
 
@@ -25,7 +25,23 @@ export default function CheckoutPage() {
   // Determine selected plan from navigation state or default to wellness
   const selectedPlan = location.state?.plan || 'wellness'
 
-  // Configure plan particulars dynamically
+  // Calculate price dynamically from selected trainer
+  const getDynamicPrice = () => {
+    if (!selectedTrainer) return selectedPlan === 'personal_training' ? 2499 : 999
+    
+    const trainerObj = trainers.find(t => t.id === selectedTrainer)
+    if (!trainerObj) return selectedPlan === 'personal_training' ? 2499 : 999
+    
+    return selectedPlan === 'personal_training' 
+      ? trainerObj.personalPrice 
+      : trainerObj.wellnessPrice
+  }
+
+  const basePrice = getDynamicPrice()
+  const tax = basePrice * 0.18 // Assuming 18% GST is included in or added to the price. Actually let's assume basePrice is total, so tax = basePrice * (18/118) or let's just make it simple: basePrice is Subtotal + Tax.
+  const subtotal = basePrice / 1.18
+  const taxAmount = basePrice - subtotal
+
   const planDetails = {
     free: {
       name: 'Free Plan',
@@ -37,27 +53,27 @@ export default function CheckoutPage() {
     },
     wellness: {
       name: 'Wellness Plan (Monthly)',
-      price: 999,
+      price: basePrice,
       subtext: 'Billed every month. Cancel anytime.',
       features: ['Dedicated wellness coach', 'Custom Diet + Workout plan', 'Progress tracking dashboard', 'Unlimited AI food photo analysis', 'Chat support with coach'],
-      tax: 152.39,
-      subtotal: 846.61
+      tax: taxAmount,
+      subtotal: subtotal
     },
     personal_training: {
       name: 'Personal Training Plan (Monthly)',
-      price: 2499,
+      price: basePrice,
       subtext: 'Billed every month. Cancel anytime.',
       features: ['Everything in Wellness', 'Live 1-on-1 video sessions', 'Real-time form correction', 'Priority coach support', 'Weekly check-in calls'],
-      tax: 381.20,
-      subtotal: 2117.80
+      tax: taxAmount,
+      subtotal: subtotal
     }
   }[selectedPlan] || {
     name: 'Wellness Plan (Monthly)',
-    price: 999,
+    price: basePrice,
     subtext: 'Billed every month. Cancel anytime.',
     features: ['Dedicated wellness coach', 'Custom Diet + Workout plan', 'Progress tracking dashboard', 'Unlimited AI food photo analysis', 'Chat support with coach'],
-    tax: 152.39,
-    subtotal: 846.61
+    tax: taxAmount,
+    subtotal: subtotal
   }
 
   // ── Fetch trainers on mount ────────────────────────────────────────────────
@@ -81,13 +97,21 @@ export default function CheckoutPage() {
           rating: t.rating || 0,
           reviews: t.reviewCount || 0,
           specialties: t.specialties || [],
+          wellnessPrice: t.pricing?.wellnessMonthly || 999,
+          personalPrice: t.pricing?.personalTrainingMonthly || 2499,
           image: t.userId?.avatar || null,
           initial: (t.userId?.name || 'U').charAt(0).toUpperCase()
         }))
 
         setTrainers(mapped)
-        // Auto-select first if only 1
-        if (mapped.length === 1) setSelectedTrainer(mapped[0].id)
+        
+        // Auto-select if arriving with a specific trainerId, or if only 1
+        const urlTrainerId = location.state?.trainerId
+        if (urlTrainerId && mapped.find(t => t.id === urlTrainerId)) {
+          setSelectedTrainer(urlTrainerId)
+        } else if (mapped.length === 1) {
+          setSelectedTrainer(mapped[0].id)
+        }
       } catch (err) {
         console.error('Error fetching trainers:', err)
         setToastMessage('Failed to load coaches. Please try again.')
@@ -98,6 +122,16 @@ export default function CheckoutPage() {
 
     fetchTrainers()
   }, [selectedPlan])
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
 
   // ── Handle Payment + Assign Trainer ────────────────────────────────────────
   const handlePayment = async (e) => {
@@ -111,38 +145,94 @@ export default function CheckoutPage() {
 
     setLoading(true)
 
-    // Simulate payment delay
-    await new Promise(r => setTimeout(r, 1500))
-
     try {
-      // Call backend to assign trainer + update subscription
-      const res = await fetch(`${API}/users/assign-trainer`, {
-        method: 'PUT',
+      // 1. Create Razorpay order on backend
+      const orderRes = await fetch(`${API}/payment/create-order`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ 
-          trainerId: selectedTrainer, 
           plan: selectedPlan,
-          paymentToken: `tok_mock_${Math.random().toString(36).substring(2)}` // Secure mock token
+          trainerId: selectedTrainer 
         })
       })
+      const orderData = await orderRes.json()
 
-      const data = await res.json()
-
-      if (res.ok && data.user) {
-        // Update AuthContext with the new user data (includes assignedTrainer)
-        updateSubscription(selectedPlan, data.user)
-        setToastMessage(`Payment of ₹${planDetails.price} successful! Coach assigned.`)
-
-        setTimeout(() => {
-          navigate('/dashboard/coach')
-        }, 1000)
-      } else {
-        setToastMessage(data.message || 'Something went wrong. Please try again.')
+      if (!orderRes.ok) {
+        throw new Error(orderData.message || 'Failed to create order')
       }
+
+      // If it's a free plan, it gets activated directly
+      if (orderData.amount === 0) {
+        updateSubscription(selectedPlan, orderData.user)
+        setToastMessage(`Free plan activated! Coach assigned.`)
+        setTimeout(() => navigate('/dashboard/coach'), 1000)
+        return
+      }
+
+      // 2. Load Razorpay script
+      const isScriptLoaded = await loadRazorpayScript()
+      if (!isScriptLoaded) {
+        throw new Error('Razorpay SDK failed to load. Are you online?')
+      }
+
+      // 3. Get Razorpay Key from backend (optional, but safer than exposing in frontend env)
+      const keyRes = await fetch(`${API}/payment/key`, { credentials: 'include' })
+      const { key } = await keyRes.json()
+
+      // 4. Initialize Razorpay Checkout
+      const options = {
+        key: key,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'FitForge',
+        description: planDetails.name,
+        order_id: orderData.orderId,
+        handler: async function (response) {
+          try {
+            // 5. Verify payment on backend
+            setToastMessage('Verifying payment...')
+            const verifyRes = await fetch(`${API}/payment/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            })
+            
+            const verifyData = await verifyRes.json()
+            if (verifyRes.ok) {
+              updateSubscription(selectedPlan, verifyData.user)
+              setToastMessage(`Payment successful! Coach assigned.`)
+              setTimeout(() => navigate('/dashboard/coach'), 1500)
+            } else {
+              setToastMessage(verifyData.message || 'Payment verification failed.')
+            }
+          } catch (err) {
+            setToastMessage('Error verifying payment.')
+          }
+        },
+        prefill: {
+          name: user?.name || '',
+          email: user?.email || '',
+        },
+        theme: {
+          color: '#C4F135' // FitForge brand color
+        }
+      }
+
+      const paymentObject = new window.Razorpay(options)
+      paymentObject.on('payment.failed', function (response) {
+        setToastMessage(`Payment Failed: ${response.error.description}`)
+      })
+      paymentObject.open()
+
     } catch (error) {
       console.error('Payment error:', error)
-      setToastMessage('Network error. Please try again.')
+      setToastMessage(error.message || 'Network error. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -367,7 +457,8 @@ export default function CheckoutPage() {
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-xl font-bold text-white">Payment Details</h2>
               <div className="flex gap-1 items-center bg-gray-800 px-2 py-1 rounded text-xs font-bold text-gray-400">
-                <span className="w-2 h-2 bg-[#F97316] rounded-full inline-block mr-1"></span> MOCK GATEWAY
+                <span className="w-2 h-2 bg-[#F97316] rounded-full inline-block mr-1"></span>
+                {import.meta.env.DEV ? 'MOCK GATEWAY' : 'SECURE PAYMENT'}
               </div>
             </div>
             <form onSubmit={handlePayment} className="space-y-6">

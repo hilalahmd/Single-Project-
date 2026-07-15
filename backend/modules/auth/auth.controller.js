@@ -198,13 +198,13 @@ res.cookie('jwt', token, {
 // Build assignedTrainer data if exists
 let assignedTrainerData = null
 if (user.assignedTrainer) {
-  const Trainer = (await import('../trainers/trainer.model.js')).default
   const trainer = await Trainer.findById(user.assignedTrainer).populate('userId', 'name email avatar')
   if (trainer) {
     assignedTrainerData = {
       _id: trainer._id,
       name: trainer.userId?.name || 'Coach',
-      trainerUserId: trainer.userId?._id
+      trainerUserId: trainer.userId?._id,
+      profilePhoto: trainer.profilePhoto || trainer.userId?.avatar || null
     }
   }
 }
@@ -253,13 +253,13 @@ export const getMe = async (req, res) => {
     }
 
     if (user.assignedTrainer) {
-      const Trainer = (await import('../trainers/trainer.model.js')).default
       const trainer = await Trainer.findById(user.assignedTrainer).populate('userId', 'name email avatar')
       if (trainer) {
         userObj.assignedTrainer = {
           _id: trainer._id,
           name: trainer.userId?.name || 'Coach',
-          trainerUserId: trainer.userId?._id
+          trainerUserId: trainer.userId?._id,
+          profilePhoto: trainer.profilePhoto || trainer.userId?.avatar || null
         }
       }
     }

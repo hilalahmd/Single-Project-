@@ -180,8 +180,12 @@ export default function ChatWindowPage() {
 
           {/* Avatar with Pulse */}
           <div className="relative">
-            <div className="w-11 h-11 bg-[#F97316]/20 rounded-full flex items-center justify-center text-[15px] font-bold text-[#F97316] border border-[#F97316]/30 shadow-[0_0_15px_rgba(249,115,22,0.15)] uppercase">
-              {contactInfo ? contactInfo.name.charAt(0) : 'U'}
+            <div className="w-11 h-11 bg-[#F97316]/20 rounded-full flex items-center justify-center text-[15px] font-bold text-[#F97316] border border-[#F97316]/30 shadow-[0_0_15px_rgba(249,115,22,0.15)] uppercase overflow-hidden">
+              {contactInfo ? (
+                (contactInfo.profilePhoto || contactInfo.profileImage || contactInfo.avatar) ? (
+                  <img src={contactInfo.profilePhoto || contactInfo.profileImage || contactInfo.avatar} alt={contactInfo.name} className="w-full h-full object-cover" />
+                ) : contactInfo.name.charAt(0)
+              ) : 'U'}
             </div>
             {/* Online Pulse Indicator */}
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#07080C] rounded-full"></span>
@@ -199,12 +203,16 @@ export default function ChatWindowPage() {
 
         {/* Actions */}
         <div className="flex gap-2">
-          <button className="p-2.5 text-gray-400 hover:text-[#F97316] hover:bg-[#F97316]/10 rounded-full transition-all hover:scale-105" title="Call">
-            <Phone size={18} />
-          </button>
-          <button onClick={handleVideoCall} className="p-2.5 text-gray-400 hover:text-[#F97316] hover:bg-[#F97316]/10 rounded-full transition-all hover:scale-105 cursor-pointer" title="Video">
-            <Video size={18} />
-          </button>
+          {role !== 'wellness_coach' && contactInfo?.role !== 'wellness_coach' && (
+            <>
+              <button className="p-2.5 text-gray-400 hover:text-[#F97316] hover:bg-[#F97316]/10 rounded-full transition-all hover:scale-105" title="Call">
+                <Phone size={18} />
+              </button>
+              <button onClick={handleVideoCall} className="p-2.5 text-gray-400 hover:text-[#F97316] hover:bg-[#F97316]/10 rounded-full transition-all hover:scale-105 cursor-pointer" title="Video">
+                <Video size={18} />
+              </button>
+            </>
+          )}
           <button className="p-2.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all hover:scale-105" title="Info">
             <Info size={18} />
           </button>
@@ -248,7 +256,7 @@ export default function ChatWindowPage() {
                           <p className="text-gray-400 text-xs mt-0.5">{time}</p>
                         </div>
                       </div>
-                      {!isMe && (
+                      {!isMe && role !== 'wellness_coach' && contactInfo?.role !== 'wellness_coach' && (
                         <button 
                           onClick={handleVideoCall}
                           className="mt-3 w-full py-2 bg-[#F97316]/10 hover:bg-[#F97316]/20 text-[#F97316] text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors cursor-pointer"
@@ -272,10 +280,10 @@ export default function ChatWindowPage() {
                     {!isMe && (
                       <div className="flex-shrink-0 w-8 mr-2 flex justify-center">
                         {!isGroupedWithNext ? (
-                          contactInfo?.profileImage || contactInfo?.avatar ? (
-                            <img src={contactInfo.profileImage || contactInfo.avatar} alt={contactInfo.name} className="w-8 h-8 rounded-full object-cover shadow-[0_0_10px_rgba(249,115,22,0.1)]" />
+                          (contactInfo?.profilePhoto || contactInfo?.profileImage || contactInfo?.avatar) ? (
+                            <img src={contactInfo.profilePhoto || contactInfo.profileImage || contactInfo.avatar} alt={contactInfo.name} className="w-8 h-8 rounded-full object-cover shadow-[0_0_10px_rgba(249,115,22,0.1)]" />
                           ) : (
-                            <div className="w-8 h-8 bg-[#F97316]/20 border border-[#F97316]/30 rounded-full flex items-center justify-center text-[12px] font-bold text-[#F97316] uppercase shadow-[0_0_10px_rgba(249,115,22,0.1)]" aria-label={contactInfo?.name}>
+                            <div className="w-8 h-8 bg-[#F97316]/20 border border-[#F97316]/30 rounded-full flex items-center justify-center text-[12px] font-bold text-[#F97316] uppercase shadow-[0_0_10px_rgba(249,115,22,0.1)] overflow-hidden" aria-label={contactInfo?.name}>
                               {contactInfo ? contactInfo.name.charAt(0) : 'U'}
                             </div>
                           )

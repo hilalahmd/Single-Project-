@@ -8,6 +8,7 @@ import {
 import { useSocket } from '../../../shared/context/SocketContext'
 import { useAuth } from '../../../shared/context/AuthContext'
 import VideoCallModal from '../../../shared/components/VideoCallModal'
+import API from '../../../shared/utils/api'
 
 // ─── States: 'lobby' → 'calling' → 'in-call' → 'ended' ─────────────────────
 
@@ -89,7 +90,7 @@ export default function VideoSessionPage() {
       setPageState('lobby')
       alert('The contact is currently unavailable. Try again later.')
       try {
-        const res = await fetch('http://localhost:5000/api/chat/call-log', {
+        const res = await fetch(`${API}/chat/call-log`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ receiverId: sessionId, type: 'call_declined' }),

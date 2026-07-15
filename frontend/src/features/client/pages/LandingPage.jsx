@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../../shared/context/AuthContext'
 import { 
   Clock, UtensilsCrossed, Users, Video, Camera, 
   TrendingUp, MessageCircle, Utensils, BarChart2, Star 
@@ -7,6 +8,7 @@ import {
 import CinematicHero from './../components/CinematicHero'
 import ScrollReveal from '../../../shared/components/ScrollReveal'
 import BeforeAfterSlider from '../components/BeforeAfterSlider'
+import API from '../../../shared/utils/api'
 
 // High-performance clamp & map functions
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val))
@@ -16,10 +18,28 @@ const mapRange = (val, inMin, inMax, outMin, outMax) => {
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const { user, role } = useAuth()
+  const [topTrainers, setTopTrainers] = useState([])
+
   
   // Ref for the global background track
   const trackRef = useRef(null)
   const grainRef = useRef(null)
+
+  useEffect(() => {
+    const fetchTopTrainers = async () => {
+      try {
+        const res = await fetch(`${API}/trainers`)
+        if (res.ok) {
+          const data = await res.json()
+          setTopTrainers(data.slice(0, 4))
+        }
+      } catch (err) {
+        console.error('Error fetching trainers:', err)
+      }
+    }
+    fetchTopTrainers()
+  }, [])
 
   useEffect(() => {
     let ticking = false;
@@ -234,13 +254,15 @@ export default function LandingPage() {
             </ScrollReveal>
             
             <div className="flex overflow-x-auto pb-12 -mx-4 px-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-4 gap-8 snap-x">
-              {[
-                { name: 'Arjun Menon', spec: 'Weight Loss', lang: 'Malayalam/English', img: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80' },
-                { name: 'Priya Nair', spec: 'Yoga/Nutrition', lang: 'Malayalam/Tamil', img: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400&q=80' },
-                { name: 'Rahul Sharma', spec: 'Muscle Building', lang: 'Hindi/English', img: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=400&q=80' },
-                { name: 'Divya Thomas', spec: 'HIIT/Cardio', lang: 'Malayalam/English', img: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&q=80' },
-              ].map((t, i) => (
-                <ScrollReveal key={i} delay={i * 150} direction="up" className="min-w-[280px] snap-center shrink-0">
+              {topTrainers.map((t, i) => {
+                const img = t.profilePhoto || t.userId?.avatar || 'https://via.placeholder.com/400x500';
+                const name = t.userId?.name || 'Trainer';
+                const spec = t.specialties?.[0] || 'Fitness';
+                const lang = t.languagesSpoken?.[0] || 'English';
+                const price = t.role === 'wellness_coach' ? t.pricing?.wellnessMonthly : t.pricing?.personalTrainingMonthly;
+
+                return (
+                <ScrollReveal key={t._id || i} delay={i * 150} direction="up" className="min-w-[280px] snap-center shrink-0">
                   <div className="relative p-8 bg-[#0f1117] border border-[rgba(255,255,255,0.08)] rounded-[20px] hover:scale-[1.02] transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,107,26,0.15)] cursor-pointer overflow-hidden group">
                     {/* Inner top highlight for depth */}
                     <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
@@ -249,31 +271,32 @@ export default function LandingPage() {
                       {/* Avatar Image with Hover Glow */}
                       <div className="relative w-24 h-24 mx-auto mb-5">
                         <div className="absolute inset-0 bg-[#ff6b1a] blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-300 rounded-full"></div>
-                        <img src={t.img} alt={t.name} loading="lazy" className="relative w-full h-full rounded-full object-cover border-2 border-transparent bg-clip-border group-hover:border-[#ff6b1a] transition-colors duration-300" style={{ backgroundOrigin: 'border-box', backgroundClip: 'padding-box, border-box', backgroundImage: 'linear-gradient(#0f1117, #0f1117), linear-gradient(to right, #ff6b1a, #ff8c3a)' }} />
+                        <img src={img} alt={name} loading="lazy" className="relative w-full h-full rounded-full object-cover border-2 border-transparent bg-clip-border group-hover:border-[#ff6b1a] transition-colors duration-300" style={{ backgroundOrigin: 'border-box', backgroundClip: 'padding-box, border-box', backgroundImage: 'linear-gradient(#0f1117, #0f1117), linear-gradient(to right, #ff6b1a, #ff8c3a)' }} />
                       </div>
                       
-                      <h3 className="text-xl font-bold text-white">{t.name}</h3>
+                      <h3 className="text-xl font-bold text-white">{name}</h3>
                       <div className="flex items-center justify-center gap-1.5 text-sm font-medium mt-2 mb-5 text-gray-400">
-                        <Star size={16} className="fill-[#ff6b1a] text-[#ff6b1a]" /> 4.9
+                        <Star size={16} className="fill-[#ff6b1a] text-[#ff6b1a]" /> {t.rating || 0}
                       </div>
                       <div className="flex flex-wrap justify-center gap-2 mb-8">
-                        <span className="px-3 py-1 bg-[#ff6b1a]/10 border border-[#ff6b1a]/20 shadow-[0_0_10px_rgba(255,107,26,0.15)] text-[#ff6b1a] text-xs font-bold rounded-full tracking-wide">{t.spec}</span>
-                        <span className="px-3 py-1 bg-white/5 border border-white/5 text-[#c4c4c8] text-xs font-bold rounded-full tracking-wide">{t.lang}</span>
+                        <span className="px-3 py-1 bg-[#ff6b1a]/10 border border-[#ff6b1a]/20 shadow-[0_0_10px_rgba(255,107,26,0.15)] text-[#ff6b1a] text-xs font-bold rounded-full tracking-wide">{spec}</span>
+                        <span className="px-3 py-1 bg-white/5 border border-white/5 text-[#c4c4c8] text-xs font-bold rounded-full tracking-wide">{lang}</span>
                       </div>
                       <div className="mb-6">
-                        <span className="text-2xl font-black text-white font-['Syne'] tracking-tight">₹999</span>
+                        <span className="text-2xl font-black text-white font-['Syne'] tracking-tight">₹{price || 0}</span>
                         <span className="text-sm text-gray-400 font-medium ml-1">/month</span>
                       </div>
                       <button 
                         className="w-full py-3 rounded-full border border-[rgba(255,255,255,0.1)] bg-white/5 text-white font-bold group-hover:border-[#ff6b1a]/50 group-hover:bg-gradient-to-r group-hover:from-[#ff6b1a] group-hover:to-[#ff8c3a] group-hover:shadow-[0_0_20px_rgba(255,107,26,0.4)] transition-all duration-300 uppercase tracking-widest text-xs"
-                        onClick={() => navigate('/trainers')}
+                        onClick={() => navigate(`/trainers/${t._id}`)}
                       >
                         View Profile
                       </button>
                     </div>
                   </div>
                 </ScrollReveal>
-              ))}
+                )
+              })}
             </div>
           </div>
         </section>
@@ -347,9 +370,15 @@ export default function LandingPage() {
               <p className="text-xl text-gray-400 font-medium mb-12">Start your journey today and achieve your goals with expert guidance.</p>
               <button 
                 className="bg-[#F97316] text-white px-12 py-5 text-lg font-bold rounded-full hover:scale-105 hover:bg-[#EA580C] shadow-[0_4px_24px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_32px_rgba(249,115,22,0.6)] transition-all duration-300" 
-                onClick={() => navigate('/auth/register')}
+                onClick={() => {
+                  if (user) {
+                    navigate(role === 'admin' ? '/admin' : role === 'trainer' ? '/trainer/dashboard' : '/dashboard')
+                  } else {
+                    navigate('/auth/register')
+                  }
+                }}
               >
-                Get Started Free
+                {user ? 'Go to Dashboard' : 'Get Started Free'}
               </button>
             </div>
           </ScrollReveal>

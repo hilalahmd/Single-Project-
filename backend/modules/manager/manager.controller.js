@@ -83,32 +83,39 @@ export const deleteManager = async (req, res) => {
 
 export const getManagerDashboardStats = async (req, res) => {
   try {
-    const pendingReportsCount = await Report.countDocuments({ status: 'pending' })
-    const recentReports = await Report.find({ status: 'pending' })
-      .populate('reporter', 'name email')
-      .populate({
-        path: 'reportedTrainer',
-        populate: { path: 'userId', select: 'name email' }
-      })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean()
-
     const tenDaysAgo = new Date()
     tenDaysAgo.setDate(tenDaysAgo.getDate() - 10)
 
-    const inactiveUsers = await User.find({ 
-      role: 'user',
-      lastActive: { $lt: tenDaysAgo }
-    })
-      .select('name email lastActive status')
-      .sort({ lastActive: 1 })
-      .limit(20)
-      .lean()
-
-    const pendingTrainersCount = await Trainer.countDocuments({ status: 'pending' })
-    const approvedTrainersCount = await Trainer.countDocuments({ status: 'approved' })
-    const rejectedTrainersCount = await Trainer.countDocuments({ status: 'rejected' })
+    const [
+      pendingReportsCount,
+      recentReports,
+      inactiveUsers,
+      pendingTrainersCount,
+      approvedTrainersCount,
+      rejectedTrainersCount
+    ] = await Promise.all([
+      Report.countDocuments({ status: 'pending' }),
+      Report.find({ status: 'pending' })
+        .populate('reporter', 'name email')
+        .populate({
+          path: 'reportedTrainer',
+          populate: { path: 'userId', select: 'name email' }
+        })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+      User.find({ 
+        role: 'user',
+        lastActive: { $lt: tenDaysAgo }
+      })
+        .select('name email lastActive status')
+        .sort({ lastActive: 1 })
+        .limit(20)
+        .lean(),
+      Trainer.countDocuments({ status: 'pending' }),
+      Trainer.countDocuments({ status: 'approved' }),
+      Trainer.countDocuments({ status: 'rejected' })
+    ])
 
     res.json({
       pendingReportsCount,

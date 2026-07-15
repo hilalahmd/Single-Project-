@@ -1,6 +1,7 @@
 import User from './user.model.js'
 import Trainer from '../trainers/trainer.model.js'
 import { Conversation } from '../chat/chat.model.js'
+import { uploadFile } from '../../shared/services/storage.service.js'
 
 // ─── Assign a trainer to the user + update subscription ─────────────────────
 export const assignTrainer = async (req, res) => {
@@ -64,6 +65,13 @@ export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
       .select('-password -otp -otpExpiry -resetPasswordToken -resetPasswordExpiry')
+      .populate({
+        path: 'assignedTrainer',
+        populate: {
+          path: 'userId',
+          select: 'name email avatar'
+        }
+      })
     
     res.json(user)
   } catch (error) {
@@ -89,6 +97,29 @@ export const updateProfile = async (req, res) => {
 }
 
 
+
+export const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image provided' })
+    }
+
+    // Upload to Cloudinary
+    const result = await uploadFile(req.file.buffer, 'avatars')
+    
+    // Update user document
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { avatar: result.secure_url },
+      { new: true }
+    ).select('-password -otp -otpExpiry -resetPasswordToken -resetPasswordExpiry')
+
+    res.json({ success: true, message: 'Avatar updated successfully', user })
+  } catch (error) {
+    console.error('Avatar upload error:', error)
+    res.status(500).json({ success: false, message: error.message })
+  }
+}
 
 export const updateBodyMetrics = async (req, res) => {
   try {

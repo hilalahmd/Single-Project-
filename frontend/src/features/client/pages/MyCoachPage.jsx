@@ -65,16 +65,18 @@ export default function MyCoachPage() {
   const [isSubmittingRating, setIsSubmittingRating] = useState(false)
 
   let assignedCoach = {
-    name: user?.assignedTrainer?.name || 'Awaiting Assignment',
-    role: subscriptionTier === 'wellness' ? 'Wellness Coach' : 'Personal Trainer'
+    name: user?.assignedTrainer?.userId?.name || user?.assignedTrainer?.name || 'Awaiting Assignment',
+    role: subscriptionTier === 'wellness' ? 'Wellness Coach' : 'Personal Trainer',
+    avatar: user?.assignedTrainer?.profilePhoto || user?.assignedTrainer?.userId?.avatar || null
   }
+
   let subscription = {
     planName: subscriptionTier === 'wellness' ? 'Wellness Plan' : 'Personal Training',
     renewDate: 'Next Month'
   }
 
   if (subscriptionTier === 'free' || !subscriptionTier) {
-    assignedCoach = { name: 'Sample Coach Profile', role: 'Preview of Premium Coaching' }
+    assignedCoach = { name: 'Sample Coach Profile', role: 'Preview of Premium Coaching', avatar: null }
     subscription = { planName: 'Free Preview Mode', renewDate: 'N/A' }
   }
 
@@ -275,7 +277,7 @@ export default function MyCoachPage() {
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
               {/* Coach Avatar */}
               <div
-                className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0 font-['Syne'] ${
+                className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-black shrink-0 font-['Syne'] overflow-hidden ${
                   isAwaitingCoach ? 'glow-pulse' : ''
                 }`}
                 style={{
@@ -285,7 +287,13 @@ export default function MyCoachPage() {
                   boxShadow: isAwaitingCoach ? '0 0 20px rgba(196,241,53,0.1)' : '0 0 16px rgba(196,241,53,0.15)',
                 }}
               >
-                {isAwaitingCoach ? <Search size={22} /> : assignedCoach.name.charAt(0)}
+                {isAwaitingCoach ? (
+                  <Search size={22} />
+                ) : assignedCoach.avatar ? (
+                  <img src={assignedCoach.avatar} alt={assignedCoach.name} className="w-full h-full object-cover" />
+                ) : (
+                  assignedCoach.name.charAt(0)
+                )}
               </div>
 
               {/* Coach Details */}
@@ -315,7 +323,8 @@ export default function MyCoachPage() {
                     setTimeout(() => setShowUpgradePrompt(false), 5000)
                     return
                   }
-                  navigate(`/dashboard/chat/${user.assignedTrainer.trainerUserId}`)
+                  const chatUserId = user.assignedTrainer?.userId?._id || user.assignedTrainer?.trainerUserId || user.assignedTrainer?.userId
+                  navigate(`/dashboard/chat/${chatUserId}`)
                 }}
                 aria-label="Message your coach"
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-black transition-all duration-200 active:scale-95 shrink-0 ${

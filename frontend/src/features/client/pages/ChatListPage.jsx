@@ -29,7 +29,7 @@ export default function ChatListPage() {
           // Backend tharunna data format cheyyunnu
           const formattedChats = data.data.map(conv => {
             // Nammal allatha matte aale kandupidikkanam (Chat listil avarude peru kanikkan)
-            const otherPerson = conv.participants.find(p => p._id !== user.id)
+            const otherPerson = conv.participants.find(p => p._id !== user._id)
             
             return {
               id: otherPerson?._id,
@@ -38,7 +38,8 @@ export default function ChatListPage() {
               msg: conv.lastMessage ? conv.lastMessage.text : 'No messages yet',
               time: conv.lastMessage ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
               unread: 0,
-              online: false
+              online: false,
+              avatar: otherPerson?.profilePhoto || otherPerson?.profileImage || otherPerson?.avatar || null
             }
           })
           setChats(formattedChats)
@@ -110,12 +111,12 @@ export default function ChatListPage() {
                 >
                   {/* Avatar */}
                   <div className="relative shrink-0">
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-[16px] transition-all ${
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-[16px] transition-all overflow-hidden ${
                       isActive
                         ? 'bg-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.4)]'
                         : 'bg-white/[0.05] border border-white/[0.10] text-gray-300'
                     }`}>
-                      {c.name ? c.name[0] : 'U'}
+                      {c.avatar ? <img src={c.avatar} alt={c.name} className="w-full h-full object-cover" /> : (c.name ? c.name[0] : 'U')}
                     </div>
                     {c.online && (
                       <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0F172A]" />
@@ -185,8 +186,12 @@ export default function ChatListPage() {
         ) : (
           /* Selected — open button */
           <div className="flex-1 flex flex-col items-center justify-center px-4">
-            <div className="w-14 h-14 rounded-full bg-[#2563EB] flex items-center justify-center font-bold text-[20px] text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] mb-4">
-              {chats.find(c => c.id === activeChat)?.name[0]}
+            <div className="w-14 h-14 rounded-full bg-[#2563EB] flex items-center justify-center font-bold text-[20px] text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] mb-4 overflow-hidden">
+              {chats.find(c => c.id === activeChat)?.avatar ? (
+                <img src={chats.find(c => c.id === activeChat)?.avatar} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                chats.find(c => c.id === activeChat)?.name[0]
+              )}
             </div>
             <p className="text-white font-bold text-[16px] mb-1">{chats.find(c => c.id === activeChat)?.name}</p>
             <p className="text-gray-400 text-[13px] mb-6 capitalize">{chats.find(c => c.id === activeChat)?.role}</p>

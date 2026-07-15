@@ -7,7 +7,7 @@ import User from '../users/user.model.js'
 // @access  Private (Client)
 export const getAvailableSlots = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('assignedTrainer').lean()
+    const user = await User.findById(req.user._id).select('assignedTrainer').lean()
     if (!user?.assignedTrainer) {
       return res.status(404).json({ success: false, message: 'No trainer assigned to your account.' })
     }
@@ -66,7 +66,7 @@ export const bookSession = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Start time is required to book a session.' })
     }
 
-    const user = await User.findById(req.user.id).select('assignedTrainer').lean()
+    const user = await User.findById(req.user._id).select('assignedTrainer').lean()
     
     // No longer falls back to a hardcoded test ID — that caused bookings to be created
     // against a non-existent trainer, which broke the trainer dashboard.
@@ -75,6 +75,12 @@ export const bookSession = async (req, res) => {
     }
 
     const trainerId = user.assignedTrainer
+
+    const trainerUser = await User.findById(trainerId).select('role').lean();
+    if (trainerUser?.role === 'wellness_coach') {
+      return res.status(403).json({ success: false, message: 'Wellness coaches do not offer live video sessions.' })
+    }
+
     const startDate = new Date(startTime)
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000) // 1 hour
 
@@ -90,7 +96,7 @@ export const bookSession = async (req, res) => {
     }
 
     const session = await Session.create({
-      clientId: req.user.id,
+      clientId: req.user._id,
       trainerId,
       sessionType: sessionType || 'Weekly Check-in',
       startTime: startDate,
@@ -111,8 +117,8 @@ export const bookSession = async (req, res) => {
 export const getMySessions = async (req, res) => {
   try {
     const query = req.user.role === 'user' 
-      ? { clientId: req.user.id } 
-      : { trainerId: req.user.id }
+      ? { clientId: req.user._id } 
+      : { trainerId: req.user._id }
       
     // Populate vachu Trainer/Client details koodi fetch cheyyunnu
     const sessions = await Session.find(query)

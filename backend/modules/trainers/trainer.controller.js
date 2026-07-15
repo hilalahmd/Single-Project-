@@ -19,6 +19,31 @@ export const getTrainers = async (req, res) => {
     const trainers = await Trainer.find(filter)
       .populate('userId', 'name email avatar')
       .sort({ rating: -1 })
+      .lean()
+
+    // Fallback mock data if database is empty so the frontend can be tested
+    if (trainers.length === 0) {
+      return res.json([
+        {
+          _id: 'mock_trainer_001',
+          userId: { name: 'Sarah Connor', email: 'sarah@example.com', avatar: '' },
+          role: 'wellness_coach',
+          languagesSpoken: ['English', 'Malayalam'],
+          rating: 4.8,
+          reviewCount: 42,
+          specialties: ['Yoga', 'Mindfulness', 'Nutrition']
+        },
+        {
+          _id: 'mock_trainer_002',
+          userId: { name: 'John Rambo', email: 'john@example.com', avatar: '' },
+          role: 'trainer',
+          languagesSpoken: ['English', 'Hindi'],
+          rating: 4.9,
+          reviewCount: 88,
+          specialties: ['Bodybuilding', 'Crossfit']
+        }
+      ]);
+    }
 
     res.json(trainers)
   } catch (error) {
@@ -184,24 +209,41 @@ export const resubmitTrainerRegistration = async (req, res) => {
 
 export const updateTrainerProfile = async (req, res) => {
   try {
-    // Get updated fields from request body
-    const { bio, specialties, languagesSpoken, pricing } = req.body
+    const { bio, specialties, languagesSpoken, wellnessPrice, personalPrice } = req.body
 
-    // Find trainer profile by userId and update it
-    // req.user._id = logged in trainer's user ID
-    // { new: true } = return updated document, not old one
+    const updateData = { bio }
+
+    // Parse array fields if they come as strings from FormData
+    if (specialties) {
+      updateData.specialties = typeof specialties === 'string' ? specialties.split(',').map(s=>s.trim()) : specialties
+    }
+    
+    if (languagesSpoken) {
+      updateData.languagesSpoken = typeof languagesSpoken === 'string' ? languagesSpoken.split(',').map(s=>s.trim()) : languagesSpoken
+    }
+
+    if (wellnessPrice !== undefined || personalPrice !== undefined) {
+      updateData.pricing = {
+        wellnessMonthly: wellnessPrice !== undefined ? Number(wellnessPrice) : 0,
+        personalTrainingMonthly: personalPrice !== undefined ? Number(personalPrice) : 0
+      }
+    }
+
+    if (req.file) {
+      const result = await uploadFile(req.file, 'profiles')
+      updateData.profilePhoto = result.url
+    }
+
     const trainer = await Trainer.findOneAndUpdate(
-      { userId: req.user._id }, // find by userId
-      { bio, specialties, languagesSpoken, pricing }, // update these fields
-      { new: true, upsert: true } // return updated trainer, and create if it doesn't exist
+      { userId: req.user._id },
+      updateData,
+      { new: true, upsert: true }
     )
 
-    // If no trainer profile found
     if (!trainer) {
       return res.status(404).json({ message: 'Trainer profile not found' })
     }
 
-    // Send success response
     res.json({ message: 'Profile updated', trainer })
 
   } catch (error) {
@@ -240,7 +282,7 @@ export const getMyTrainerProfile = async (req, res) => {
  */
 export const getMyClients = async (req, res) => {
   try {
-    const trainer = await Trainer.findOne({ userId: req.user.id }).lean()
+    const trainer = await Trainer.findOne({ userId: req.user._id }).lean()
     if (!trainer) {
       return res.status(404).json({ success: false, message: 'Trainer profile not found' })
     }
@@ -269,7 +311,7 @@ export const getMyClients = async (req, res) => {
  */
 export const getTrainerDashboardStats = async (req, res) => {
   try {
-    const userId = req.user.id
+    const userId = req.user._id
 
     // Find trainer profile (lean — read only)
     const trainerProfile = await Trainer.findOne({ userId }).lean()
@@ -349,7 +391,7 @@ export const getTrainerDashboardStats = async (req, res) => {
  */
 export const getUnreadMessages = async (req, res) => {
   try {
-    const userId = req.user.id
+    const userId = req.user._id
 
     const conversations = await Conversation.find({ participants: userId }).select('_id').lean()
     const conversationIds = conversations.map(c => c._id)
@@ -374,7 +416,7 @@ export const getUnreadMessages = async (req, res) => {
 
 export const getTrainerEarnings = async (req, res) => {
   try {
-    const userId = req.user.id
+    const userId = req.user._id
     const trainerProfile = await Trainer.findOne({ userId })
     
     if (!trainerProfile) {

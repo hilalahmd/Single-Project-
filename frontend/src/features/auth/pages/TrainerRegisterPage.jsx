@@ -28,6 +28,7 @@ export default function TrainerRegisterPage() {
   const [form, setForm] = useState({
     name: '', email: '', phone: '', password: '', confirmPassword: ''
   })
+  const [role, setRole] = useState('trainer') // Default to trainer
   const f = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }))
   const [showPw, setShowPw] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -67,7 +68,11 @@ export default function TrainerRegisterPage() {
   const removeFile = (i) => setFiles(prev => prev.filter((_, idx) => idx !== i))
 
   const handleRegister = async () => {
-    const data = await register(form.name, form.email, form.password, 'trainer')
+    if (form.password !== form.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+    const data = await register(form.name, form.email, form.password, role)
     if (data.userId) {
       setUserId(data.userId)
       setStep(2)
@@ -242,6 +247,26 @@ export default function TrainerRegisterPage() {
             {/* STEP 1 */}
             {step === 1 && (
               <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                <div>
+                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 ml-1">Select Role</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button 
+                      type="button" 
+                      onClick={() => setRole('trainer')}
+                      className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all flex flex-col items-center justify-center gap-1 ${role === 'trainer' ? 'bg-[#F97316]/10 border-[#F97316] text-[#F97316] shadow-[0_0_15px_rgba(249,115,22,0.15)]' : 'bg-[#030712]/80 border-[#1E293B] text-gray-400 hover:border-gray-600 hover:text-gray-200'}`}
+                    >
+                      Personal Trainer
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setRole('wellness_coach')}
+                      className={`py-3 px-4 rounded-xl border text-sm font-bold transition-all flex flex-col items-center justify-center gap-1 ${role === 'wellness_coach' ? 'bg-[#F97316]/10 border-[#F97316] text-[#F97316] shadow-[0_0_15px_rgba(249,115,22,0.15)]' : 'bg-[#030712]/80 border-[#1E293B] text-gray-400 hover:border-gray-600 hover:text-gray-200'}`}
+                    >
+                      Wellness Coach
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Full Name</label>
                   <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors">

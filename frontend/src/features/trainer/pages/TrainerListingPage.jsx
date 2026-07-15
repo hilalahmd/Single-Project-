@@ -11,6 +11,7 @@ export default function TrainerListingPage() {
   const gridRef = useRef(null)
 
   const [activeTag, setActiveTag] = useState('All')
+  const [coachType, setCoachType] = useState('trainer') // 'trainer' or 'wellness'
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedFilters, setSelectedFilters] = useState({
     language: 'Any language',
@@ -25,7 +26,7 @@ export default function TrainerListingPage() {
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     if (params.get('type') === 'wellness') {
-      setActiveTag('Wellness')
+      setCoachType('wellness')
       setTimeout(() => {
         gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }, 300)
@@ -45,19 +46,19 @@ export default function TrainerListingPage() {
         if (!res.ok) throw new Error('Failed to load trainers')
         const data = await res.json()
 
-        const mapped = data.map(t => ({
-          id: t._id,
-          name: t.userId?.name || 'Unknown',
-          role: t.role === 'wellness_coach' ? 'Wellness Coach' : 'Personal Trainer',
-          languages: t.languagesSpoken || [],
-          rating: t.rating || 0,
-          reviews: t.reviewCount || 0,
-          price: t.role === 'wellness_coach'
-            ? t.pricing?.wellnessMonthly || 0
-            : t.pricing?.personalTrainingMonthly || 0,
-          tags: t.specialties || [],
-          image: t.userId?.avatar || 'https://via.placeholder.com/400x500'
-        }))
+          const mapped = data.map(t => ({
+            id: t._id,
+            name: t.userId?.name || 'Unknown',
+            role: t.role === 'wellness_coach' ? 'Wellness Coach' : 'Personal Trainer',
+            languages: t.languagesSpoken || [],
+            rating: t.rating || 0,
+            reviews: t.reviewCount || 0,
+            price: t.role === 'wellness_coach'
+              ? t.pricing?.wellnessMonthly || 0
+              : t.pricing?.personalTrainingMonthly || 0,
+            tags: t.specialties || [],
+            image: t.profilePhoto || t.userId?.avatar || 'https://via.placeholder.com/400x500'
+          }))
 
         setTrainers(mapped)
       } catch (err) {
@@ -70,11 +71,12 @@ export default function TrainerListingPage() {
     fetchTrainers()
   }, [])
 
-  // Filter trainers by active tag and search query
+  // Filter trainers by active tag, search query, and coachType
   const filteredTrainers = trainers.filter(t => {
+    const matchesType = (coachType === 'trainer' && t.role === 'Personal Trainer') || (coachType === 'wellness' && t.role === 'Wellness Coach');
     const matchesTag = activeTag === 'All' || t.tags.includes(activeTag) || t.role.toLowerCase().includes(activeTag.toLowerCase())
     const matchesSearch = searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.role.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesTag && matchesSearch
+    return matchesType && matchesTag && matchesSearch
   })
 
   return (
@@ -92,33 +94,33 @@ export default function TrainerListingPage() {
             {/* Animated Background */}
             <div 
               className={`absolute top-1.5 bottom-1.5 w-48 sm:w-56 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] rounded-full shadow-[0_0_15px_rgba(255,107,26,0.4)] transition-transform duration-300 ease-in-out ${
-                activeTag === 'Wellness' ? 'translate-x-full' : 'translate-x-0'
+                coachType === 'wellness' ? 'translate-x-full' : 'translate-x-0'
               }`}
             />
 
             <button
               onClick={() => {
-                setActiveTag('All')
+                setCoachType('trainer')
                 setTimeout(() => gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
               }}
               className={`relative z-10 flex items-center justify-center gap-2 w-48 sm:w-56 py-3.5 text-sm font-bold rounded-full transition-all duration-300 ${
-                activeTag !== 'Wellness' ? 'text-white' : 'text-gray-400 hover:text-white'
+                coachType === 'trainer' ? 'text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
-              <Users size={18} className={activeTag !== 'Wellness' ? 'text-white' : 'text-gray-500'} />
+              <Users size={18} className={coachType === 'trainer' ? 'text-white' : 'text-gray-500'} />
               Personal Trainers
             </button>
             
             <button
               onClick={() => {
-                setActiveTag('Wellness')
+                setCoachType('wellness')
                 setTimeout(() => gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
               }}
               className={`relative z-10 flex items-center justify-center gap-2 w-48 sm:w-56 py-3.5 text-sm font-bold rounded-full transition-all duration-300 ${
-                activeTag === 'Wellness' ? 'text-white' : 'text-gray-400 hover:text-white'
+                coachType === 'wellness' ? 'text-white' : 'text-gray-400 hover:text-white'
               }`}
             >
-              <Activity size={18} className={activeTag === 'Wellness' ? 'text-white' : 'text-gray-500'} />
+              <Activity size={18} className={coachType === 'wellness' ? 'text-white' : 'text-gray-500'} />
               Wellness Coaches
             </button>
           </div>
@@ -256,7 +258,7 @@ export default function TrainerListingPage() {
                 {/* Footer row */}
                 <div className="mt-auto flex items-center justify-between pt-5 border-t border-[rgba(255,255,255,0.08)]">
                   <div>
-                    <span className="font-black text-2xl text-white font-['Syne']">${t.price}</span>
+                    <span className="font-black text-2xl text-white font-['Syne']">₹{t.price}</span>
                     <span className="text-sm text-gray-500 font-medium"> / mo</span>
                   </div>
                   <div className="flex items-center gap-3">
@@ -267,7 +269,7 @@ export default function TrainerListingPage() {
                       View
                     </button>
                     <button 
-                      onClick={() => navigate('/plans')}
+                      onClick={() => navigate(`/plans?trainerId=${t.id}`)}
                       className="px-5 py-2 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] rounded-lg text-sm font-bold text-white hover:shadow-[0_0_15px_rgba(255,107,26,0.4)] transition-all duration-300"
                     >
                       Subscribe

@@ -187,3 +187,41 @@ export const getClientPlan = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 }
+
+
+/**
+ * getTrainerAssignedPlans — fetches all workout/hybrid plans assigned by the logged-in trainer
+ */
+export const getTrainerAssignedPlans = async (req, res) => {
+  try {
+    const trainerId = req.user._id
+
+    const plans = await Plan.find({ trainerId, type: { $in: ['workout', 'hybrid'] } })
+      .populate('clientId', 'name email avatar')
+      .sort({ createdAt: -1 })
+
+    res.json({ success: true, plans })
+  } catch (error) {
+    console.error('Error fetching trainer assigned plans:', error)
+    res.status(500).json({ success: false, message: 'Server Error' })
+  }
+}
+
+/**
+ * getTrainerAssignedDietPlans — fetches all diet/hybrid plans assigned by the logged-in trainer
+ */
+export const getTrainerAssignedDietPlans = async (req, res) => {
+  try {
+    const trainerId = req.user._id
+
+    const plans = await Plan.find({ trainerId, type: { $in: ['diet', 'hybrid'] } })
+      .populate('clientId', 'name email avatar')
+      .sort({ createdAt: -1 })
+
+    res.json({ success: true, plans })
+  } catch (error) {
+    console.error('Error fetching trainer assigned diet plans:', error)
+    res.status(500).json({ success: false, message: 'Server Error' })
+  }
+}
+

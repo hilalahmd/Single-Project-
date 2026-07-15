@@ -118,7 +118,7 @@ export const generateFreeDietPlan = async (req, res) => {
       hip: Number(measurements?.hip)
     })
 
-       const isSubscribed = true // Testing-nu vendi temporary aayi 'true' aakkunnu
+      const isSubscribed = req.user.subscriptionTier === 'wellness' || req.user.subscriptionTier === 'personal_training'
      const prompt = buildPrompt({ gender, age, height, weight, country, goal, dietPref, measurements }, estimatedBodyFat, isSubscribed)
 
     let dietPlan

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { ArrowDownRight, TrendingUp, Scale, Percent, Info } from 'lucide-react'
 import { motion, useScroll, useTransform, AnimatePresence, useInView } from 'framer-motion'
 import Modal from '../../../shared/components/Modal'
@@ -307,7 +307,7 @@ export default function ProgressTrackerPage() {
   const [formExReps, setFormExReps] = useState(8)
   const [formExSets, setFormExSets] = useState(4)
 
-  const handleSave = async (e) => {
+  const handleSave = useCallback(async (e) => {
     e.preventDefault()
 
     const weightVal = Number(formExWeight)

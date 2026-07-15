@@ -8,7 +8,7 @@ const router = express.Router()
 // GET /api/ai/chat/history - Fetch all chat sessions for the user
 router.get('/chat/history', protect, async (req, res) => {
   try {
-    const chats = await AIChat.find({ userId: req.user.id })
+    const chats = await AIChat.find({ userId: req.user._id })
       .select('title createdAt updatedAt')
       .sort({ updatedAt: -1 })
     res.status(200).json({ success: true, data: chats })
@@ -20,7 +20,7 @@ router.get('/chat/history', protect, async (req, res) => {
 // GET /api/ai/chat/history/:chatId - Fetch a specific chat session with its messages
 router.get('/chat/history/:chatId', protect, async (req, res) => {
   try {
-    const chat = await AIChat.findOne({ _id: req.params.chatId, userId: req.user.id })
+    const chat = await AIChat.findOne({ _id: req.params.chatId, userId: req.user._id })
     if (!chat) return res.status(404).json({ success: false, message: 'Chat not found' })
     res.status(200).json({ success: true, data: chat })
   } catch (error) {
@@ -43,7 +43,7 @@ router.post('/chat', protect, async (req, res) => {
     let chat;
     if (chatId) {
       // Append to existing chat
-      chat = await AIChat.findOne({ _id: chatId, userId: req.user.id })
+      chat = await AIChat.findOne({ _id: chatId, userId: req.user._id })
       if (!chat) return res.status(404).json({ success: false, message: "Chat not found" })
       
       chat.messages.push({ role: 'user', text: message })
@@ -58,7 +58,7 @@ router.post('/chat', protect, async (req, res) => {
     } else {
       // Create new chat
       chat = await AIChat.create({
-        userId: req.user.id,
+        userId: req.user._id,
         title: message.substring(0, 30) + (message.length > 30 ? '...' : ''),
         messages: [
           { role: 'user', text: message },

@@ -7,6 +7,7 @@ import { SocketProvider } from './shared/context/SocketContext'
 import ProtectedRoute from './shared/components/ProtectedRoute'
 import GlobalLoader from './shared/components/GlobalLoader'
 import GlobalCallListener from './shared/components/GlobalCallListener'
+import ErrorBoundary from './shared/components/ErrorBoundary'
 
 // Layouts
 import MainLayout from './shared/layouts/MainLayout'
@@ -60,11 +61,15 @@ const TrainerPublicProfilePage = lazy(() => import('./features/trainer/pages/Tra
 // ── Trainer — Dashboard pages ────────────────────────────────────────────────
 const TrainerDashboardPage = lazy(() => import('./features/trainer/pages/TrainerDashboardPage'))
 const ClientListPage = lazy(() => import('./features/trainer/pages/ClientListPage'))
+const WorkoutPlansPage = lazy(() => import('./features/trainer/pages/WorkoutPlansPage'))
+const DietPlansPage = lazy(() => import('./features/trainer/pages/DietPlansPage'))
 const TrainerSchedulePage = lazy(() => import('./features/trainer/pages/TrainerSchedulePage'))
 const EarningsPage = lazy(() => import('./features/trainer/pages/EarningsPage'))
 const TrainerProfileEditPage = lazy(() => import('./features/trainer/pages/TrainerProfileEditPage'))
 const CertificatesPage = lazy(() => import('./features/trainer/pages/CertificatesPage'))
 const TrainerPlanBuilderPage = lazy(() => import('./features/trainer/pages/TrainerPlanBuilderPage'))
+const ClientProgressDashboardPage = lazy(() => import('./features/trainer/pages/ClientProgressDashboardPage'))
+
 // ── Admin — Dashboard pages ──────────────────────────────────────────────────
 const AdminDashboardPage = lazy(() => import('./features/admin/pages/AdminDashboardPage'))
 const TrainerApprovalsPage = lazy(() => import('./features/admin/pages/TrainerApprovalsPage'))
@@ -105,7 +110,8 @@ function App() {
         <AuthProvider>
           <SocketProvider>
             <GlobalCallListener />
-            <Suspense fallback={<GlobalLoader />}>
+            <ErrorBoundary>
+              <Suspense fallback={<GlobalLoader />}>
               <Routes>
 
               {/* ── Auth — self-contained pages (own layout) ── */}
@@ -159,6 +165,9 @@ function App() {
                 <Route element={<DashboardLayout />}>
                   <Route path="/trainer/dashboard" element={<TrainerDashboardPage />} />
                   <Route path="/trainer/clients" element={<ClientListPage />} />
+                  <Route path="/trainer/analytics/:clientId" element={<ClientProgressDashboardPage />} />
+                  <Route path="/trainer/workout-plans" element={<WorkoutPlansPage />} />
+                  <Route path="/trainer/diet-plans" element={<DietPlansPage />} />
                   <Route path="/trainer/plans/build/:id" element={<TrainerPlanBuilderPage />} />
                   <Route path="/trainer/schedule" element={<TrainerSchedulePage />} />
                   <Route path="/trainer/earnings" element={<EarningsPage />} />
@@ -200,6 +209,7 @@ function App() {
 
               </Routes>
             </Suspense>
+            </ErrorBoundary>
           </SocketProvider>
         </AuthProvider>
       </ToastProvider>

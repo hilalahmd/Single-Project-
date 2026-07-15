@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Camera, Plus, X } from 'lucide-react'
 import API from '../../../shared/utils/api'
 import { useAuth } from '../../../shared/context/AuthContext'
@@ -15,6 +15,12 @@ export default function TrainerProfileEditPage() {
   const [wellnessPrice, setWellnessPrice] = useState('')
   const [personalPrice, setPersonalPrice] = useState('')
   const [languages, setLanguages] = useState([])
+  
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState('')
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,6 +40,7 @@ export default function TrainerProfileEditPage() {
         setLanguages(data.languagesSpoken || [])
         setWellnessPrice(data.pricing?.wellnessMonthly || '')
         setPersonalPrice(data.pricing?.personalTrainingMonthly || '')
+        setProfilePhotoUrl(data.profilePhoto || '')
       } catch (err) {
         setMessage(err.message)
       } finally {
@@ -44,22 +51,33 @@ export default function TrainerProfileEditPage() {
     fetchProfile()
   }, [])
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      setSelectedFile(file)
+      setPreviewUrl(URL.createObjectURL(file))
+    }
+  }
+
   const saveProfile = async () => {
     try {
       setSaving(true)
+      
+      const formData = new FormData()
+      formData.append('bio', bio)
+      formData.append('wellnessPrice', wellnessPrice)
+      formData.append('personalPrice', personalPrice)
+      formData.append('specialties', tags.join(','))
+      formData.append('languagesSpoken', languages.join(','))
+      
+      if (selectedFile) {
+        formData.append('profilePhoto', selectedFile)
+      }
+
       const res = await fetch(`${API}/trainers/profile`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          bio,
-          specialties: tags,
-          languagesSpoken: languages,
-          pricing: {
-            wellnessMonthly: Number(wellnessPrice) || 0,
-            personalTrainingMonthly: Number(personalPrice) || 0
-          }
-        })
+        body: formData
       })
       if (!res.ok) throw new Error('Failed to save profile')
       setMessage('Profile saved successfully')
@@ -78,6 +96,8 @@ export default function TrainerProfileEditPage() {
     )
   }
 
+  const displayImage = previewUrl || profilePhotoUrl || user?.avatar || null
+
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       <div>
@@ -88,12 +108,26 @@ export default function TrainerProfileEditPage() {
       <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-sm">
         <div className="flex items-center gap-6 mb-8">
           <div className="relative">
-            <div className="w-24 h-24 bg-[#1E293B] text-gray-400 flex items-center justify-center text-[32px] font-bold rounded-full border border-white/10 uppercase">
-              {user?.name?.charAt(0) || 'U'}
+            <div className="w-24 h-24 bg-[#1E293B] text-gray-400 flex items-center justify-center text-[32px] font-bold rounded-full border border-white/10 uppercase overflow-hidden">
+              {displayImage ? (
+                <img src={displayImage} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                user?.name?.charAt(0) || 'U'
+              )}
             </div>
-            <button className="absolute bottom-0 right-0 w-8 h-8 bg-[#2563EB] text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg border border-[#0F172A]">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 w-8 h-8 bg-[#2563EB] text-white rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors shadow-lg border border-[#0F172A]"
+            >
               <Camera size={14} />
             </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileChange} 
+              accept="image/jpeg, image/png, image/webp" 
+              className="hidden" 
+            />
           </div>
           <div>
             <p className="text-[20px] font-bold text-white">{user?.name || 'Trainer Name'}</p>

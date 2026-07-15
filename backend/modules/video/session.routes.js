@@ -15,6 +15,6 @@ router.get('/slots', restrictTo('user'), getAvailableSlots)
 router.post('/book', restrictTo('user'), bookSession)
 
 // Ente sessions edukkan (Both Client & Trainer access undu)
-router.get('/my-sessions', restrictTo('user', 'trainer', 'wellness_coach'), getMySessions)
+router.get('/my-sessions', restrictTo('user', 'trainer'), getMySessions)
 
 export default router
