@@ -135,5 +135,5 @@ The project follows a highly modular, clean architecture separating concerns int
 ---
 
 <div align="center">
-  Built with ❤️ by <a href="https://github.com/hilalahmd">Hilal Ahammed PP</a>
+  Built by <a href="https://github.com/hilalahmd">Hilal Ahammed PP</a>
 </div>
