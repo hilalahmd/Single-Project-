@@ -405,20 +405,10 @@ Respond ONLY in this exact JSON format, no markdown, no backticks:
 
   } catch (error) {
     console.error('Image analysis error:', error)
-    
-    // Always return fallback data on error so the user can test the UI
-    console.log('Gemini API failed, returning mock fallback data so user can test the UI.');
-    return res.json({
-      analysis: {
-        name: "Mock AI Detection (API Error)",
-        calories: 450,
-        macros: {
-          protein: 25,
-          carbs: 45,
-          fat: 20
-        }
-      }
-    });
+    return res.status(503).json({
+      message: 'Food AI is temporarily unavailable. Please try again in a moment.',
+      error: process.env.NODE_ENV !== 'production' ? error.message : undefined
+    })
   }
 }
 

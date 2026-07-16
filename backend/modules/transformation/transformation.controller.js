@@ -1,6 +1,5 @@
-import axios from 'axios';
-import https from 'https';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+
 
 // 1. Analyze Endpoint (Using Free Gemini API)
 export const analyzeTransformation = async (req, res) => {
@@ -9,6 +8,12 @@ export const analyzeTransformation = async (req, res) => {
     
     if (!images || !images.front) {
       return res.status(400).json({ message: "Front image is required for analysis." });
+    }
+
+    // Image size guard — base64 has ~33% overhead, so 15MB base64 ≈ 10MB real file
+    const MAX_BASE64_SIZE = 15 * 1024 * 1024 // 15MB base64 string limit
+    if (images.front.length > MAX_BASE64_SIZE) {
+      return res.status(400).json({ message: 'Image is too large. Please use an image under 10MB.' });
     }
 
     console.log("Analyzing image with Gemini (Free)...");
@@ -74,6 +79,12 @@ export const generateTransformationImage = async (req, res) => {
 
     if (!prompt || !originalImageBase64) {
       return res.status(400).json({ message: 'Image prompt and original photo are required.' });
+    }
+
+    // Image size guard
+    const MAX_BASE64_SIZE = 15 * 1024 * 1024 // 15MB base64 string limit
+    if (originalImageBase64.length > MAX_BASE64_SIZE) {
+      return res.status(400).json({ message: 'Image is too large. Please use an image under 10MB.' });
     }
 
     console.log("Generating image using Stability AI SD3 Image-to-Image...");

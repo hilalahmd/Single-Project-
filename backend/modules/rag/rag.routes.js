@@ -2,8 +2,18 @@ import express from 'express'
 import { askRAGChatbot } from './rag.service.js'
 import { protect } from '../../middleware/authenticate.js'
 import AIChat from './aichat.model.js'
+import rateLimit from 'express-rate-limit'
 
 const router = express.Router()
+
+// Rate limiter: max 20 AI chat requests per 15 minutes per IP
+const aiChatLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { success: false, message: 'Too many requests. Please wait a few minutes and try again.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
 
 // GET /api/ai/chat/history - Fetch all chat sessions for the user
 router.get('/chat/history', protect, async (req, res) => {
@@ -28,8 +38,19 @@ router.get('/chat/history/:chatId', protect, async (req, res) => {
   }
 })
 
+// DELETE /api/ai/chat/history/:chatId - Delete a specific chat session
+router.delete('/chat/history/:chatId', protect, async (req, res) => {
+  try {
+    const chat = await AIChat.findOneAndDelete({ _id: req.params.chatId, userId: req.user._id })
+    if (!chat) return res.status(404).json({ success: false, message: 'Chat not found' })
+    res.status(200).json({ success: true, message: 'Chat deleted successfully' })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
 // POST /api/ai/chat
-router.post('/chat', protect, async (req, res) => {
+router.post('/chat', aiChatLimiter, protect, async (req, res) => {
   try {
     const { message, chatId } = req.body
     

@@ -1,6 +1,7 @@
 import axios from 'axios'
+import API from '../../../shared/utils/api'
 
-const API_URL = 'http://localhost:5000/api/nutrition'
+const API_URL = `${API}/nutrition`
 
 export const getDailyLog = async (date) => {
   const response = await axios.get(`${API_URL}/${date}`, { withCredentials: true })

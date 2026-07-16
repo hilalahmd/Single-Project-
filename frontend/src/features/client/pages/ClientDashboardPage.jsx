@@ -131,10 +131,6 @@ export default function ClientDashboardPage() {
           baseCrb = meals.reduce((sum, m) => sum + m.items.reduce((s, item) => s + (item.carbs || 0), 0), 0)
           baseFat = meals.reduce((sum, m) => sum + m.items.reduce((s, item) => s + (item.fat || 0), 0), 0)
           
-          if (nutritionRes.log.targetCalories) targetCals = nutritionRes.log.targetCalories
-          if (nutritionRes.log.targetProtein) targetPro = nutritionRes.log.targetProtein
-          if (nutritionRes.log.targetCarbs) targetCrb = nutritionRes.log.targetCarbs
-          if (nutritionRes.log.targetFat) targetFat = nutritionRes.log.targetFat
         }
 
         // Add macros from completed Trainer-assigned meals

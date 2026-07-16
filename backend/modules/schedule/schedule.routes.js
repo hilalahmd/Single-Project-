@@ -60,16 +60,5 @@ router.get('/bookings/my', restrictTo('user'), getMyBookings)
 // PATCH /api/schedule/bookings/:bookingId/cancel — Client cancel cheyyunnu
 router.patch('/bookings/:bookingId/cancel', restrictTo('user'), cancelBooking)
 
-// TEMPORARY DEVELOPMENT PURGE ROUTE (drop old testing data via browser GET)
-router.get('/purge-test-data', async (req, res) => {
-  try {
-    const mongoose = (await import('mongoose')).default
-    await mongoose.model('AvailabilitySlot').deleteMany({})
-    await mongoose.model('SlotBooking').deleteMany({})
-    res.json({ success: true, message: 'All slots and bookings purged! Database is clean.' })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
 
 export default router

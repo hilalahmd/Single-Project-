@@ -34,12 +34,10 @@ export default function ClientSettingsPage() {
 
     setPwLoading(true)
     try {
-      const token = localStorage.getItem('token')
       const res = await fetch(`${API}/auth/reset-password`, {
         method:  'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         credentials: 'include',
         body: JSON.stringify({ currentPassword, newPassword })

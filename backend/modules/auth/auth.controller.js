@@ -90,7 +90,7 @@ export const forgotPassword = async (req, res) => {
     user.resetPasswordExpiry = new Date(Date.now() + 30 * 60 * 1000) // 30 mins
     await user.save()
 
-    const resetLink = `http://localhost:5173/auth/reset-password?token=${resetToken}`
+    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/reset-password?token=${resetToken}`
 
     await sendOTPEmail(email, `Reset your password by clicking this link: ${resetLink}`)
 
@@ -211,7 +211,6 @@ if (user.assignedTrainer) {
 
 res.json({ 
   message: 'Login successful',
-  token: token, 
   user: {
     _id: user._id,
     name: user.name,

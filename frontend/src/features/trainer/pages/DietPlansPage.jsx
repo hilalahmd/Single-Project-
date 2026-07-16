@@ -3,7 +3,7 @@ import { Plus, Salad, MoreHorizontal, Loader, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Card from '../../../shared/components/Card'
 import Modal from '../../../shared/components/Modal'
-import api from '../../../shared/utils/api'
+import { apiClient as api } from '../../../shared/utils/api'
 
 export default function DietPlansPage() {
   const navigate = useNavigate()

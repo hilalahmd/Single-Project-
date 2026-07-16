@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Award, FileText, ExternalLink, Loader, ImageOff } from 'lucide-react'
-import api from '../../../shared/utils/api'
+import { apiClient as api } from '../../../shared/utils/api'
 
 // Cloudinary URL-il ninnu file type determine cheyyunnu
 const getFileType = (url) => {

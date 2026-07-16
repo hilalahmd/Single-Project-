@@ -145,7 +145,7 @@ export default function VideoSessionPage() {
     if (socket && sessionId) {
       socket.emit('end_call', { targetId: sessionId })
       try {
-        const res = await fetch('http://localhost:5000/api/chat/call-log', {
+        const res = await fetch(`${API}/chat/call-log`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ receiverId: sessionId, type: 'call_missed' }),

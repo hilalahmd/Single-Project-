@@ -307,7 +307,7 @@ export default function ProgressTrackerPage() {
   const [formExReps, setFormExReps] = useState(8)
   const [formExSets, setFormExSets] = useState(4)
 
-  const handleSave = useCallback(async (e) => {
+  const handleSave = async (e) => {
     e.preventDefault()
 
     const weightVal = Number(formExWeight)

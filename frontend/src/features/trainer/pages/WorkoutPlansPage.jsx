@@ -3,7 +3,7 @@ import { Plus, Dumbbell, MoreHorizontal, Loader } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Card from '../../../shared/components/Card'
 import Modal from '../../../shared/components/Modal'
-import api from '../../../shared/utils/api'
+import { apiClient as api } from '../../../shared/utils/api'
 
 export default function WorkoutPlansPage() {
   const navigate = useNavigate()

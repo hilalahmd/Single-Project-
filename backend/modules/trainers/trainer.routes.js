@@ -40,8 +40,10 @@ router.get('/dashboard-stats', protect, restrictTo('trainer', 'wellness_coach'),
 // GET http://localhost:5000/api/trainers/unread-messages
 router.get('/unread-messages', protect, restrictTo('trainer', 'wellness_coach'), getUnreadMessages)
 
-router.get('/:id', getTrainerById)
+// Move earnings above /:id to prevent route collision
+router.get('/earnings', protect, restrictTo('trainer', 'wellness_coach'), getTrainerEarnings)
 
+router.get('/:id', getTrainerById)
 
 // Complete registration with file uploads
 router.post(
@@ -56,8 +58,6 @@ router.post(
   completeTrainerRegistration
 )
 
-
-router.get('/earnings', protect, restrictTo('trainer', 'wellness_coach'), getTrainerEarnings)
 
 
 // Resubmit application

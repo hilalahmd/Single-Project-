@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Sparkles, Send, Plus, Lock, Loader2, MessageSquare, Menu, Bot } from 'lucide-react'
+import { Sparkles, Send, Plus, Lock, Loader2, MessageSquare, Menu, Bot, Trash2 } from 'lucide-react'
 import { useAuth } from '../../../shared/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -61,6 +61,29 @@ export default function AIAssistantPage() {
       console.error("Failed to load chat", error)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const deleteChat = async (chatId, e) => {
+    e.stopPropagation()
+    if (!window.confirm("Are you sure you want to delete this chat?")) return
+    
+    try {
+      const res = await fetch(`${API}/ai/chat/history/${chatId}`, { 
+        method: 'DELETE',
+        credentials: 'include' 
+      })
+      const data = await res.json()
+      if (data.success) {
+        setHistory(prev => prev.filter(c => c._id !== chatId))
+        if (currentChatId === chatId) {
+          setStarted(false)
+          setMessages([])
+          setCurrentChatId(null)
+        }
+      }
+    } catch (error) {
+      console.error("Failed to delete chat", error)
     }
   }
 
@@ -159,11 +182,18 @@ export default function AIAssistantPage() {
                 <button 
                   key={chat._id}
                   onClick={() => loadChat(chat._id)}
-                  className={`w-full text-left p-3 rounded-[12px] transition-colors border ${currentChatId === chat._id ? 'bg-white/5 border-white/10 text-white' : 'border-transparent text-[#9CA3AF] hover:bg-white/5 hover:text-white'}`}
+                  className={`w-full text-left p-3 rounded-[12px] transition-colors border group relative ${currentChatId === chat._id ? 'bg-white/5 border-white/10 text-white' : 'border-transparent text-[#9CA3AF] hover:bg-white/5 hover:text-white'}`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 pr-6">
                     <MessageSquare size={16} className={currentChatId === chat._id ? 'text-[#FF7A1A]' : 'text-[#9CA3AF]'} />
                     <span className="text-sm font-medium truncate flex-1">{chat.title}</span>
+                  </div>
+                  <div 
+                    onClick={(e) => deleteChat(chat._id, e)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 text-[#9CA3AF] hover:text-red-400 transition-all cursor-pointer"
+                    title="Delete chat"
+                  >
+                    <Trash2 size={14} />
                   </div>
                 </button>
               ))

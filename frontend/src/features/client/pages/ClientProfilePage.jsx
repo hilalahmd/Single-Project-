@@ -5,10 +5,11 @@ import Card from '../../../shared/components/Card'
 import Button from '../../../shared/components/Button'
 import Badge from '../../../shared/components/Badge'
 import API from '../../../shared/utils/api'
+import { apiClient as api } from '../../../shared/utils/api'
 import { useAuth } from '../../../context/AuthContext'
 
 export default function ClientProfilePage() {
-  const { user, login } = useAuth()
+  const { user, setUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -126,7 +127,7 @@ export default function ClientProfilePage() {
       if (res.data.success) {
         setProfile(prev => ({ ...prev, avatar: res.data.user.avatar }))
         // Update global auth state if needed, or simply let the local state reflect it
-        login(res.data.user, localStorage.getItem('token')) // Re-login with updated user
+        setUser(res.data.user) // Update global auth state with new avatar
         setToastMessage('Avatar updated successfully')
       }
     } catch (error) {

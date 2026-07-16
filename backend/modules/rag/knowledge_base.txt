@@ -9,63 +9,56 @@
 4. Protein intake should be around 1.6g to 2.2g per kilogram of body weight for muscle gain.
 5. Hydration is key: Drink at least 3-4 liters of water daily, especially on workout days.
 6. A standard healthy breakfast could include oats, eggs, and a piece of fruit. Puttu (a traditional Kerala dish) contains about 250-300 calories per serving depending on the coconut ratio.
+7. Meal timing matters: consume a protein-rich meal within 30-60 minutes after a workout for optimal muscle recovery.
+8. Avoid ultra-processed foods, excessive sugar, and trans fats. Focus on whole foods: vegetables, lean proteins, healthy fats, and complex carbohydrates.
 
 ## Workout Guidelines
-7. Progressive overload is the gradual increase of stress placed upon the body during exercise training. It is the most important principle for muscle growth.
-8. A beginner should train 3 to 4 days a week, focusing on full-body workouts or upper/lower splits.
-9. Rest days are crucial. Muscles grow during rest, not during the workout. Aim for 7-9 hours of sleep.
-10. Best exercises for weight loss include a mix of strength training (like squats, deadlifts) and cardio (HIIT, running).
+9. Progressive overload is the gradual increase of stress placed upon the body during exercise training. It is the most important principle for muscle growth.
+10. A beginner should train 3 to 4 days a week, focusing on full-body workouts or upper/lower splits.
+11. Rest days are crucial. Muscles grow during rest, not during the workout. Aim for 7-9 hours of sleep.
+12. Best exercises for weight loss include a mix of strength training (like squats, deadlifts) and cardio (HIIT, running).
+13. Compound movements like squats, deadlifts, bench press, and overhead press give the most muscle activation and calorie burn per exercise.
+14. HIIT (High-Intensity Interval Training): alternating between intense bursts and recovery periods. Example: 30 seconds sprint, 30 seconds walk, repeated 10 times.
 
 ## Troubleshooting
-11. If you experience sharp joint pain during an exercise, stop immediately and consult a doctor or your FitForge trainer. Muscle soreness (DOMS) is normal 24-48 hours after a workout.
+15. If you experience sharp joint pain during an exercise, stop immediately and consult a doctor or your FitForge trainer. Muscle soreness (DOMS) is normal 24-48 hours after a workout.
+16. Plateau in weight loss: if stuck for more than 2 weeks, consider adjusting calorie intake, changing workout type, or doing a diet break for 1-2 weeks.
+
 ## About FitForge Platform
-12. FitForge is a comprehensive fitness ecosystem that bridges the gap between fitness enthusiasts and professional trainers. 
-13. The platform offers three main modules: The Client Dashboard, The Trainer Dashboard, and the Admin Panel.
-14. Users can book 1-on-1 or Group Video sessions with their favorite trainers directly through the platform.
+17. FitForge is a comprehensive fitness ecosystem that bridges the gap between fitness enthusiasts and professional trainers.
+18. The platform offers three main roles: Client, Trainer, and Admin. There is also a Manager role that helps supervise trainers.
+19. Users can book 1-on-1 or Group Video sessions with their assigned trainers directly through the platform — no Zoom or Google Meet needed.
+20. FitForge offers subscription tiers: Free, Wellness, and Personal Training. Premium subscribers get full access to all AI features, unlimited diet plans, and live coaching sessions.
+21. The founder and CEO of FitForge is Hilal Ahmed, a certified personal trainer and software developer passionate about making fitness coaching accessible to everyone.
+
 ## FitForge Unique Features
-15. Food AI Image Analyzer: FitForge includes a smart Food AI feature where users can upload a picture of their meal, and the AI automatically calculates the macros (Calories, Protein, Carbs, Fats) and tells them if it fits their diet.
-16. WebRTC Video Calling: FitForge has an in-built high-quality video calling system. Trainers and clients can join live workout sessions without needing Zoom or Google Meet. It supports both solo and group workouts with CSS Grid dynamic layouts.
-17. Real-Time Chat: FitForge provides secure real-time messaging between trainers and clients, protected by JWT authentication and Socket.io rate limiting.
+22. Food AI Image Analyzer: Users can upload a picture of their meal and the AI automatically calculates the macros (Calories, Protein, Carbs, Fats).
+23. WebRTC Video Calling: FitForge has an in-built high-quality video calling system. Trainers and clients can join live workout sessions without any third-party app. It supports both 1-on-1 and group sessions.
+24. Real-Time Chat: FitForge provides secure real-time messaging between trainers and clients, protected by JWT authentication and Socket.io.
+25. Body Transformation Predictor: Uses Gemini Vision AI and Stability AI to analyze a user's current physique and generate realistic transformation previews at 3 months, 6 months, and 1 year timelines.
+26. AI Diet Plan Generator: Creates personalized diet plans based on the user's BMR, body measurements, country, and goal. Uses the US Navy Body Fat formula for accurate analysis.
+27. Progress Tracker: Users can log their body weight, measurements, and workouts over time. FitForge charts this data visually so both clients and trainers can monitor improvement.
+28. AI Fitness Chatbot: A RAG-powered AI assistant that can answer fitness, diet, and platform questions 24/7.
+
 ## Subscription & Pricing
-18. FitForge offers a Free Tier where users can access basic workouts and the AI Assistant (with rate limits).
-19. Premium subscribers get unlimited access to the AI Assistant, unlimited Food AI analysis, and the ability to book premium trainers for live sessions.
+29. FitForge Free Tier: access to the AI chatbot (rate limited), basic workout info, and a 1-day sample diet plan.
+30. Wellness Plan: 7-day AI diet plan, unlimited Food AI scans, group video sessions, and real-time chat with a trainer.
+31. Personal Training Plan: Everything in Wellness plus dedicated 1-on-1 live sessions, fully custom workout and diet plans, and direct real-time progress monitoring by the trainer.
+
 ## Trainer Guidelines
-20. Trainers on FitForge are highly vetted professionals. They can create custom diet plans, assign workout routines, and track the real-time progress of their clients using the Trainer Dashboard.
-21. If a client misses a video session, the trainer can reschedule it or send a message via the built-in chat.
+32. Trainers on FitForge are vetted professionals. They submit their certificates, specialties, and experience. The admin reviews and approves before they can take clients.
+33. If a client misses a video session, the trainer can reschedule it or send a message via the built-in chat.
+34. Trainer earnings are tracked through the platform. Payouts are managed by the FitForge admin panel.
+35. Trainers can build custom workout plans and assign them to clients. They can also monitor client progress from their dashboard.
 
-## About the Codebase (README)
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-
-
-
+## Fitness & Nutrition Science
+36. BMR (Basal Metabolic Rate): the calories your body burns at rest. FitForge uses the Mifflin-St Jeor formula: Men: (10 x weight kg) + (6.25 x height cm) - (5 x age) + 5. Women: (10 x weight kg) + (6.25 x height cm) - (5 x age) - 161.
+37. TDEE (Total Daily Energy Expenditure) = BMR x Activity Multiplier. Sedentary=1.2, Light=1.375, Moderate=1.55, Very Active=1.725.
+38. Macronutrients: Protein = 4 cal/gram, Carbohydrates = 4 cal/gram, Fat = 9 cal/gram.
+39. Creatine monohydrate is one of the most researched supplements for strength and muscle gain. Standard dose: 3-5g per day.
+40. Intermittent fasting (16:8 method) can be effective for fat loss but is not ideal for everyone, especially those focused on muscle building who need frequent protein intake.
+41. US Navy Body Fat Formula (Men): 495 / (1.0324 - 0.19077 * log10(waist - neck) + 0.15456 * log10(height)) - 450.
+42. Healthy body fat ranges: Men: 10-20% (fit), Women: 18-28% (fit). Above 25% for men or 35% for women is generally considered overweight.
 
 ## Live Database Context (Trainers)
-Trainer Name: Hilal Ahmed. Role: trainer. Specialties: Weight Loss, Muscle Building, HIIT. Languages: Malayalam, English. Bio: Certified personal trainer with 5 years experience. Rating: 0 stars. Price: 999 INR.
-Trainer Name: Test Trainer. Role: trainer. Specialties: . Languages: . Bio: . Rating: 0 stars. Price: 0 INR.
-Trainer Name: realtrainertesess. Role: trainer. Specialties: Weight Loss, Muscle Building. Languages: . Bio: 123. Rating: 0 stars. Price: 9999 INR.
-
-## Live Database Context (Users)
-The FitForge platform currently has 27 active users registered.
-
-
-Founder / CEO of the fitforge is HILAL .
-
-
-instagram of ceo 
-
-
+Trainer Name: Hilal Ahmed. Role: trainer. Specialties: Weight Loss, Muscle Building, HIIT. Languages: Malayalam, English. Bio: Certified personal trainer with 5 years experience. Price: 999 INR per month.

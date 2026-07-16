@@ -285,14 +285,10 @@ export default function NutritionTrackerPage() {
         if (res.success && res.log) {
           setMeals(res.log.meals || [])
           setWaterData({ intake: res.log.waterIntake || 0, goal: res.log.waterGoal || 3000 })
-          if (res.log.targetCalories) setTargetCalories(res.log.targetCalories)
-          else setTargetCalories(activeDynamicTargets.targetCalories)
-          if (res.log.targetProtein) setTargetProtein(res.log.targetProtein)
-          else setTargetProtein(activeDynamicTargets.targetProtein)
-          if (res.log.targetCarbs) setTargetCarbs(res.log.targetCarbs)
-          else setTargetCarbs(activeDynamicTargets.targetCarbs)
-          if (res.log.targetFat) setTargetFat(res.log.targetFat)
-          else setTargetFat(activeDynamicTargets.targetFat)
+          setTargetCalories(activeDynamicTargets.targetCalories)
+          setTargetProtein(activeDynamicTargets.targetProtein)
+          setTargetCarbs(activeDynamicTargets.targetCarbs)
+          setTargetFat(activeDynamicTargets.targetFat)
         } else {
           setMeals([])
           setWaterData({ intake: 0, goal: 3000 })

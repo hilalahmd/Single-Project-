@@ -304,15 +304,34 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit('peer_left', { userId })
   })
 
-  // 6. User app close cheyyumbol (Phone  // Disconnect
+  // 6. User app close cheyyumbol (Phone close cheyyanath pole) — Disconnect
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id)
     messageRateLimits.delete(socket.id)
     
-    // Find user and remove from online map
+    // Find user and remove from onlineUsers map
     for (const [userId, socId] of onlineUsers.entries()) {
       if (socId === socket.id) {
         onlineUsers.delete(userId)
+      }
+    }
+
+    // videoRooms cleanup — Memory leak fix
+    // Disconnect aayaal video room-il ninnum user-ne remove cheyyanam
+    // Illenkil ghost users accumulate aavum over time
+    for (const [roomId, room] of videoRooms.entries()) {
+      for (const [userId, peerData] of room.entries()) {
+        if (peerData.socketId === socket.id) {
+          room.delete(userId)
+          // Notify remaining peers in the room that this user left
+          socket.to(roomId).emit('peer_left', { userId })
+          console.log(`[Video] User ${userId} removed from room ${roomId} on disconnect`)
+        }
+      }
+      // If room is now empty, delete it entirely
+      if (room.size === 0) {
+        videoRooms.delete(roomId)
+        console.log(`[Video] Empty room ${roomId} cleaned up`)
       }
     }
   })
