@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Dumbbell } from 'lucide-react'
 import Card from '../../../shared/components/Card'
@@ -6,7 +6,7 @@ import Button from '../../../shared/components/Button'
 import Badge from '../../../shared/components/Badge'
 import API from '../../../shared/utils/api'
 import { apiClient as api } from '../../../shared/utils/api'
-import { useAuth } from '../../../context/AuthContext'
+import { useAuth } from '../../../shared/context/AuthContext'
 
 export default function ClientProfilePage() {
   const { user, setUser } = useAuth()
