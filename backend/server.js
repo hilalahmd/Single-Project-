@@ -175,7 +175,7 @@ io.on('connection', (socket) => {
   socket.on('mark_messages_read', ({ senderId, chatId }) => {
     // Sender-kku avaru ayacha message receiver read aakki ennu ariyikkunnu
     socket.to(senderId).emit('messages_read_by_receiver', { chatId })
-  })
+  })  
 
   // ==========================================
   // WEBRTC VIDEO CALL SIGNALING
