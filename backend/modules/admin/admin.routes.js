@@ -1,7 +1,8 @@
 import express from 'express'
 import { 
   getAllTrainers, approveTrainer, rejectTrainer, suspendTrainer, 
-  getAdminDashboardStats, getAllUsers, getPendingPayouts, suspendUser, deleteUser
+  getAdminDashboardStats, getAllUsers, getPendingPayouts, suspendUser, deleteUser,
+  getAdminRevenueStats
 } from './admin.controller.js'
 import { getAuditLogs } from './audit.controller.js'
 import { protect } from '../../middleware/authenticate.js'
@@ -19,5 +20,6 @@ router.put('/users/:id/suspend', protect, restrictTo('admin', 'manager'), suspen
 router.delete('/users/:id', protect, restrictTo('admin'), deleteUser)
 router.get('/payouts', protect, restrictTo('admin'), getPendingPayouts)
 router.get('/audit-logs', protect, restrictTo('admin', 'manager'), getAuditLogs)
+router.get('/revenue', protect, restrictTo('admin', 'manager'), getAdminRevenueStats)
 
 export default router

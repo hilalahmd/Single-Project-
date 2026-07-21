@@ -22,6 +22,7 @@ const trainerSchema = new mongoose.Schema({
   reason: { type: String, default: '' }, // For suspension reason
   approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   approvedAt: { type: Date },
+  subscriptionExpiresAt: { type: Date }, // Free trial or Paid Platform Subscription Expiry
   reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   reviewedAt: { type: Date },
   suspendedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

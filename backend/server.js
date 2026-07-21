@@ -13,6 +13,7 @@ import userRoutes from './modules/users/user.routes.js'
 import trainerRoutes from './modules/trainers/trainer.routes.js'
 import adminRoutes from './modules/admin/admin.routes.js'
 import managerRoutes from './modules/manager/manager.routes.js'
+import notificationRoutes from './modules/notifications/notification.routes.js'
 import reportRoutes from './modules/reports/report.routes.js'
 import foodAiRoutes from './modules/food-ai/foodai.routes.js'
 import transformationRoutes from './modules/transformation/transformation.routes.js'
@@ -23,6 +24,7 @@ import nutritionRoutes from './modules/nutrition/nutrition.routes.js'
 import progressRoutes from './modules/progress/progress.routes.js'
 import scheduleRoutes from './modules/schedule/schedule.routes.js'
 import paymentRoutes from './modules/payment/payment.routes.js'
+import payoutRoutes from './modules/payouts/payout.routes.js'
 import ragRoutes from './modules/rag/rag.routes.js'
 import { initializeRAG } from './modules/rag/rag.service.js'
 import dns from 'node:dns'
@@ -59,6 +61,7 @@ app.use('/api/users', userRoutes)
 app.use('/api/trainers', trainerRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/managers', managerRoutes)
+app.use('/api/notifications', notificationRoutes)
 app.use('/api/reports', reportRoutes)
 app.use('/api/food-ai', foodAiRoutes)
 app.use('/api/transformation', transformationRoutes)
@@ -69,6 +72,7 @@ app.use('/api/nutrition', nutritionRoutes)
 app.use('/api/progress', progressRoutes)
 app.use('/api/schedule', scheduleRoutes)
 app.use('/api/payment', paymentRoutes)
+app.use('/api/payouts', payoutRoutes)
 app.use('/api/ai', ragRoutes)
 
 

@@ -9,11 +9,11 @@ const paymentSchema = new mongoose.Schema({
   trainer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Trainer',
-    required: true
+    required: false // Optional for platform_subscription
   },
   planTier: {
     type: String,
-    enum: ['free', 'wellness', 'personal_training'],
+    enum: ['free', 'wellness', 'personal_training', 'platform_subscription'],
     required: true
   },
   amount: {

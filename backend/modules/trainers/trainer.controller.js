@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import { uploadFile } from '../../shared/services/storage.service.js'
 import { Conversation, Message } from '../chat/chat.model.js'
 import Session from '../video/session.model.js'
+import Payment from '../payment/payment.model.js'
 
 
 
@@ -413,10 +414,11 @@ export const getTrainerDashboardStats = async (req, res) => {
         .lean()
     ])
 
-    // Fetch upcoming sessions for this trainer
+    // Fetch upcoming sessions for this trainer (only future sessions)
     const upcomingSessionsData = await Session.find({
       trainerId: trainerProfile._id,
-      status: 'scheduled'
+      status: 'scheduled',
+      startTime: { $gte: new Date() }
     })
       .populate('clientId', 'name')
       .sort({ startTime: 1 })
@@ -490,34 +492,50 @@ export const getTrainerEarnings = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Trainer profile not found' })
     }
 
-    const activeClientsCount = await User.countDocuments({
-      assignedTrainer: trainerProfile._id,
-      role: 'user'
-    })
+    const balance = trainerProfile.earnings?.balance || 0;
+    const totalEarned = trainerProfile.earnings?.totalEarned || 0;
+    
+    // Check Subscription Status
+    const isApproved = trainerProfile.status === 'approved';
+    const expiresAt = trainerProfile.subscriptionExpiresAt;
+    const isSubscriptionActive = isApproved && expiresAt && new Date(expiresAt) > new Date();
 
-    const ptPrice = trainerProfile.pricing?.personalTrainingMonthly || 0
-    const currentGross = activeClientsCount * ptPrice
-    const currentNet = Math.round(currentGross * 0.85)
+    // Fetch Payments to build history
+    const payments = await Payment.find({ trainer: trainerProfile._id, status: 'successful' }).lean();
 
-    // Generate historical data based on current earnings for demo purposes
-    // (Until Stripe integration is built)
-    const months = [
-      { month: 'Jul 2026', sessions: activeClientsCount * 4, gross: currentGross, net: currentNet },
-      { month: 'Jun 2026', sessions: 48, gross: 2880, net: 2448 },
-      { month: 'May 2026', sessions: 52, gross: 3120, net: 2652 },
-      { month: 'Apr 2026', sessions: 45, gross: 2700, net: 2295 }
-    ]
+    const monthlyDataMap = {};
 
-    const totalEarned = months.reduce((acc, curr) => acc + curr.net, 0)
+    payments.forEach(p => {
+      const date = new Date(p.createdAt);
+      const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+      
+      if (!monthlyDataMap[monthYear]) {
+        monthlyDataMap[monthYear] = { month: monthYear, sessions: 0, gross: 0, net: 0 };
+      }
+
+      monthlyDataMap[monthYear].sessions += 1;
+      monthlyDataMap[monthYear].gross += p.amount;
+      monthlyDataMap[monthYear].net += p.amount * 0.95; // Trainer keeps 95%
+    });
+
+    const history = Object.values(monthlyDataMap).reverse();
 
     const earningsData = {
-      thisMonth: currentNet,
+      thisMonth: balance, 
       totalEarned: totalEarned,
-      pendingPayout: currentNet, 
-      history: months
+      pendingPayout: balance, 
+      history: history 
     }
 
-    res.status(200).json({ success: true, earningsData })
+    res.status(200).json({ 
+      success: true, 
+      earningsData,
+      subscription: {
+        isActive: isSubscriptionActive,
+        expiresAt: expiresAt,
+        status: trainerProfile.status
+      }
+    })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }

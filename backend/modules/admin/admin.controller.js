@@ -2,6 +2,7 @@ import Trainer from "../trainers/trainer.model.js";
 import User from '../users/user.model.js';
 import bcrypt from 'bcryptjs';
 import { logAuditAction } from '../../shared/utils/audit.logger.js';
+import Payment from '../payment/payment.model.js';
 
 export const approveTrainer = async (req, res) => {
   try {
@@ -12,6 +13,12 @@ export const approveTrainer = async (req, res) => {
     trainer.status = 'approved'
     trainer.approvedBy = req.user._id
     trainer.approvedAt = new Date()
+    
+    // Give a 30-day free trial upon approval
+    const expiry = new Date()
+    expiry.setDate(expiry.getDate() + 30)
+    trainer.subscriptionExpiresAt = expiry
+
     await trainer.save()
 
     await logAuditAction('APPROVE_TRAINER', req.user._id, trainer.userId, 'Approved trainer application')
@@ -92,7 +99,30 @@ export const getAdminDashboardStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments({ role: 'user' })
     const activeTrainers = await Trainer.countDocuments({ status: 'approved' })
-    const monthlyRevenue = totalUsers * 2000 // Mock until Stripe is integrated
+    
+    // Calculate Monthly Revenue from Payments
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const payments = await Payment.find({
+      status: 'successful',
+      createdAt: { $gte: startOfMonth }
+    });
+
+    let monthlyRevenue = 0;
+    let subscriptionRevenue = 0;
+    let commissionRevenue = 0;
+
+    payments.forEach(p => {
+      if (p.planTier === 'platform_subscription') {
+        monthlyRevenue += p.amount;
+        subscriptionRevenue += p.amount;
+      } else {
+        monthlyRevenue += p.amount * 0.05;
+        commissionRevenue += p.amount * 0.05;
+      }
+    });
 
     const recentRegistrations = await User.find()
       .sort({ createdAt: -1 })
@@ -104,6 +134,8 @@ export const getAdminDashboardStats = async (req, res) => {
       totalUsers,
       activeTrainers,
       monthlyRevenue,
+      subscriptionRevenue,
+      commissionRevenue,
       recentRegistrations
     })
   } catch (error) {
@@ -249,3 +281,78 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ message: error.message })
   }
 }
+
+export const getAdminRevenueStats = async (req, res) => {
+  try {
+    const payments = await Payment.find({ status: 'successful' })
+      .populate('user', 'name avatar')
+      .populate({
+        path: 'trainer',
+        populate: { path: 'userId', select: 'name avatar' }
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    let grossRevenue = 0;
+    let platformCommission = 0;
+    let trainerPayouts = 0;
+
+    const monthlyDataMap = {};
+
+    payments.forEach(p => {
+      grossRevenue += p.amount;
+
+      let adminCut = 0;
+      let trainerCut = 0;
+
+      const date = new Date(p.createdAt);
+      const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+
+      if (!monthlyDataMap[monthYear]) {
+        monthlyDataMap[monthYear] = { month: monthYear, sub: 0, wRev: 0, ptRev: 0, total: 0, comm: 0, net: 0 };
+      }
+
+      const md = monthlyDataMap[monthYear];
+
+      if (p.planTier === 'platform_subscription') {
+        adminCut = p.amount;
+        trainerCut = 0;
+        md.sub += 1;
+        md.total += p.amount;
+        md.comm += p.amount;
+        md.net += p.amount;
+      } else {
+        adminCut = p.amount * 0.05;
+        trainerCut = p.amount * 0.95;
+        
+        md.total += p.amount;
+        md.comm += adminCut;
+        md.net += adminCut;
+
+        if (p.planTier === 'wellness') md.wRev += p.amount;
+        if (p.planTier === 'personal_training') md.ptRev += p.amount;
+      }
+
+      platformCommission += adminCut;
+      trainerPayouts += trainerCut;
+    });
+
+    const reports = Object.values(monthlyDataMap).reverse();
+
+    res.json({
+      success: true,
+      stats: {
+        grossRevenue,
+        platformCommission,
+        trainerPayouts,
+        netRevenue: platformCommission
+      },
+      reports,
+      transactions: payments // Send the full list of populated payments
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
