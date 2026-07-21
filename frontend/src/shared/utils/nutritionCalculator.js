@@ -8,10 +8,10 @@
 export const calculateDynamicTargets = (user) => {
   // Safe defaults if metrics are missing
   const defaultTargets = {
-    targetCalories: 2500,
-    targetProtein: 150,
-    targetCarbs: 250,
-    targetFat: 70
+    targetCalories: 0,
+    targetProtein: 0,
+    targetCarbs: 0,
+    targetFat: 0
   }
 
   if (!user || !user.bodyMetrics) return defaultTargets

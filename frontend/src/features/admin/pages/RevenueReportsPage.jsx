@@ -1,11 +1,67 @@
-import { Download, TrendingUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Download, TrendingUp, Loader } from 'lucide-react'
+import API from '../../../shared/utils/api'
 
 export default function RevenueReportsPage() {
-  const reports = [
-    { month: 'Oct 2026', sub: 450, wRev: '₹4,49,550', ptRev: '₹2,49,900', total: '₹6,99,450', comm: '₹1,39,890', net: '₹1,39,890' },
-    { month: 'Sep 2026', sub: 420, wRev: '₹4,19,580', ptRev: '₹2,24,910', total: '₹6,44,490', comm: '₹1,28,898', net: '₹1,28,898' },
-    { month: 'Aug 2026', sub: 380, wRev: '₹3,79,620', ptRev: '₹1,99,920', total: '₹5,79,540', comm: '₹1,15,908', net: '₹1,15,908' },
-  ]
+  const [stats, setStats] = useState({
+    grossRevenue: 0,
+    platformCommission: 0,
+    trainerPayouts: 0,
+    netRevenue: 0
+  })
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchRevenueData()
+  }, [])
+
+  const fetchRevenueData = async () => {
+    try {
+      const res = await fetch(`${API}/admin/revenue`, { credentials: 'include' })
+      const data = await res.json()
+      if (data.success) {
+        setStats(data.stats)
+        setReports(data.reports)
+      }
+    } catch (error) {
+      console.error('Failed to fetch revenue data', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount)
+  }
+
+  const handleExportCSV = () => {
+    const headers = ['Month', 'Active Subs', 'Wellness Rev.', 'PT Rev.', 'Total Revenue', 'Commission', 'Net Profit']
+    const rows = reports.map(r => [r.month, r.sub, r.wRev, r.ptRev, r.total, r.comm, r.net])
+    
+    const csvRows = [headers.join(','), ...rows.map(e => e.join(','))]
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join('\n')
+    
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute("download", "FitForge_Admin_Revenue.csv")
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader className="animate-spin text-gray-500" size={32} />
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -21,7 +77,7 @@ export default function RevenueReportsPage() {
             <option>Last 6 Months</option>
             <option>This Year</option>
           </select>
-          <button className="flex-1 sm:flex-none flex items-center justify-center px-5 py-2.5 bg-white border border-gray-200 text-black text-sm font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
+          <button onClick={handleExportCSV} className="flex-1 sm:flex-none flex items-center justify-center px-5 py-2.5 bg-white border border-gray-200 text-black text-sm font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
             <Download size={16} className="mr-2"/> Export CSV
           </button>
         </div>
@@ -30,35 +86,23 @@ export default function RevenueReportsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
           <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Gross Revenue</p>
-          <p className="text-2xl font-bold text-black">₹19,23,480</p>
+          <p className="text-2xl font-bold text-black">{formatCurrency(stats.grossRevenue)}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
           <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Platform Commission</p>
-          <p className="text-2xl font-bold text-black">₹3,84,696</p>
+          <p className="text-2xl font-bold text-black">{formatCurrency(stats.platformCommission)}</p>
         </div>
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
           <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Trainer Payouts</p>
-          <p className="text-2xl font-bold text-black">₹15,38,784</p>
+          <p className="text-2xl font-bold text-black">{formatCurrency(stats.trainerPayouts)}</p>
         </div>
         <div className="bg-black text-white rounded-2xl p-6 shadow-md border border-gray-800">
           <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">Net Revenue</p>
-          <p className="text-2xl font-bold text-white">₹3,84,696</p>
+          <p className="text-2xl font-bold text-white">{formatCurrency(stats.netRevenue)}</p>
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-black">Revenue Over Time</h2>
-        </div>
-        <div className="w-full h-80 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 border-dashed">
-          <div className="text-center">
-            <TrendingUp size={48} className="text-gray-300 mx-auto mb-4" />
-            <span className="font-bold text-gray-400">Chart Placeholder</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mt-8">
         <div className="p-6 border-b border-gray-100">
           <h2 className="text-xl font-bold text-black">Monthly Breakdown</h2>
         </div>
@@ -66,7 +110,7 @@ export default function RevenueReportsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
-                {['Month', 'Active Subs', 'Wellness Rev.', 'PT Rev.', 'Total Revenue', 'Commission (20%)', 'Net Profit'].map(h => (
+                {['Month', 'Active Subs', 'Wellness Rev.', 'PT Rev.', 'Total Revenue', 'Commission (5%)', 'Net Profit'].map(h => (
                   <th key={h} className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -76,13 +120,20 @@ export default function RevenueReportsPage() {
                 <tr key={i} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 font-bold text-black">{row.month}</td>
                   <td className="px-6 py-4 text-gray-600 font-medium">{row.sub}</td>
-                  <td className="px-6 py-4 text-gray-600 font-medium">{row.wRev}</td>
-                  <td className="px-6 py-4 text-gray-600 font-medium">{row.ptRev}</td>
-                  <td className="px-6 py-4 font-bold text-gray-800">{row.total}</td>
-                  <td className="px-6 py-4 text-gray-600 font-medium">{row.comm}</td>
-                  <td className="px-6 py-4 font-bold text-green-600">{row.net}</td>
+                  <td className="px-6 py-4 text-gray-600 font-medium">{formatCurrency(row.wRev)}</td>
+                  <td className="px-6 py-4 text-gray-600 font-medium">{formatCurrency(row.ptRev)}</td>
+                  <td className="px-6 py-4 font-bold text-gray-800">{formatCurrency(row.total)}</td>
+                  <td className="px-6 py-4 text-gray-600 font-medium">{formatCurrency(row.comm)}</td>
+                  <td className="px-6 py-4 font-bold text-green-600">{formatCurrency(row.net)}</td>
                 </tr>
               ))}
+              {reports.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-400 font-medium">
+                    No revenue data available yet.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

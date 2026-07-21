@@ -5,6 +5,42 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import API from '../../../shared/utils/api'
 
+// Simple Markdown Parser for AI output
+const renderFormattedText = (text) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+  return lines.map((line, index) => {
+    const isListItem = line.trim().startsWith('* ') || line.trim().startsWith('- ');
+    let content = line;
+    if (isListItem) content = content.replace(/^[*|-]\s/, '');
+    
+    // Replace **bold**
+    const parts = content.split(/(\*\*.*?\*\*)/g);
+    const formattedLine = parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i} className="text-white font-bold">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+
+    if (isListItem) {
+      return (
+        <div key={index} className="flex gap-2 mt-1.5 ml-2">
+          <span className="text-[#FF7A1A] mt-0.5 font-bold">•</span>
+          <span className="flex-1">{formattedLine}</span>
+        </div>
+      );
+    }
+
+    return (
+      <span key={index} className={line === '' ? 'block h-2' : ''}>
+        {formattedLine}
+        {index !== lines.length - 1 && line !== '' && <br />}
+      </span>
+    );
+  });
+};
+
 export default function AIAssistantPage() {
   const navigate = useNavigate()
   const { subscriptionTier } = useAuth()
@@ -279,7 +315,7 @@ export default function AIAssistantPage() {
                           ? 'bg-gradient-to-br from-[#FF7A1A] to-[#EA580C] text-white rounded-3xl rounded-tr-sm max-w-[70%] break-words' 
                           : 'bg-[#141419] border border-white/5 text-gray-200 rounded-3xl rounded-tl-sm w-full break-words'
                       }`}>
-                        <p className="whitespace-pre-wrap">{m.text}</p>
+                        <div className="whitespace-pre-wrap leading-relaxed text-[15px]">{renderFormattedText(m.text)}</div>
                       </div>
                     </motion.div>
                   ))}

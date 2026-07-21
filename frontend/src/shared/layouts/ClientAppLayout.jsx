@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import NotificationDropdown from '../components/NotificationDropdown'
 
 const primaryNav = [
   { label: 'Home',     to: '/',                   icon: Home },
@@ -180,10 +181,16 @@ export default function ClientAppLayout() {
         <Link to="/" className={`text-xl font-black tracking-tight font-['Syne'] ${theme === 'light' ? 'text-[#0F172A]' : 'text-white'}`}>
           FITFORGE
         </Link>
-        <button className={`relative ${theme === 'light' ? 'text-gray-600' : 'text-gray-400'}`}>
-          <Bell size={20} />
-          <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-[#F97316]" />
-        </button>
+        <NotificationDropdown theme={{
+          btnColor: theme === 'light' ? 'text-gray-600' : 'text-gray-400',
+          bellDot: 'bg-[#F97316]',
+          dropdownBg: theme === 'light' ? 'bg-white border-gray-200' : 'bg-[#111318] border-[#1E293B]',
+          dropdownHeaderBorder: theme === 'light' ? 'border-gray-200' : 'border-[#1E293B]',
+          dropdownTitle: theme === 'light' ? 'text-gray-900' : 'text-white',
+          dropdownItemBorder: theme === 'light' ? 'border-gray-100 hover:bg-gray-50' : 'border-[#1E293B] hover:bg-[#0F172A]',
+          unreadBg: theme === 'light' ? 'bg-[#F97316]/10' : 'bg-[#F97316]/5',
+          iconBg: theme === 'light' ? 'bg-gray-100' : 'bg-[#1E293B]'
+        }} />
       </header>
 
       {/* ── Page Content ── */}

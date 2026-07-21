@@ -36,6 +36,7 @@ import {
 
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import NotificationDropdown from '../components/NotificationDropdown'
 
 // ── Nav item definitions per role ────────────────────────────────────────────
 
@@ -269,15 +270,9 @@ export default function DashboardLayout() {
                 {themeMode === 'light' ? <Moon size={16} /> : <Sun size={16} />}
               </button>
             )}
-            <button className={`relative flex items-center justify-center transition-colors ${theme.btnColor}`}>
-              <Bell size={20} />
-              <motion.span 
-                initial={{ scale: 0 }}
-                animate={{ scale: [0, 1.5, 1] }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className={`absolute top-0 right-0 w-2 h-2 rounded-full border-2 ${theme.bellDot}`} 
-              />
-            </button>
+            
+            <NotificationDropdown theme={theme} />
+
             <Link 
               to={isPremiumMode && !isAdminMode ? '/dashboard/profile' : (isAdminMode ? '/admin' : '/trainer/profile')}
               className={`flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold border shadow-sm cursor-pointer transition-all ${theme.avatarBtn}`}

@@ -244,10 +244,10 @@ export default function NutritionTrackerPage() {
 
   const [meals, setMeals] = useState([])
   const [waterData, setWaterData] = useState({ intake: 0, goal: 3000 })
-  const [targetCalories, setTargetCalories] = useState(dynamicTargets.targetCalories)
-  const [targetProtein, setTargetProtein] = useState(dynamicTargets.targetProtein)
-  const [targetCarbs, setTargetCarbs] = useState(dynamicTargets.targetCarbs)
-  const [targetFat, setTargetFat] = useState(dynamicTargets.targetFat)
+  const [targetCalories, setTargetCalories] = useState(0)
+  const [targetProtein, setTargetProtein] = useState(0)
+  const [targetCarbs, setTargetCarbs] = useState(0)
+  const [targetFat, setTargetFat] = useState(0)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [activeMealIndex, setActiveMealIndex] = useState(null)
@@ -273,7 +273,7 @@ export default function NutritionTrackerPage() {
         ])
 
         // Check if trainer set custom nutrition targets in the active plan
-        let activeDynamicTargets = { ...dynamicTargets }
+        let activeDynamicTargets = { targetCalories: 0, targetProtein: 0, targetCarbs: 0, targetFat: 0 }
         if (planRes.success && planRes.plan && planRes.plan.nutritionTargets) {
           const pt = planRes.plan.nutritionTargets
           if (pt.calories) activeDynamicTargets.targetCalories = pt.calories
