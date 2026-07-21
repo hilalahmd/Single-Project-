@@ -28,9 +28,9 @@ export const createOrder = async (req, res) => {
 
     let amount = 0
     if (plan === 'wellness') {
-      amount = (trainer.pricing?.wellnessMonthly || 999) * 100
+      amount = Math.max(trainer.pricing?.wellnessMonthly || 0, 999) * 100
     } else if (plan === 'personal_training') {
-      amount = (trainer.pricing?.personalTrainingMonthly || 2499) * 100
+      amount = Math.max(trainer.pricing?.personalTrainingMonthly || 0, 2499) * 100
     } else if (plan !== 'free') {
       return res.status(400).json({ message: 'Invalid plan selected' })
     }

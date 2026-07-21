@@ -113,13 +113,55 @@ export const getAdminDashboardStats = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    // Fetch all users (both clients and trainers) except superadmins
-    const users = await User.find({ role: { $ne: 'admin' } })
-      .select('-password')
-      .sort({ createdAt: -1 })
-    res.json(users)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const role = req.query.role || 'All Roles';
+    const status = req.query.status || 'All Statuses';
+
+    const filter = { role: { $ne: 'admin' } };
+    
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (role !== 'All Roles') {
+      const targetRole = role.toLowerCase() === 'client' ? 'user' : role.toLowerCase();
+      filter.role = targetRole;
+    }
+    
+    if (status !== 'All Statuses') {
+      filter.status = status.toLowerCase();
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [users, totalRecords] = await Promise.all([
+      User.find(filter)
+        .select('-password')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      User.countDocuments(filter)
+    ]);
+
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    res.json({
+      data: users,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalRecords,
+        limit
+      }
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({ message: error.message });
   }
 }
 

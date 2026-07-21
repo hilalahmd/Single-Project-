@@ -9,41 +9,108 @@ import Session from '../video/session.model.js'
 
 export const getTrainers = async (req, res) => {
   try {
-    const { language } = req.query
+    const { type, tag, search, language, rating, priceSort } = req.query
 
-    const filter = { status: 'approved' }
-    if (language) {
-      filter.languagesSpoken = language
+    const pipeline = []
+
+    // 1. Base Match: Only approved trainers
+    pipeline.push({ $match: { status: 'approved' } })
+
+    // 2. Role Filter
+    if (type === 'wellness') {
+      pipeline.push({ $match: { role: 'wellness_coach' } })
+    } else if (type === 'trainer') {
+      // In the DB, personal trainers are saved as 'trainer'
+      pipeline.push({ $match: { role: 'trainer' } })
     }
 
-    const trainers = await Trainer.find(filter)
-      .populate('userId', 'name email avatar')
-      .sort({ rating: -1 })
-      .lean()
-
-    // Fallback mock data if database is empty so the frontend can be tested
-    if (trainers.length === 0) {
-      return res.json([
-        {
-          _id: 'mock_trainer_001',
-          userId: { name: 'Sarah Connor', email: 'sarah@example.com', avatar: '' },
-          role: 'wellness_coach',
-          languagesSpoken: ['English', 'Malayalam'],
-          rating: 4.8,
-          reviewCount: 42,
-          specialties: ['Yoga', 'Mindfulness', 'Nutrition']
-        },
-        {
-          _id: 'mock_trainer_002',
-          userId: { name: 'John Rambo', email: 'john@example.com', avatar: '' },
-          role: 'trainer',
-          languagesSpoken: ['English', 'Hindi'],
-          rating: 4.9,
-          reviewCount: 88,
-          specialties: ['Bodybuilding', 'Crossfit']
+    // 3. Tag Filter
+    if (tag && tag !== 'All') {
+      pipeline.push({
+        $match: {
+          $or: [
+            { specialties: tag },
+            { role: { $regex: tag, $options: 'i' } }
+          ]
         }
-      ]);
+      })
     }
+
+    // 4. Language Filter
+    if (language && language !== 'Any language') {
+      pipeline.push({ $match: { languagesSpoken: language } })
+    }
+
+    // 5. Rating Filter
+    if (rating && rating !== 'Any rating') {
+      const minRating = parseFloat(rating)
+      if (!isNaN(minRating)) {
+        pipeline.push({ $match: { rating: { $gte: minRating } } })
+      }
+    }
+
+    // 6. Join User Collection for Search (Name, Avatar)
+    pipeline.push({
+      $lookup: {
+        from: 'users', // Mongoose usually uses pluralized collection names
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'userObj'
+      }
+    })
+    
+    // Unwind so userObj is a single object, not an array
+    pipeline.push({ $unwind: { path: '$userObj', preserveNullAndEmptyArrays: true } })
+
+    // 7. Search Filter (by User Name or Trainer Role)
+    if (search) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { 'userObj.name': { $regex: search, $options: 'i' } },
+            { role: { $regex: search, $options: 'i' } }
+          ]
+        }
+      })
+    }
+
+    // 8. Add Fields for Effective Price (used for sorting) and restore userId object structure
+    pipeline.push({
+      $addFields: {
+        userId: {
+          _id: '$userObj._id',
+          name: '$userObj.name',
+          email: '$userObj.email',
+          avatar: '$userObj.avatar'
+        },
+        effectivePrice: {
+          $cond: {
+            if: { $eq: ['$role', 'wellness_coach'] },
+            then: { $ifNull: ['$pricing.wellnessMonthly', 999] },
+            else: { $ifNull: ['$pricing.personalTrainingMonthly', 2499] }
+          }
+        }
+      }
+    })
+
+    // 9. Sorting
+    if (priceSort === 'Low to High') {
+      pipeline.push({ $sort: { effectivePrice: 1 } })
+    } else if (priceSort === 'High to Low') {
+      pipeline.push({ $sort: { effectivePrice: -1 } })
+    } else {
+      pipeline.push({ $sort: { rating: -1 } })
+    }
+
+    // 10. Clean up output (remove temporary fields)
+    pipeline.push({
+      $project: {
+        userObj: 0,
+        effectivePrice: 0
+      }
+    })
+
+    const trainers = await Trainer.aggregate(pipeline)
 
     res.json(trainers)
   } catch (error) {

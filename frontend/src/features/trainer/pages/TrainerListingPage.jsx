@@ -40,7 +40,16 @@ export default function TrainerListingPage() {
     const fetchTrainers = async () => {
       try {
         setLoading(true)
-        const res = await fetch(`${API}/trainers`, {
+
+        const params = new URLSearchParams()
+        if (coachType) params.append('type', coachType)
+        if (activeTag && activeTag !== 'All') params.append('tag', activeTag)
+        if (searchQuery) params.append('search', searchQuery)
+        if (selectedFilters.language && selectedFilters.language !== 'Any language') params.append('language', selectedFilters.language)
+        if (selectedFilters.rating && selectedFilters.rating !== 'Any rating') params.append('rating', selectedFilters.rating)
+        if (selectedFilters.price && selectedFilters.price !== 'Any price') params.append('priceSort', selectedFilters.price)
+
+        const res = await fetch(`${API}/trainers?${params.toString()}`, {
           credentials: 'include'
         })
         if (!res.ok) throw new Error('Failed to load trainers')
@@ -68,16 +77,15 @@ export default function TrainerListingPage() {
       }
     }
 
-    fetchTrainers()
-  }, [])
+    const timer = setTimeout(() => {
+      fetchTrainers()
+    }, 300) // Debounce for search input
 
-  // Filter trainers by active tag, search query, and coachType
-  const filteredTrainers = trainers.filter(t => {
-    const matchesType = (coachType === 'trainer' && t.role === 'Personal Trainer') || (coachType === 'wellness' && t.role === 'Wellness Coach');
-    const matchesTag = activeTag === 'All' || t.tags.includes(activeTag) || t.role.toLowerCase().includes(activeTag.toLowerCase())
-    const matchesSearch = searchQuery === '' || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.role.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesType && matchesTag && matchesSearch
-  })
+    return () => clearTimeout(timer)
+  }, [coachType, activeTag, searchQuery, selectedFilters])
+
+  // Data is now professionally filtered and sorted by the Backend Aggregation Pipeline!
+  const filteredTrainers = trainers
 
   return (
     <div className="relative min-h-screen bg-[#000000] overflow-hidden">

@@ -14,6 +14,7 @@ const PLANS = [
   },
   {
     name: 'Wellness',
+    prefix: 'Starts from',
     price: '₹999',
     period: '/month',
     color: '#2563EB',
@@ -25,12 +26,13 @@ const PLANS = [
       'AI food photo analysis',
       'Real-time chat support',
     ],
-    cta: 'Choose Wellness',
-    route: '/plans',
+    cta: 'Browse Wellness Coaches',
+    route: '/trainers?type=wellness',
     highlight: true,
   },
   {
     name: 'Personal Training',
+    prefix: 'Starts from',
     price: '₹2,499',
     period: '/month',
     color: '#7C3AED',
@@ -40,8 +42,8 @@ const PLANS = [
       'Real-time form correction',
       'Priority coach support',
     ],
-    cta: 'Choose Personal Training',
-    route: '/plans',
+    cta: 'Browse PT Coaches',
+    route: '/trainers?type=personal_training',
     highlight: false,
   },
 ]
@@ -84,9 +86,12 @@ export default function PricingSection() {
 
               <h3 className="text-lg font-bold text-white mb-2">{plan.name}</h3>
 
-              <div className="mb-6">
-                <span className="text-4xl font-black text-white">{plan.price}</span>
-                <span className="text-gray-400 text-sm ml-1">{plan.period}</span>
+              <div className="mb-6 flex flex-col justify-center min-h-[4.5rem]">
+                {plan.prefix && <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{plan.prefix}</div>}
+                <div>
+                  <span className="text-4xl font-black text-white">{plan.price}</span>
+                  <span className="text-gray-400 text-sm ml-1">{plan.period}</span>
+                </div>
               </div>
 
               <ul className="space-y-3 mb-7 flex-1">

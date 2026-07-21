@@ -331,7 +331,10 @@ export default function LandingPage() {
                     Most Popular
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-2">Wellness</h3>
-                  <div className="mb-8"><span className="text-5xl font-bold text-white">₹999</span><span className="text-gray-400 font-medium ml-1">/month</span></div>
+                  <div className="mb-8 flex flex-col justify-center min-h-[5rem]">
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Starts from</div>
+                    <div><span className="text-5xl font-bold text-white">₹999</span><span className="text-gray-400 font-medium ml-1">/month</span></div>
+                  </div>
                   <ul className="space-y-5 mb-10 flex-1">
                     <li className="flex items-start gap-3 text-white font-bold"><div className="w-2 h-2 rounded-full bg-[#F97316] mt-2 shrink-0"/>Dedicated wellness coach</li>
                     <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>Diet + workout plan</li>
@@ -339,21 +342,24 @@ export default function LandingPage() {
                     <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>AI food analysis</li>
                     <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>Chat</li>
                   </ul>
-                  <button className="w-full py-4 rounded-full bg-[#F97316] text-white font-bold hover:bg-[#EA580C] shadow-[0_4px_14px_rgba(249,115,22,0.4)] transition-colors" onClick={() => navigate('/trainers?type=wellness')}>Choose Wellness</button>
+                  <button className="w-full py-4 rounded-full bg-[#F97316] text-white font-bold hover:bg-[#EA580C] shadow-[0_4px_14px_rgba(249,115,22,0.4)] transition-colors" onClick={() => navigate('/trainers?type=wellness')}>Browse Wellness Coaches</button>
                 </div>
               </ScrollReveal>
 
               <ScrollReveal delay={300} direction="left">
                 <div className="p-8 flex flex-col bg-[#0F172A] border border-[#1E293B] rounded-3xl h-full hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer shadow-sm">
                   <h3 className="text-2xl font-bold text-white mb-2">Personal Training</h3>
-                  <div className="mb-8"><span className="text-5xl font-bold text-white">₹2499</span><span className="text-gray-400 font-medium ml-1">/month</span></div>
+                  <div className="mb-8 flex flex-col justify-center min-h-[5rem]">
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Starts from</div>
+                    <div><span className="text-5xl font-bold text-white">₹2499</span><span className="text-gray-400 font-medium ml-1">/month</span></div>
+                  </div>
                   <ul className="space-y-5 mb-10 flex-1">
                     <li className="flex items-start gap-3 text-white font-bold"><div className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2 shrink-0"/>Everything in Wellness</li>
                     <li className="flex items-start gap-3 text-white font-bold"><div className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2 shrink-0"/>Live 1-on-1 video sessions</li>
                     <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>Real-time form correction</li>
                     <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>Priority support</li>
                   </ul>
-                  <button className="w-full py-4 rounded-full bg-[#1E293B] text-white font-bold hover:bg-[#2A364D] transition-colors" onClick={() => navigate('/trainers')}>Choose PT</button>
+                  <button className="w-full py-4 rounded-full bg-[#1E293B] text-white font-bold hover:bg-[#2A364D] transition-colors" onClick={() => navigate('/trainers?type=personal_training')}>Browse PT Coaches</button>
                 </div>
               </ScrollReveal>
 

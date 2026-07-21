@@ -10,14 +10,31 @@ export default function UserManagementPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('All Roles')
   const [statusFilter, setStatusFilter] = useState('All Statuses')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm, roleFilter, statusFilter])
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch(`${API}/admin/users`, { credentials: 'include' })
+        const params = new URLSearchParams()
+        params.append('page', page)
+        params.append('limit', 10)
+        if (searchTerm) params.append('search', searchTerm)
+        if (roleFilter !== 'All Roles') params.append('role', roleFilter)
+        if (statusFilter !== 'All Statuses') params.append('status', statusFilter)
+
+        const res = await fetch(`${API}/admin/users?${params.toString()}`, { credentials: 'include' })
         if (res.ok) {
-          const data = await res.json()
-          setUsers(data)
+          const result = await res.json()
+          setUsers(result.data || [])
+          if (result.pagination) {
+            setTotalPages(result.pagination.totalPages)
+          }
         }
       } catch (err) {
         console.error("Failed to load users", err)
@@ -25,8 +42,9 @@ export default function UserManagementPage() {
         setLoading(false)
       }
     }
-    fetchUsers()
-  }, [])
+    const timer = setTimeout(fetchUsers, 300)
+    return () => clearTimeout(timer)
+  }, [page, searchTerm, roleFilter, statusFilter])
   const handleSuspend = async (userId, currentStatus) => {
     if (!window.confirm(`Are you sure you want to ${currentStatus === 'active' ? 'suspend' : 'activate'} this user?`)) return
     try {
@@ -35,11 +53,18 @@ export default function UserManagementPage() {
         credentials: 'include'
       })
       if (res.ok) {
-        // Refresh users list
-        const updatedUsers = await fetch(`${API}/admin/users`, { credentials: 'include' }).then(r => r.json())
-        setUsers(updatedUsers)
+        // Refresh users list (using current page filters)
+        const params = new URLSearchParams()
+        params.append('page', page)
+        params.append('limit', 10)
+        if (searchTerm) params.append('search', searchTerm)
+        if (roleFilter !== 'All Roles') params.append('role', roleFilter)
+        if (statusFilter !== 'All Statuses') params.append('status', statusFilter)
+
+        const result = await fetch(`${API}/admin/users?${params.toString()}`, { credentials: 'include' }).then(r => r.json())
+        setUsers(result.data || [])
         if (selectedUser && selectedUser._id === userId) {
-          setSelectedUser(updatedUsers.find(u => u._id === userId))
+          setSelectedUser((result.data || []).find(u => u._id === userId))
         }
       }
     } catch (err) {
@@ -65,22 +90,7 @@ export default function UserManagementPage() {
     }
   }
 
-  const filteredUsers = users.filter(u => {
-    const matchesSearch = (u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    let matchesRole = true
-    if (roleFilter !== 'All Roles') {
-      const targetRole = roleFilter.toLowerCase() === 'client' ? 'user' : roleFilter.toLowerCase()
-      matchesRole = u.role === targetRole
-    }
-    
-    let matchesStatus = true
-    if (statusFilter !== 'All Statuses') {
-      matchesStatus = u.status === statusFilter.toLowerCase()
-    }
-    
-    return matchesSearch && matchesRole && matchesStatus
-  })
+  // Filtering is now handled professionally by the backend API!
 
   return (
     <div className="max-w-7xl mx-auto relative overflow-hidden flex h-[calc(100vh-6rem)] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 bg-[#F9FAFB]">
@@ -128,13 +138,13 @@ export default function UserManagementPage() {
                 </tr>
               </thead>
                           <tbody className="divide-y divide-gray-100">
-                {filteredUsers.length === 0 ? (
+                {users.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-12 text-center text-gray-500 font-medium">
                       No users match your filters.
                     </td>
                   </tr>
-                ) : filteredUsers.map((row) => (
+                ) : users.map((row) => (
                   <tr key={row._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -168,6 +178,29 @@ export default function UserManagementPage() {
 
             </table>
           </div>
+          
+          {/* Pagination UI */}
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <span className="text-sm text-gray-500">Page <span className="font-bold text-black">{page}</span> of {totalPages}</span>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button 
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
