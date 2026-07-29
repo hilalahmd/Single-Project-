@@ -11,6 +11,9 @@
     "replace": "node replace.js"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@react-three/postprocessing": "^3.0.4",
     "axios": "^1.7.2",
     "framer-motion": "^11.18.2",
     "lottie-react": "^2.4.1",
@@ -18,7 +21,8 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.18.0",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

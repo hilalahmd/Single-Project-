@@ -1,29 +1,159 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../shared/context/AuthContext'
 import { 
   Clock, UtensilsCrossed, Users, Video, Camera, 
-  TrendingUp, MessageCircle, Utensils, BarChart2, Star 
+  TrendingUp, MessageCircle, Utensils, BarChart2, Star, Check 
 } from 'lucide-react'
-import CinematicHero from './../components/CinematicHero'
-import ScrollReveal from '../../../shared/components/ScrollReveal'
+import { AnimatePresence, motion } from 'framer-motion'
 import BeforeAfterSlider from '../components/BeforeAfterSlider'
 import API from '../../../shared/utils/api'
 
-// High-performance clamp & map functions
-const clamp = (val, min, max) => Math.max(min, Math.min(max, val))
-const mapRange = (val, inMin, inMax, outMin, outMax) => {
-  return clamp(((val - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin, Math.min(outMin, outMax), Math.max(outMin, outMax))
+let hasAnimatedIntro = false;
+
+const AnimatedHeroText = ({ lines, subtext, subtextClassName, className, enforceOnce = false }) => {
+  const INITIAL_PAUSE = 1.0;
+  const STAGGER_DELAY = 0.05;
+  const shouldAnimate = !enforceOnce || !hasAnimatedIntro;
+  
+  let maxWordLen = 0;
+  lines.forEach(line => {
+    line.text.split(' ').forEach(word => {
+      if (word.length > maxWordLen) maxWordLen = word.length;
+    })
+  });
+  
+  const subtextDelay = shouldAnimate ? (INITIAL_PAUSE + (maxWordLen * STAGGER_DELAY) + 0.3) : 0;
+
+  useEffect(() => {
+    if (enforceOnce) hasAnimatedIntro = true;
+  }, [enforceOnce]);
+
+  return (
+    <div className={`flex flex-col ${className || ''}`}>
+      {lines.map((line, lineIdx) => (
+        <span key={lineIdx} className={`block whitespace-nowrap ${line.className || ''}`}>
+          {line.text.split(' ').map((word, wordIdx, wordArr) => (
+            <span key={wordIdx} className="inline-block" style={{ marginRight: wordIdx < wordArr.length - 1 ? '0.25em' : '0' }}>
+              {word.split('').map((char, charIdx) => {
+                const isFirst = charIdx === 0;
+                if (isFirst) {
+                  return (
+                    <motion.span
+                      key={charIdx}
+                      initial={shouldAnimate ? { opacity: 0, y: 15 } : { opacity: 1, y: 0 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                      className="inline-block"
+                    >
+                      {char}
+                    </motion.span>
+                  )
+                }
+                return (
+                  <motion.span
+                    key={charIdx}
+                    initial={shouldAnimate ? { opacity: 0, width: 0 } : { opacity: 1, width: 'auto' }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    transition={{ 
+                      delay: shouldAnimate ? INITIAL_PAUSE + (charIdx * STAGGER_DELAY) : 0,
+                      type: 'spring', stiffness: 150, damping: 20 
+                    }}
+                    className="inline-block overflow-hidden align-bottom"
+                  >
+                    {char}
+                  </motion.span>
+                )
+              })}
+            </span>
+          ))}
+        </span>
+      ))}
+      {subtext && (
+        <motion.div
+          initial={shouldAnimate ? { opacity: 0, y: 10 } : { opacity: 1, y: 0 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: subtextDelay, duration: 0.6, ease: 'easeOut' }}
+          className={subtextClassName || ''}
+        >
+          {subtext}
+        </motion.div>
+      )}
+    </div>
+  )
+}
+
+// --- Text Animation Helpers ---
+const containerVariant = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.03, delayChildren: 0.1 }
+  }
+}
+
+const fadeUpVariant = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+  }
+}
+
+const charVariant = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { type: 'spring', stiffness: 150, damping: 15 }
+  }
+}
+
+const AnimatedText = ({ text, className }) => {
+  return (
+    <span className={`inline-block whitespace-nowrap ${className}`}>
+      {text.split('').map((char, index) => (
+        <motion.span key={index} variants={charVariant} className="inline-block">
+          {char === ' ' ? '\u00A0' : char}
+        </motion.span>
+      ))}
+    </span>
+  )
+}
+
+// --- Slide Presentation Wrapper ---
+const Slide = ({ isActive, children }) => {
+  return (
+    <AnimatePresence>
+      {isActive && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
+          style={{ willChange: 'opacity' }}
+          className="absolute inset-0 flex flex-col items-center justify-center w-full h-full z-20 overflow-hidden pointer-events-auto"
+        >
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
 }
 
 export default function LandingPage() {
   const navigate = useNavigate()
   const { user, role } = useAuth()
   const [topTrainers, setTopTrainers] = useState([])
-
   
-  // Ref for the global background track
-  const trackRef = useRef(null)
+  // --- Slide Logic ---
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const totalSlides = 6
+  const isAnimating = useRef(false)
+  const touchStartY = useRef(0)
+
+  const videoRef = useRef(null)
   const grainRef = useRef(null)
 
   useEffect(() => {
@@ -41,68 +171,105 @@ export default function LandingPage() {
     fetchTopTrainers()
   }, [])
 
+  // Dispatch custom event to let Navbar know the slide changed
   useEffect(() => {
-    let ticking = false;
+    const event = new CustomEvent('landingSlideChange', { 
+      detail: { slideIndex: currentSlide } 
+    });
+    window.dispatchEvent(event);
+  }, [currentSlide]);
 
-    const updateDOM = () => {
-      // Calculate scroll progress over the ENTIRE document
-      const scrollTop = window.scrollY
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-      let p = scrollTop / (maxScroll || 1)
-      p = clamp(p, 0, 1)
-
-      // Global Track Animation (Spreads out as you scroll down the entire page)
-      if (trackRef.current) {
-        const trackSpread = mapRange(p, 0.0, 1.0, 1, 6.0)
-        trackRef.current.style.transform = `translate3d(0, ${p * 40}vh, 0) scaleX(${trackSpread})`
-      }
-
-      ticking = false;
-    };
-
-    const onScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(updateDOM);
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    // Initial paint
-    updateDOM()
-    
-    // Recalculate on resize in case document height changes
-    window.addEventListener('resize', updateDOM)
-    
-    return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', updateDOM)
+  const goToNext = useCallback(() => {
+    if (isAnimating.current) return;
+    if (currentSlide < totalSlides - 1) {
+      isAnimating.current = true;
+      setCurrentSlide(prev => prev + 1);
+      setTimeout(() => { isAnimating.current = false }, 900);
     }
-  }, [])
+  }, [currentSlide]);
+
+  const goToPrev = useCallback(() => {
+    if (isAnimating.current) return;
+    if (currentSlide > 0) {
+      isAnimating.current = true;
+      setCurrentSlide(prev => prev - 1);
+      setTimeout(() => { isAnimating.current = false }, 900);
+    }
+  }, [currentSlide]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(err => console.log('Video autoplay blocked:', err));
+    }
+
+    const handleWheel = (e) => {
+      // Allow horizontal scroll (e.g. for trainers slider)
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        return;
+      }
+      // Lower threshold for a smoother, easier trigger
+      if (Math.abs(e.deltaY) < 10) return;
+
+      if (e.deltaY > 0) {
+        goToNext();
+      } else {
+        goToPrev();
+      }
+    };
+
+    const handleTouchStart = (e) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      const touchEndY = e.touches[0].clientY;
+      const diff = touchStartY.current - touchEndY;
+      
+      // Lower threshold for swipe
+      if (Math.abs(diff) > 30) {
+        if (diff > 0) {
+           goToNext();
+        } else {
+           goToPrev();
+        }
+        // reset touch start so it doesn't trigger repeatedly in one swipe
+        touchStartY.current = touchEndY; 
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+    // Prevent browser overscroll/rubber-banding and entirely disable native scroll
+    document.body.style.overscrollBehavior = 'none';
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      document.body.style.overscrollBehavior = 'auto';
+      document.body.style.overflow = 'auto';
+    };
+  }, [goToNext, goToPrev]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#07080C] text-white font-['Inter'] selection:bg-[#F97316] selection:text-white relative">
+    <div className="fixed inset-0 h-[100dvh] w-full overflow-hidden bg-[#07080C] text-white font-['Inter'] selection:bg-[#F97316] selection:text-white z-50">
       
-      {/* GLOBAL FIXED BACKGROUND (Replaces Hero-only background) */}
-      <div className="fixed inset-0 z-0 pointer-events-none will-change-transform transform-gpu">
-        {/* Track */}
-        <svg ref={trackRef} width="100%" height="100%" preserveAspectRatio="none" className="absolute bottom-0 h-[60%] origin-top will-change-transform transform-gpu">
-          <g>
-            <line x1="50%" y1="0" x2="50%" y2="100%" stroke="white" strokeWidth="2" opacity="0.40" />
-            <line x1="50%" y1="0" x2="20%" y2="100%" stroke="white" strokeWidth="2" strokeDasharray="10 10" opacity="0.40" />
-            <line x1="50%" y1="0" x2="-10%" y2="100%" stroke="white" strokeWidth="2" strokeDasharray="10 10" opacity="0.40" />
-            <line x1="50%" y1="0" x2="-40%" y2="100%" stroke="white" strokeWidth="2" strokeDasharray="10 10" opacity="0.40" />
-            <line x1="50%" y1="0" x2="80%" y2="100%" stroke="white" strokeWidth="2" strokeDasharray="10 10" opacity="0.40" />
-            <line x1="50%" y1="0" x2="110%" y2="100%" stroke="white" strokeWidth="2" strokeDasharray="10 10" opacity="0.40" />
-            <line x1="50%" y1="0" x2="140%" y2="100%" stroke="white" strokeWidth="2" strokeDasharray="10 10" opacity="0.40" />
-            <line x1="0" y1="30%" x2="100%" y2="30%" stroke="white" strokeWidth="1" opacity="0.25" />
-            <line x1="0" y1="60%" x2="100%" y2="60%" stroke="white" strokeWidth="2" opacity="0.25" />
-            <line x1="0" y1="90%" x2="100%" y2="90%" stroke="white" strokeWidth="4" opacity="0.25" />
-          </g>
-        </svg>
-        {/* Vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse,_transparent_25%,_rgba(7,8,12,0.95)_100%)] z-10 pointer-events-none"></div>
-        {/* Film Grain */}
+      {/* GLOBAL FIXED BACKGROUND (Static, doesn't scroll) */}
+      <div className="absolute inset-0 z-0 pointer-events-none bg-black">
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        >
+          <source src="/videos/hero-bg.mp4" type="video/mp4" />
+        </video>
+
         <div 
           ref={grainRef}
           className="absolute inset-0 z-[70] opacity-[0.03] pointer-events-none transform-gpu mix-blend-overlay"
@@ -110,114 +277,75 @@ export default function LandingPage() {
         ></div>
       </div>
 
-      {/* ALL CONTENT GOES IN Z-10 OR HIGHER TO SIT ABOVE BACKGROUND */}
-      <div className="relative z-10 flex flex-col min-h-screen">
-        
-        {/* HERO SECTION */}
-        <CinematicHero />
+      {/* SLIDE PRESENTATION CONTENT */}
+      <div className="relative z-10 w-full h-full">
 
-
-        {/* HOW IT WORKS */}
-        <section className="pt-12 pb-32 overflow-hidden relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ScrollReveal>
-              <h2 className="text-4xl font-bold text-center text-white mb-24 font-['Syne'] tracking-tight">How It Works</h2>
-            </ScrollReveal>
-            <div className="grid md:grid-cols-3 gap-16">
-              {[
-                { num: '1', title: 'Register & Set Goals', desc: 'Tell us about your fitness level, dietary preferences, and goals.' },
-                { num: '2', title: 'Get Matched With Your Coach', desc: 'We pair you with a certified professional who speaks your language.' },
-                { num: '3', title: 'Train, Track, Transform', desc: 'Follow your plan, log meals, and meet your coach via live video.' }
-              ].map((step, i) => (
-                <ScrollReveal key={i} delay={i * 200} className="relative text-center px-6">
-                  <div className="absolute -top-16 left-1/2 -translate-x-1/2 text-[140px] font-black text-white/5 select-none -z-10 leading-none">
-                    {step.num}
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mt-12 mb-4">{step.title}</h3>
-                  <p className="text-gray-400 font-medium text-lg leading-relaxed">{step.desc}</p>
-                </ScrollReveal>
-              ))}
-            </div>
+        {/* SLIDE 0: Connect. Train. Transform. */}
+        <Slide isActive={currentSlide === 0}>
+          <div className="flex flex-col items-center justify-center w-full font-['Syne'] mt-[-5vh]">
+            <h1 className="text-[clamp(3rem,6vw,6rem)] font-[800] tracking-[-0.03em] leading-tight text-center drop-shadow-2xl px-4 flex flex-col items-center text-white">
+              <span>CONNECT. TRAIN.</span>
+              <span>TRANSFORM.</span>
+            </h1>
+            <p className="mt-6 text-white text-[0.7rem] font-[800] tracking-[0.3em] uppercase drop-shadow-md">
+              India's #1 Live Coaching Platform
+            </p>
           </div>
-        </section>
+        </Slide>
 
-
-        {/* FREE DIET GENERATOR TEASER SECTION */}
-        <section className="py-32 overflow-hidden relative border-t border-white/5 bg-[#0F172A]/30">
-          <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-600/10 blur-[120px] rounded-full pointer-events-none transform-gpu"></div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <ScrollReveal direction="right">
-                <div>
-                   <div className="inline-flex items-center gap-2 bg-orange-600/20 border border-orange-500/50 rounded-full px-4 py-2 mb-6">
-                     <span className="text-orange-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                       <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span> Free Tool
-                     </span>
-                   </div>
-                   <h2 className="text-4xl sm:text-5xl font-black text-white mb-6 font-['Syne'] tracking-tight leading-tight">
-                     Get a Custom AI Diet Plan in <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">Seconds</span>.
-                   </h2>
-                   <p className="text-gray-400 font-medium text-lg leading-relaxed mb-8">
-                     Not sure where to start? Use our free AI-powered diet generator. Enter your physical metrics and goals, and instantly receive a personalized Indian diet plan. No credit card required.
-                   </p>
-                   <button 
-                     onClick={() => navigate('/free-diet-plan')}
-                     className="px-8 py-4 bg-white text-black font-bold rounded-full hover:scale-105 hover:bg-gray-100 shadow-[0_0_20px_rgba(255,255,255,0.2)] transition-all flex items-center gap-3"
-                   >
-                     Try Free Diet Generator <Utensils size={18} />
-                   </button>
-                </div>
-              </ScrollReveal>
-              <ScrollReveal direction="left">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-tr from-orange-600/20 to-transparent rounded-3xl blur-2xl transform rotate-3"></div>
-                  <div className="bg-[#030712] border border-[#1E293B] rounded-3xl p-8 relative shadow-2xl overflow-hidden">
-                    {/* Decorative mock UI */}
-                    <div className="flex items-center justify-between mb-6 border-b border-[#1E293B] pb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-[#1E293B] flex items-center justify-center"><Utensils size={20} className="text-orange-400"/></div>
-                        <div>
-                          <div className="text-sm font-bold text-white">Your AI Plan</div>
-                          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Generating...</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <input type="text" placeholder="e.g. I want to lose 5kg in 2 months..." className="w-full bg-[#0F172A] border border-[#1E293B] rounded-xl px-4 py-3 text-sm text-white focus:outline-none pointer-events-none" readOnly />
-                      <button className="w-full bg-[#F97316] text-white font-bold py-3 rounded-xl flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(249,115,22,0.4)] pointer-events-none">
-                        Analyzing Goals... <span className="flex gap-1 ml-1"><span className="w-1 h-1 bg-white rounded-full animate-bounce"></span><span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span><span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span></span>
-                      </button>
-                      <div className="grid grid-cols-2 gap-4 mt-4 opacity-50">
-                        <div className="h-16 bg-[#1E293B]/50 rounded-2xl border border-white/5 animate-pulse"></div>
-                        <div className="h-16 bg-[#1E293B]/50 rounded-2xl border border-white/5 animate-pulse"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </ScrollReveal>
+        {/* SLIDE 1: Diet Generator */}
+        <Slide isActive={currentSlide === 1}>
+          <motion.div 
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariant}
+          >
+            <div className="max-w-3xl drop-shadow-2xl">
+               <motion.div variants={fadeUpVariant} className="inline-flex items-center gap-2 bg-[#5a6b41]/40 border border-[#7a8754]/80 rounded-full px-5 py-2 mb-8 shadow-sm backdrop-blur-sm">
+                 <span className="text-[#f97316] text-sm font-bold uppercase tracking-[0.2em] flex items-center gap-2">
+                   <span className="w-2 h-2 rounded-full bg-[#f97316] animate-pulse"></span> Free Tool
+                 </span>
+               </motion.div>
+               
+               <h2 className="text-[clamp(2.5rem,5vw,5.5rem)] font-black text-white mb-8 tracking-tighter leading-[0.95] flex flex-col drop-shadow-xl overflow-hidden">
+                 <AnimatedText text="Get a Custom" className="block" />
+                 <AnimatedText text="AI Diet Plan in" className="block" />
+                 <AnimatedText text="Seconds." className="text-[#F97316] block" />
+               </h2>
+               
+               <motion.p variants={fadeUpVariant} className="text-gray-200 font-medium text-lg sm:text-xl leading-relaxed mb-10 max-w-2xl drop-shadow-md font-['Inter']">
+                 Not sure where to start? Use our free AI-powered diet generator. Enter your physical metrics and goals, and instantly receive a personalized Indian diet plan. No credit card required.
+               </motion.p>
+               
+               <motion.button 
+                 variants={fadeUpVariant}
+                 onClick={() => navigate('/free-diet-plan')}
+                 className="px-10 py-5 bg-white text-black text-lg font-bold rounded-full hover:scale-105 hover:bg-gray-100 shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all flex items-center gap-4 cursor-pointer"
+               >
+                 Try Free Diet Generator <Utensils size={22} className="text-black" />
+               </motion.button>
             </div>
-          </div>
-        </section>
+          </motion.div>
+        </Slide>
 
-        {/* TRANSFORM PREVIEW TEASER SECTION */}
-        <section className="py-32 overflow-hidden relative border-t border-white/5 bg-[#0a0a0a]">
-          <div className="absolute top-1/2 right-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#ff6b1a]/10 blur-[120px] rounded-full pointer-events-none transform-gpu"></div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <ScrollReveal direction="left" className="order-2 lg:order-1">
-                <div className="relative">
+        {/* SLIDE 2: Transform Preview Teaser */}
+        <Slide isActive={currentSlide === 2}>
+          <div className="w-full h-full flex flex-col justify-center relative bg-transparent">
+            <div className="absolute top-1/2 right-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#ff6b1a]/10 blur-[120px] rounded-full pointer-events-none transform-gpu"></div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+              <div className="grid lg:grid-cols-2 gap-16 items-center">
+                <div className="order-2 lg:order-1 relative">
                   <div className="absolute inset-0 bg-gradient-to-bl from-[#ff6b1a]/20 to-transparent rounded-3xl blur-2xl transform -rotate-3"></div>
                   <BeforeAfterSlider />
                 </div>
-              </ScrollReveal>
-              <ScrollReveal direction="right" className="order-1 lg:order-2">
-                <div>
+                <div className="order-1 lg:order-2">
                    <div className="inline-flex items-center gap-2 bg-[#ff6b1a]/20 border border-[#ff6b1a]/50 rounded-full px-4 py-2 mb-6">
                      <span className="text-[#ff6b1a] text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                        <span className="w-2 h-2 rounded-full bg-[#ff6b1a] animate-pulse"></span> AI Preview
                      </span>
                    </div>
-                   <h2 className="text-4xl sm:text-5xl font-black text-white mb-6 font-['Syne'] tracking-tight leading-tight uppercase">
+                   <h2 className="text-4xl sm:text-5xl font-black text-white mb-6 tracking-tight leading-tight uppercase">
                      See Your Transformation Before You <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a]">Start</span>.
                    </h2>
                    <p className="text-gray-400 font-medium text-lg leading-relaxed mb-8">
@@ -225,201 +353,262 @@ export default function LandingPage() {
                    </p>
                    <button 
                      onClick={() => navigate('/transform-preview')}
-                     className="px-8 py-4 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white font-bold rounded-full uppercase tracking-widest text-sm hover:scale-105 shadow-[0_0_20px_rgba(255,107,26,0.3)] transition-all flex items-center gap-3"
+                     className="px-8 py-4 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white font-bold rounded-full uppercase tracking-widest text-sm hover:scale-105 shadow-[0_0_20px_rgba(255,107,26,0.3)] transition-all flex items-center gap-3 cursor-pointer"
                    >
                      Try Transform Preview &rarr;
                    </button>
                 </div>
-              </ScrollReveal>
+              </div>
             </div>
           </div>
-        </section>
+        </Slide>
 
-        {/* TRAINER SHOWCASE */}
-        <section className="py-32 overflow-hidden relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ScrollReveal direction="left">
-              <div className="flex justify-between items-end mb-16 relative">
-                {/* Ambient glow behind heading */}
-                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[300px] h-[200px] bg-[#ff6b1a]/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
-                
-                <div>
-                  <h2 className="text-4xl font-bold text-white mb-3 font-['Syne'] tracking-tight uppercase">Meet Our Trainers</h2>
-                  <p className="text-gray-400 font-medium text-lg">Certified experts ready to guide you.</p>
-                </div>
-                <Link to="/trainers" className="hidden sm:flex items-center text-sm font-bold text-[#ff6b1a] group hover:text-[#ff8c3a] transition-colors">
-                  View all trainers <span className="ml-1 group-hover:translate-x-1 transition-transform duration-300">&rarr;</span>
-                </Link>
-              </div>
-            </ScrollReveal>
-            
-            <div className="flex overflow-x-auto pb-12 -mx-4 px-4 sm:mx-0 sm:px-0 md:grid md:grid-cols-4 gap-8 snap-x">
-              {topTrainers.map((t, i) => {
-                const img = t.profilePhoto || t.userId?.avatar || 'https://via.placeholder.com/400x500';
-                const name = t.userId?.name || 'Trainer';
-                const spec = t.specialties?.[0] || 'Fitness';
-                const lang = t.languagesSpoken?.[0] || 'English';
-                const price = t.role === 'wellness_coach' ? t.pricing?.wellnessMonthly : t.pricing?.personalTrainingMonthly;
+        {/* SLIDE 3: Trainer Showcase (Editorial Typography) */}
+        <Slide isActive={currentSlide === 3}>
+          <div className="w-full h-full flex flex-col justify-center relative bg-black pointer-events-auto z-20 border-y border-white/5">
+            {/* Minimalist Section Header */}
+            <div className="absolute top-12 left-0 w-full text-center">
+              <h2 className="text-[10px] font-bold text-gray-500 tracking-[0.3em] uppercase">Meet Our Trainers</h2>
+            </div>
 
-                return (
-                <ScrollReveal key={t._id || i} delay={i * 150} direction="up" className="min-w-[280px] snap-center shrink-0">
-                  <div className="relative p-8 bg-[#0f1117] border border-[rgba(255,255,255,0.08)] rounded-[20px] hover:scale-[1.02] transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,107,26,0.15)] cursor-pointer overflow-hidden group">
-                    {/* Inner top highlight for depth */}
-                    <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-                    
-                    <div className="text-center relative z-10">
-                      {/* Avatar Image with Hover Glow */}
-                      <div className="relative w-24 h-24 mx-auto mb-5">
-                        <div className="absolute inset-0 bg-[#ff6b1a] blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-300 rounded-full"></div>
-                        <img src={img} alt={name} loading="lazy" className="relative w-full h-full rounded-full object-cover border-2 border-transparent bg-clip-border group-hover:border-[#ff6b1a] transition-colors duration-300" style={{ backgroundOrigin: 'border-box', backgroundClip: 'padding-box, border-box', backgroundImage: 'linear-gradient(#0f1117, #0f1117), linear-gradient(to right, #ff6b1a, #ff8c3a)' }} />
+            <div className="w-full overflow-hidden flex items-center justify-center flex-1 mt-12 relative group/section">
+              <div className="flex w-max animate-marquee space-x-12 md:space-x-24 px-12">
+                {[...topTrainers, ...topTrainers, ...topTrainers, ...topTrainers, ...topTrainers, ...topTrainers].map((t, i) => {
+                  const name = t.userId?.name || 'TRAINER';
+                  const price = t.role === 'wellness_coach' ? t.pricing?.wellnessMonthly : t.pricing?.personalTrainingMonthly;
+                  const quote = (t.specialties && t.specialties[0] && typeof t.specialties[0] === 'string') 
+                    ? `"${t.specialties[0].toUpperCase()} AND ATHLETIC EXCELLENCE"` 
+                    : '"NEXT-LEVEL ATHLETIC PERFORMANCE"';
+
+                  return (
+                    <div 
+                      key={`${t._id}-${i}`} 
+                      className="flex flex-col items-center justify-center text-center w-[280px] md:w-[400px] shrink-0 cursor-pointer group"
+                      onClick={() => navigate(`/trainers/${t._id}`)}
+                    >
+                      {/* Star Rating */}
+                      <div className="text-white text-xs tracking-[0.3em] mb-6 opacity-80">
+                        ★★★★★
                       </div>
                       
-                      <h3 className="text-xl font-bold text-white">{name}</h3>
-                      <div className="flex items-center justify-center gap-1.5 text-sm font-medium mt-2 mb-5 text-gray-400">
-                        <Star size={16} className="fill-[#ff6b1a] text-[#ff6b1a]" /> {t.rating || 0}
+                      {/* Quote / Specialty */}
+                      <p className="text-gray-300 text-[10px] md:text-[11px] font-medium uppercase tracking-[0.25em] mb-12 leading-loose max-w-[320px]">
+                        {quote}
+                      </p>
+                      
+                      {/* Name (Acting as the Logo) */}
+                      <h3 className="text-3xl md:text-5xl font-['Inter'] font-black text-white uppercase tracking-tighter group-hover:text-gray-400 transition-colors duration-500 mb-6 whitespace-nowrap">
+                        {name}
+                      </h3>
+                      
+                      {/* Action / Price */}
+                      <div className="flex flex-col items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -translate-y-4 group-hover:translate-y-0">
+                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">
+                          From ₹{price || 0} / month
+                        </span>
+                        <div className="text-white text-[10px] font-bold uppercase tracking-widest border-b border-white pb-1 hover:text-[#F97316] hover:border-[#F97316] transition-colors">
+                          View Profile
+                        </div>
                       </div>
-                      <div className="flex flex-wrap justify-center gap-2 mb-8">
-                        <span className="px-3 py-1 bg-[#ff6b1a]/10 border border-[#ff6b1a]/20 shadow-[0_0_10px_rgba(255,107,26,0.15)] text-[#ff6b1a] text-xs font-bold rounded-full tracking-wide">{spec}</span>
-                        <span className="px-3 py-1 bg-white/5 border border-white/5 text-[#c4c4c8] text-xs font-bold rounded-full tracking-wide">{lang}</span>
-                      </div>
-                      <div className="mb-6">
-                        <span className="text-2xl font-black text-white font-['Syne'] tracking-tight">₹{price || 0}</span>
-                        <span className="text-sm text-gray-400 font-medium ml-1">/month</span>
-                      </div>
-                      <button 
-                        className="w-full py-3 rounded-full border border-[rgba(255,255,255,0.1)] bg-white/5 text-white font-bold group-hover:border-[#ff6b1a]/50 group-hover:bg-gradient-to-r group-hover:from-[#ff6b1a] group-hover:to-[#ff8c3a] group-hover:shadow-[0_0_20px_rgba(255,107,26,0.4)] transition-all duration-300 uppercase tracking-widest text-xs"
-                        onClick={() => navigate(`/trainers/${t._id}`)}
-                      >
-                        View Profile
-                      </button>
                     </div>
-                  </div>
-                </ScrollReveal>
-                )
-              })}
+                  )
+                })}
+              </div>
             </div>
+            
+            {/* Gradient Edges for fade effect on scroll */}
+            <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black to-transparent pointer-events-none z-10"></div>
+            <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black to-transparent pointer-events-none z-10"></div>
           </div>
-        </section>
+        </Slide>
 
-        {/* PRICING SECTION */}
-        <section className="py-32 overflow-hidden relative border-t border-[#1E293B]" id="pricing">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ScrollReveal>
-              <div className="text-center mb-20">
-                <h2 className="text-4xl font-bold text-white mb-4 font-['Syne'] tracking-tight">Simple Pricing</h2>
+        {/* SLIDE 4: Pricing */}
+        <Slide isActive={currentSlide === 4}>
+          <div className="w-full h-full flex flex-col justify-center bg-[#09090b] relative z-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">Simple Pricing</h2>
                 <p className="text-gray-400 text-lg font-medium">No hidden fees.</p>
               </div>
-            </ScrollReveal>
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              
-              <ScrollReveal delay={0} direction="right">
-                <div className="p-8 flex flex-col bg-[#0F172A] border border-[#1E293B] rounded-3xl h-full hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer shadow-sm">
-                  <h3 className="text-2xl font-bold text-white mb-2">Free</h3>
-                  <div className="mb-8"><span className="text-5xl font-bold text-white">₹0</span><span className="text-gray-400 font-medium ml-1">/month</span></div>
-                  <ul className="space-y-5 mb-10 flex-1">
-                    <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2 shrink-0"/>BMI/BMR calculators</li>
-                    <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2 shrink-0"/>AI diet plan (3/month)</li>
-                    <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2 shrink-0"/>Browse trainers</li>
-                  </ul>
-                  <button className="w-full py-4 rounded-full bg-[#1E293B] text-white font-bold hover:bg-[#2A364D] transition-colors" onClick={() => navigate('/auth/register')}>Get Started</button>
-                </div>
-              </ScrollReveal>
-
-              <ScrollReveal delay={150} direction="up" className="z-10">
-                <div className="p-8 flex flex-col bg-[#111827] border-2 border-[#F97316] shadow-[0_12px_40px_rgba(249,115,22,0.12)] rounded-3xl relative transform md:-translate-y-8 h-full scale-105 hover:scale-110 transition-all duration-300 cursor-pointer">
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#F97316] text-white text-[11px] font-bold px-4 py-1.5 rounded-full uppercase tracking-widest shadow-md">
-                    Most Popular
+              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+                
+                {/* Free */}
+                <div className="p-8 flex flex-col bg-[#111827] border border-[#1F2937] rounded-xl h-full">
+                  <div className="mb-2">
+                    <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-2">Free</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-6xl font-black text-white leading-none tracking-tighter">₹0</span>
+                      <span className="text-gray-400 font-medium text-sm">/month</span>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Wellness</h3>
-                  <div className="mb-8 flex flex-col justify-center min-h-[5rem]">
-                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Starts from</div>
-                    <div><span className="text-5xl font-bold text-white">₹999</span><span className="text-gray-400 font-medium ml-1">/month</span></div>
-                  </div>
-                  <ul className="space-y-5 mb-10 flex-1">
-                    <li className="flex items-start gap-3 text-white font-bold"><div className="w-2 h-2 rounded-full bg-[#F97316] mt-2 shrink-0"/>Dedicated wellness coach</li>
-                    <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>Diet + workout plan</li>
-                    <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>Progress tracking</li>
-                    <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>AI food analysis</li>
-                    <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>Chat</li>
+                  <ul className="space-y-4 mb-10 flex-1 mt-8">
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>BMI/BMR calculators</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>AI diet plan (3/month)</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>Browse trainers</span>
+                    </li>
                   </ul>
-                  <button className="w-full py-4 rounded-full bg-[#F97316] text-white font-bold hover:bg-[#EA580C] shadow-[0_4px_14px_rgba(249,115,22,0.4)] transition-colors" onClick={() => navigate('/trainers?type=wellness')}>Browse Wellness Coaches</button>
+                  <button className="w-full py-3.5 rounded-xl border border-white/20 bg-transparent text-white font-bold hover:bg-white hover:text-black transition-colors" onClick={() => navigate('/auth/register')}>Get Started</button>
                 </div>
-              </ScrollReveal>
 
-              <ScrollReveal delay={300} direction="left">
-                <div className="p-8 flex flex-col bg-[#0F172A] border border-[#1E293B] rounded-3xl h-full hover:scale-105 hover:shadow-xl transition-all duration-300 cursor-pointer shadow-sm">
-                  <h3 className="text-2xl font-bold text-white mb-2">Personal Training</h3>
-                  <div className="mb-8 flex flex-col justify-center min-h-[5rem]">
-                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Starts from</div>
-                    <div><span className="text-5xl font-bold text-white">₹2499</span><span className="text-gray-400 font-medium ml-1">/month</span></div>
+                {/* Wellness */}
+                <div className="p-8 flex flex-col bg-[#111827] border border-[#1F2937] rounded-xl h-full relative md:scale-[1.04] scale-[1.02] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-10">
+                  <div className="absolute top-0 right-0 bg-[#F97316] text-white text-[10px] font-bold px-4 py-1.5 rounded-tr-xl rounded-bl-xl uppercase tracking-widest shadow-md">
+                    Popular
                   </div>
-                  <ul className="space-y-5 mb-10 flex-1">
-                    <li className="flex items-start gap-3 text-white font-bold"><div className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2 shrink-0"/>Everything in Wellness</li>
-                    <li className="flex items-start gap-3 text-white font-bold"><div className="w-1.5 h-1.5 rounded-full bg-[#F97316] mt-2 shrink-0"/>Live 1-on-1 video sessions</li>
-                    <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>Real-time form correction</li>
-                    <li className="flex items-start gap-3 text-white font-medium"><div className="w-1.5 h-1.5 rounded-full bg-gray-500 mt-2 shrink-0"/>Priority support</li>
+                  <div className="mb-2">
+                    <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-2">Wellness</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-6xl font-black text-white leading-none tracking-tighter">₹999</span>
+                      <span className="text-gray-400 font-medium text-sm">/month</span>
+                    </div>
+                  </div>
+                  <ul className="space-y-4 mb-10 flex-1 mt-8">
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-[#F97316] shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span className="text-white font-bold">Dedicated wellness coach</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>Diet + workout plan</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>Progress tracking</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>AI food analysis</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>Chat support</span>
+                    </li>
                   </ul>
-                  <button className="w-full py-4 rounded-full bg-[#1E293B] text-white font-bold hover:bg-[#2A364D] transition-colors" onClick={() => navigate('/trainers?type=personal_training')}>Browse PT Coaches</button>
+                  <button className="w-full py-3.5 rounded-xl bg-[#F97316] text-white font-bold hover:bg-[#EA580C] shadow-lg transition-colors" onClick={() => navigate('/trainers?type=wellness')}>Browse Wellness Coaches</button>
                 </div>
-              </ScrollReveal>
 
-            </div>
-          </div>
-        </section>
+                {/* PT */}
+                <div className="p-8 flex flex-col bg-[#111827] border border-[#1F2937] rounded-xl h-full">
+                  <div className="mb-2">
+                    <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-2">Personal Training</span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-6xl font-black text-white leading-none tracking-tighter">₹2499</span>
+                      <span className="text-gray-400 font-medium text-sm">/month</span>
+                    </div>
+                  </div>
+                  <ul className="space-y-4 mb-10 flex-1 mt-8">
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>Everything in Wellness</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span className="text-white font-bold">Live 1-on-1 video sessions</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>Real-time form correction</span>
+                    </li>
+                    <li className="flex items-start gap-3 text-gray-300 font-medium">
+                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
+                      <span>Priority support</span>
+                    </li>
+                  </ul>
+                  <button className="w-full py-3.5 rounded-xl border border-white/20 bg-transparent text-white font-bold hover:bg-white hover:text-black transition-colors" onClick={() => navigate('/trainers?type=personal_training')}>Browse PT Coaches</button>
+                </div>
 
-
-        {/* FOOTER CTA */}
-        <section className="py-32 text-center overflow-hidden relative border-t border-[#1E293B] bg-[radial-gradient(ellipse_at_top,_rgba(249,115,22,0.08)_0%,_transparent_50%)]">
-          <ScrollReveal direction="up" duration={1000}>
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-              <h2 className="text-5xl font-black text-white mb-6 tracking-tight font-['Syne']">Ready to Transform?</h2>
-              <p className="text-xl text-gray-400 font-medium mb-12">Start your journey today and achieve your goals with expert guidance.</p>
-              <button 
-                className="bg-[#F97316] text-white px-12 py-5 text-lg font-bold rounded-full hover:scale-105 hover:bg-[#EA580C] shadow-[0_4px_24px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_32px_rgba(249,115,22,0.6)] transition-all duration-300" 
-                onClick={() => {
-                  if (user) {
-                    navigate(role === 'admin' ? '/admin' : role === 'trainer' ? '/trainer/dashboard' : '/dashboard')
-                  } else {
-                    navigate('/auth/register')
-                  }
-                }}
-              >
-                {user ? 'Go to Dashboard' : 'Get Started Free'}
-              </button>
-            </div>
-          </ScrollReveal>
-        </section>
-
-        {/* STATS BRIDGE BAR */}
-        <ScrollReveal direction="none" duration={1000}>
-          <div className="bg-[#07080C] py-8 border-y border-[#1E293B]">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-wrap items-center justify-between gap-8 text-center" style={{ fontFamily: "'Syne', sans-serif" }}>
-                <div className="flex-1 min-w-[150px]">
-                  <div className="text-3xl font-[800] text-white">500+</div>
-                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Trainers</div>
-                </div>
-                <div className="flex-1 min-w-[150px]">
-                  <div className="text-3xl font-[800] text-white">10,000+</div>
-                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Active Clients</div>
-                </div>
-                <div className="flex-1 min-w-[150px]">
-                  <div className="text-3xl font-[800] text-white">4.9★</div>
-                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Average Rating</div>
-                </div>
-                <div className="flex-1 min-w-[150px]">
-                  <div className="text-3xl font-[800] text-white">6</div>
-                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Languages</div>
-                </div>
-              </div>
-              <div className="text-center mt-8 text-sm text-gray-400 font-medium">
-                Join 10,000+ happy clients globally who have transformed their lives with FitForge.
               </div>
             </div>
           </div>
-        </ScrollReveal>
-        
+        </Slide>
+
+        {/* SLIDE 5: Footer CTA */}
+        <Slide isActive={currentSlide === 5}>
+          <div className="w-full h-full flex flex-col justify-center items-center text-center relative bg-black">
+            {/* Dark athlete background image */}
+            <img 
+              src="/images/athlete-back-dark.png" 
+              alt="" 
+              className="absolute inset-0 w-full h-full object-cover object-center z-0"
+            />
+            {/* Gradient overlay: dark at edges, especially bottom to hide any artifacts */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black z-[1]"></div>
+            <div className="absolute inset-0 bg-black/30 z-[1]"></div>
+            <div className="flex-1 flex flex-col justify-center items-center w-full">
+              <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+                <h2 className="text-5xl font-black text-white mb-6 tracking-tight">Ready to Transform?</h2>
+                <p className="text-xl text-gray-400 font-medium mb-12">Start your journey today and achieve your goals with expert guidance.</p>
+                <button 
+                  className="bg-[#F97316] text-white px-12 py-5 text-lg font-bold rounded-full hover:scale-105 hover:bg-[#EA580C] shadow-[0_4px_24px_rgba(249,115,22,0.4)] hover:shadow-[0_8px_32px_rgba(249,115,22,0.6)] transition-all duration-300 pointer-events-auto cursor-pointer" 
+                  onClick={() => {
+                    if (user) {
+                      navigate(role === 'admin' ? '/admin' : role === 'trainer' ? '/trainer/dashboard' : '/dashboard')
+                    } else {
+                      navigate('/auth/register')
+                    }
+                  }}
+                >
+                  {user ? 'Go to Dashboard' : 'Get Started Free'}
+                </button>
+              </div>
+            </div>
+
+            <div className="relative z-10 w-full bg-transparent py-8 border-t border-[#1E293B] mt-auto">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-wrap items-center justify-between gap-8 text-center">
+                  <div className="flex-1 min-w-[150px]">
+                    <div className="text-3xl font-[800] text-white">500+</div>
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Trainers</div>
+                  </div>
+                  <div className="flex-1 min-w-[150px]">
+                    <div className="text-3xl font-[800] text-white">10,000+</div>
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Active Clients</div>
+                  </div>
+                  <div className="flex-1 min-w-[150px]">
+                    <div className="text-3xl font-[800] text-white">4.9★</div>
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Average Rating</div>
+                  </div>
+                  <div className="flex-1 min-w-[150px]">
+                    <div className="text-3xl font-[800] text-white">6</div>
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Languages</div>
+                  </div>
+                </div>
+                <div className="text-center mt-8 text-sm text-gray-400 font-medium">
+                  Join 10,000+ happy clients globally who have transformed their lives with FitForge.
+                </div>
+              </div>
+            </div>
+          </div>
+        </Slide>
+
       </div>
+      
+      {/* Slide Indicators (Optional, highly recommended for slide navigation) */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50">
+        {[0, 1, 2, 3, 4, 5].map((index) => (
+          <button
+            key={index}
+            onClick={() => {
+              if (isAnimating.current || currentSlide === index) return;
+              setCurrentSlide(index);
+              isAnimating.current = true;
+              setTimeout(() => { isAnimating.current = false }, 1200);
+            }}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              currentSlide === index ? 'bg-[#F97316] scale-150 shadow-[0_0_10px_#F97316]' : 'bg-white/30 hover:bg-white/50'
+            }`}
+          />
+        ))}
+      </div>
+
     </div>
   )
 }

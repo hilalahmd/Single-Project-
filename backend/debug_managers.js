@@ -7,7 +7,7 @@ const User = mongoose.model('User', UserSchema);
 
 async function run() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI);
     console.log("Connected to MongoDB.");
     
     const managers = await User.find({ 

@@ -70,7 +70,7 @@ export default function TrainerApprovalsPage() {
     
     // Search filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase()
+      const query = searchQuery.toLowerCase() 
       const name = t.userId?.name?.toLowerCase() || ''
       const email = t.userId?.email?.toLowerCase() || ''
       if (!name.includes(query) && !email.includes(query)) return false

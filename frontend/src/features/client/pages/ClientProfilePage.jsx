@@ -97,7 +97,7 @@ export default function ClientProfilePage() {
   const saveMetrics = async () => {
     try {
       setSaving(true)
-      const res = await fetch(`${API}/users/metrics`, {
+      const res = await fetch(`${API}/users/body-metrics`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

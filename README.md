@@ -24,7 +24,7 @@ Unlike standard fitness apps, FitForge features a custom **Retrieval-Augmented G
 - **RAG Chatbot Assistant:** A custom-built vector memory chatbot that acts as a 24/7 fitness assistant, providing context-aware answers to complex health queries.
 
 ### ⚡ Real-Time Infrastructure
-- **Live 1-on-1 Video Sessions:** Built-in video coaching powered by raw **WebRTC** and **Socket.io** signaling for ultra-low latency, peer-to-peer fitness classes.
+- **Live 1-on-3 Video Sessions:** Built-in video coaching powered by raw **WebRTC** and **Socket.io** signaling for ultra-low latency, peer-to-peer fitness classes.
 - **Instant Messaging & Presence:** Real-time chat functionality and live user-status tracking across the entire platform.
 
 ### 🔐 Multi-Tier Architecture & Security

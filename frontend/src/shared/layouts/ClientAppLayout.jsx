@@ -94,50 +94,40 @@ export default function ClientAppLayout() {
         </div>
 
         {/* Center: Nav */}
-        <nav className="hidden lg:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-          {primaryNav.map(({ label, to }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/dashboard'}
-              className={({ isActive }) =>
-                `relative py-1 text-[11px] font-bold uppercase tracking-widest transition-colors 
-                 after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#F97316] 
-                 after:rounded-full after:origin-center after:transition-transform after:duration-300 
-                 ${isActive ? 'text-[#F97316] after:scale-x-100' : `${theme === 'light' ? 'text-[#64748B]' : 'text-gray-300'} hover:text-[#F97316] after:scale-x-0 hover:after:scale-x-100 hover:after:bg-[#F97316]`}`
-              }
-            >
-              {label}
-            </NavLink>
+        <nav className="hidden lg:flex items-center justify-center gap-6 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+          {primaryNav.map(({ label, to }, index, arr) => (
+            <div key={to} className="flex items-center gap-6">
+              <NavLink
+                to={to}
+                end={to === '/dashboard'}
+                className={({ isActive }) =>
+                  `text-[10px] font-bold uppercase tracking-[0.15em] transition-opacity duration-300 
+                   ${isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100'} 
+                   ${theme === 'light' ? 'text-[#0F172A]' : 'text-white'}`
+                }
+              >
+                {label}
+              </NavLink>
+              {index < arr.length - 1 && (
+                <span className={`text-[10px] font-light transition-colors duration-300 ${theme === 'light' ? 'text-[#0F172A]/30' : 'text-white/30'}`}>+</span>
+              )}
+            </div>
           ))}
         </nav>
 
         {/* Right side: Actions + Profile */}
         <div className="flex items-center justify-end gap-6 flex-1">
 
-          <button 
-            onClick={toggleTheme}
-            className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all cursor-pointer ${
-              theme === 'light' 
-                ? 'text-[#F97316] hover:bg-black/5' 
-                : 'text-gray-300 hover:text-[#F97316] hover:bg-white/5'
-            }`}
-            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-          >
-            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-          </button>
 
           <div className="relative" ref={profileDropdownRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
-              className={`relative flex items-center justify-center w-9 h-9 rounded-full bg-transparent transition-all duration-300 cursor-pointer ${
-                theme === 'light'
-                  ? 'text-[#64748B] hover:text-[#F97316] border border-gray-200 hover:border-[#F97316]/50'
-                  : 'text-gray-300 hover:text-[#F97316] border border-white/15 hover:border-[#F97316]/50'
+              className={`relative flex items-center justify-center w-8 h-8 rounded-full bg-transparent transition-opacity duration-300 opacity-60 hover:opacity-100 cursor-pointer ${
+                theme === 'light' ? 'text-[#0F172A]' : 'text-white'
               }`}
               title="My Profile"
             >
-              <User size={18} />
+              <User size={16} />
             </button>
 
           {/* Profile Dropdown */}

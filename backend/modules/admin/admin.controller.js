@@ -3,6 +3,7 @@ import User from '../users/user.model.js';
 import bcrypt from 'bcryptjs';
 import { logAuditAction } from '../../shared/utils/audit.logger.js';
 import Payment from '../payment/payment.model.js';
+import escapeRegex from '../../utils/escapeRegex.js';
 
 export const approveTrainer = async (req, res) => {
   try {
@@ -154,9 +155,10 @@ export const getAllUsers = async (req, res) => {
     const filter = { role: { $ne: 'admin' } };
     
     if (search) {
+      const sanitizedSearch = escapeRegex(search);
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
+        { name: { $regex: sanitizedSearch, $options: 'i' } },
+        { email: { $regex: sanitizedSearch, $options: 'i' } }
       ];
     }
     

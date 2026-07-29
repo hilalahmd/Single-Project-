@@ -49,9 +49,17 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
+    // Ensure navbar is visible when navigating to a new page
+    setHidden(false)
+  }, [location.pathname])
+
+  useEffect(() => {
     let lastScrollY = window.scrollY
 
     const handleScroll = () => {
+      // Don't apply scroll logic on home page since it uses slides now
+      if (window.location.pathname === '/') return;
+
       const currentScrollY = window.scrollY
       
       if (currentScrollY > lastScrollY && currentScrollY > 80) {
@@ -63,43 +71,64 @@ export default function Navbar() {
       lastScrollY = currentScrollY
       setScrolled(currentScrollY > 20)
     }
+
+    const handleSlideChange = (e) => {
+      if (e.detail?.slideIndex > 0) {
+        setHidden(true)
+      } else {
+        setHidden(false)
+      }
+    }
     
     window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('landingSlideChange', handleSlideChange)
+    
     handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('landingSlideChange', handleSlideChange)
+    }
   }, [])
 
-  const isHome = true // Always use home page theme for navbar
+  const isHome = location.pathname === '/'
 
   return (
-    <header className={`fixed top-0 w-full z-[100] transition-all duration-500 ease-in-out ${hidden ? '-translate-y-full' : 'translate-y-0'} ${isHome ? 'bg-[#07080C] border-b border-white/5' : 'bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] border-b border-gray-100'}`}>
+    <header className={`fixed top-0 w-full z-[100] transition-all duration-500 ease-in-out ${hidden ? '-translate-y-full' : 'translate-y-0'} ${
+      isHome 
+        ? 'bg-transparent border-transparent' 
+        : 'bg-[#07080C] border-b border-white/5'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-16' : 'h-20'}`}>
 
           {/* Logo */}
           <Link
             to="/"
-            className={`text-2xl font-black tracking-[-0.05em] font-['Syne'] ${isHome ? 'text-white' : 'text-[#0F172A]'}`}
+            className={`text-2xl font-black tracking-[-0.05em] font-['Syne'] transition-colors duration-300 text-white`}
           >
             FITFORGE
           </Link>
 
           {/* Center: Nav */}
-          <nav className="hidden lg:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-            {getNavLinks(user, role, subscriptionTier).map(({ label, to }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={to === '/dashboard' || to === '/'}
-                className={({ isActive }) =>
-                  `relative py-1 text-[11px] font-bold uppercase tracking-widest transition-colors 
-                   after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-[#F97316] 
-                   after:rounded-full after:origin-center after:transition-transform after:duration-300 
-                   ${isActive ? 'text-[#F97316] after:scale-x-100' : `${isHome ? 'text-gray-300' : 'text-[#64748B]'} hover:text-[#F97316] after:scale-x-0 hover:after:scale-x-100 hover:after:bg-[#F97316]`}`
-                }
-              >
-                {label}
-              </NavLink>
+          <nav className="hidden lg:flex items-center justify-center gap-6 absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
+            {getNavLinks(user, role, subscriptionTier).map(({ label, to }, index, arr) => (
+              <div key={to} className="flex items-center gap-6">
+                <NavLink
+                  to={to}
+                  end={to === '/dashboard' || to === '/'}
+                  className={({ isActive }) =>
+                    `text-[10px] font-bold uppercase tracking-[0.15em] transition-opacity duration-300 
+                     ${isActive ? 'opacity-100' : 'opacity-60 hover:opacity-100'} 
+                     text-white`
+                  }
+                >
+                  {label}
+                </NavLink>
+                {index < arr.length - 1 && (
+                  <span className={`text-[10px] font-light transition-colors duration-300 text-white/30`}>+</span>
+                )}
+              </div>
             ))}
           </nav>
 
@@ -107,63 +136,42 @@ export default function Navbar() {
           <div className="hidden md:flex items-center justify-end gap-6 flex-1">
 
             {user ? (
-              role === 'user' ? (
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="bg-[#F97316] text-white px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:bg-[#EA580C] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-                >
-                  DASHBOARD
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    const dashboardUrl = role === 'admin' ? '/admin' : '/trainer/dashboard'
-                    navigate(dashboardUrl)
-                  }}
-                  className="bg-[#F97316] text-white px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:bg-[#EA580C] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
-                >
-                  DASHBOARD
-                </button>
-              )
+              <button
+                onClick={() => {
+                  const dashboardUrl = role === 'admin' ? '/admin' : role === 'user' ? '/dashboard' : '/trainer/dashboard'
+                  navigate(dashboardUrl)
+                }}
+                className={`text-[10px] font-bold uppercase tracking-[0.15em] transition-opacity duration-300 opacity-80 hover:opacity-100 cursor-pointer text-white`}
+              >
+                DASHBOARD
+              </button>
             ) : (
               <>
                 <Link
                   to="/auth/login"
-                  className={`text-xs font-bold transition-colors uppercase tracking-widest ${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}
+                  className={`text-[10px] font-bold uppercase tracking-[0.15em] transition-opacity duration-300 opacity-60 hover:opacity-100 text-white`}
                 >
-                  Log in
+                  LOG IN
                 </Link>
 
                 <button
                   onClick={() => navigate('/auth/register')}
-                  className="bg-[#F97316] text-white px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-[0_4px_14px_rgba(249,115,22,0.3)] hover:bg-[#EA580C] hover:shadow-[0_6px_20px_rgba(249,115,22,0.4)] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                  className={`text-[10px] font-bold uppercase tracking-[0.15em] transition-opacity duration-300 opacity-100 hover:opacity-70 cursor-pointer text-white`}
                 >
                   GET STARTED
                 </button>
               </>
             )}
-            
-            <button 
-              onClick={toggleTheme}
-              className={`flex items-center justify-center w-8 h-8 rounded-xl transition-all cursor-pointer ${
-                theme === 'light' 
-                  ? 'text-[#F97316] hover:bg-black/5' 
-                  : 'text-gray-300 hover:text-[#F97316] hover:bg-white/5'
-              }`}
-              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-            >
-              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
-            </button>
 
             {/* Profile avatar — only when logged in */}
             {user && (
               <div className="relative" ref={profileDropdownRef}>
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="relative flex items-center justify-center w-9 h-9 rounded-full bg-transparent text-gray-300 hover:text-[#F97316] border border-white/15 hover:border-[#F97316]/50 transition-all duration-300 cursor-pointer"
+                  className={`relative flex items-center justify-center w-8 h-8 rounded-full bg-transparent transition-opacity duration-300 opacity-60 hover:opacity-100 cursor-pointer text-white`}
                   title="My Profile"
                 >
-                  <User size={18} />
+                  <User size={16} />
                 </button>
 
                 {profileOpen && (
@@ -210,7 +218,7 @@ export default function Navbar() {
           <div className="ml-auto md:hidden">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className={`p-2 ${isHome ? 'text-white' : 'text-[#0F172A]'}`}
+              className={`p-2 transition-colors duration-300 text-white`}
             >
               {menuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -234,23 +242,7 @@ export default function Navbar() {
             ))}
             <hr className={isHome ? 'border-white/10' : 'border-gray-100'} />
             
-            <div className="flex items-center justify-between py-1">
-              <span className={`text-xs font-bold uppercase tracking-widest ${theme === 'light' ? 'text-[#0F172A]' : 'text-gray-300'}`}>Theme</span>
-              <button 
-                onClick={() => {
-                  toggleTheme()
-                  setMenuOpen(false)
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all ${
-                  theme === 'light' 
-                    ? 'bg-[#F97316]/10 border-[#F97316]/30 text-[#F97316] hover:bg-[#F97316]/20' 
-                    : 'bg-white/5 border-white/10 text-gray-300 hover:text-white hover:bg-white/10'
-                }`}
-              >
-                {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
-                {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-              </button>
-            </div>
+
             
             {user ? (
               role === 'user' ? (

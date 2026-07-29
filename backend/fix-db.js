@@ -6,7 +6,7 @@ dotenv.config();
 
 const fixDb = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI);
     console.log("Connected to DB");
     
     // Set expiry to 30 days from now for all approved trainers who don't have it

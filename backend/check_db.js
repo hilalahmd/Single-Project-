@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema({
 });
 
 async function check() {
-  await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/fitforge');
+  await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/fitforge');
   const User = mongoose.model('User', UserSchema);
   const Trainer = mongoose.model('Trainer', TrainerSchema);
 

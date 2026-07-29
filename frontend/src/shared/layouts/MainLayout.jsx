@@ -18,7 +18,7 @@ export default function MainLayout() {
       <main className={`flex-1 ${!isHome ? 'pt-20' : ''}`}>
         <Outlet />
       </main>
-      <Footer />
+      {!isHome && <Footer />}
     </div>
   )
 }
