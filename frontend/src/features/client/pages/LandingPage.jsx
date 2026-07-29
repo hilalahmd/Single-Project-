@@ -122,6 +122,35 @@ const AnimatedText = ({ text, className }) => {
   )
 }
 
+// --- Auto-Changing Pure Client Image Showcase ---
+const ClientDietSlideshow = () => {
+  const [activeIdx, setActiveIdx] = useState(0)
+
+  const images = [
+    '/images/diet-client-1.png',
+    '/images/diet-client-2.png',
+    '/images/diet-client-3.png'
+  ]
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveIdx((prev) => (prev + 1) % images.length)
+    }, 3500)
+    return () => clearInterval(timer)
+  }, [images.length])
+
+  return (
+    <div className="relative w-full max-w-[480px] h-[460px] md:h-[520px] overflow-hidden rounded-none bg-black flex items-center justify-center border border-white/20 shadow-[0_30px_70px_rgba(0,0,0,0.9)]">
+      <img
+        src={images[activeIdx]}
+        alt="Client Healthy Diet"
+        className="w-full h-full object-cover z-0"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none z-10"></div>
+    </div>
+  )
+}
+
 // --- Slide Presentation Wrapper ---
 const Slide = ({ isActive, children }) => {
   return (
@@ -265,7 +294,10 @@ export default function LandingPage() {
           loop
           muted
           playsInline
-          className="absolute inset-0 w-full h-full object-cover z-0"
+          className={`absolute inset-0 w-full h-full object-cover z-0 transition-all duration-700 ${
+            currentSlide === 1 ? 'filter grayscale contrast-125 brightness-75 scale-105 opacity-80' : 
+            currentSlide === 2 ? 'opacity-0' : 'opacity-60'
+          }`}
         >
           <source src="/videos/hero-bg.mp4" type="video/mp4" />
         </video>
@@ -293,67 +325,27 @@ export default function LandingPage() {
           </div>
         </Slide>
 
-        {/* SLIDE 1: Diet Generator */}
+        {/* SLIDE 1: Transform Preview Teaser */}
         <Slide isActive={currentSlide === 1}>
-          <motion.div 
-            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariant}
-          >
-            <div className="max-w-3xl drop-shadow-2xl">
-               <motion.div variants={fadeUpVariant} className="inline-flex items-center gap-2 bg-[#5a6b41]/40 border border-[#7a8754]/80 rounded-full px-5 py-2 mb-8 shadow-sm backdrop-blur-sm">
-                 <span className="text-[#f97316] text-sm font-bold uppercase tracking-[0.2em] flex items-center gap-2">
-                   <span className="w-2 h-2 rounded-full bg-[#f97316] animate-pulse"></span> Free Tool
-                 </span>
-               </motion.div>
-               
-               <h2 className="text-[clamp(2.5rem,5vw,5.5rem)] font-black text-white mb-8 tracking-tighter leading-[0.95] flex flex-col drop-shadow-xl overflow-hidden">
-                 <AnimatedText text="Get a Custom" className="block" />
-                 <AnimatedText text="AI Diet Plan in" className="block" />
-                 <AnimatedText text="Seconds." className="text-[#F97316] block" />
-               </h2>
-               
-               <motion.p variants={fadeUpVariant} className="text-gray-200 font-medium text-lg sm:text-xl leading-relaxed mb-10 max-w-2xl drop-shadow-md font-['Inter']">
-                 Not sure where to start? Use our free AI-powered diet generator. Enter your physical metrics and goals, and instantly receive a personalized Indian diet plan. No credit card required.
-               </motion.p>
-               
-               <motion.button 
-                 variants={fadeUpVariant}
-                 onClick={() => navigate('/free-diet-plan')}
-                 className="px-10 py-5 bg-white text-black text-lg font-bold rounded-full hover:scale-105 hover:bg-gray-100 shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all flex items-center gap-4 cursor-pointer"
-               >
-                 Try Free Diet Generator <Utensils size={22} className="text-black" />
-               </motion.button>
-            </div>
-          </motion.div>
-        </Slide>
-
-        {/* SLIDE 2: Transform Preview Teaser */}
-        <Slide isActive={currentSlide === 2}>
           <div className="w-full h-full flex flex-col justify-center relative bg-transparent">
-            <div className="absolute top-1/2 right-1/4 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#ff6b1a]/10 blur-[120px] rounded-full pointer-events-none transform-gpu"></div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
-              <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                {/* Left Column: Interactive Client Transformation Slider */}
                 <div className="order-2 lg:order-1 relative">
-                  <div className="absolute inset-0 bg-gradient-to-bl from-[#ff6b1a]/20 to-transparent rounded-3xl blur-2xl transform -rotate-3"></div>
                   <BeforeAfterSlider />
                 </div>
+
+                {/* Right Column: Pure White Text & CTA */}
                 <div className="order-1 lg:order-2">
-                   <div className="inline-flex items-center gap-2 bg-[#ff6b1a]/20 border border-[#ff6b1a]/50 rounded-full px-4 py-2 mb-6">
-                     <span className="text-[#ff6b1a] text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                       <span className="w-2 h-2 rounded-full bg-[#ff6b1a] animate-pulse"></span> AI Preview
-                     </span>
-                   </div>
-                   <h2 className="text-4xl sm:text-5xl font-black text-white mb-6 tracking-tight leading-tight uppercase">
-                     See Your Transformation Before You <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a]">Start</span>.
+                   <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tighter leading-[0.95] uppercase">
+                     See Your Transformation Before You Start.
                    </h2>
-                   <p className="text-gray-400 font-medium text-lg leading-relaxed mb-8">
+                   <p className="text-white font-medium text-base sm:text-lg leading-relaxed mb-8 max-w-xl font-['Inter'] drop-shadow-md">
                      Upload 4 quick photos, choose your goal, and let our AI generate a hyper-realistic preview of your future physique.
                    </p>
                    <button 
                      onClick={() => navigate('/transform-preview')}
-                     className="px-8 py-4 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white font-bold rounded-full uppercase tracking-widest text-sm hover:scale-105 shadow-[0_0_20px_rgba(255,107,26,0.3)] transition-all flex items-center gap-3 cursor-pointer"
+                     className="px-9 py-4 bg-white text-black text-base font-bold rounded-full hover:scale-105 hover:bg-gray-100 shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all flex items-center gap-3 cursor-pointer"
                    >
                      Try Transform Preview &rarr;
                    </button>
@@ -361,6 +353,54 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
+        </Slide>
+
+        {/* SLIDE 2: Diet Generator */}
+        <Slide isActive={currentSlide === 2}>
+          <motion.div 
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariant}
+          >
+            <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+               {/* Left Column: Pure White Text & CTA */}
+               <div className="max-w-2xl drop-shadow-2xl">
+                  <h2 className="text-[clamp(2.5rem,4.5vw,4.8rem)] font-black text-white mb-6 tracking-tighter leading-[0.95] flex flex-col drop-shadow-xl overflow-hidden">
+                    <AnimatedText text="Get a Custom" className="block text-white" />
+                    <AnimatedText text="AI Diet Plan in" className="block text-white" />
+                    <AnimatedText text="Seconds." className="block text-white" />
+                  </h2>
+                  
+                  <motion.p variants={fadeUpVariant} className="text-white font-medium text-base sm:text-lg leading-relaxed mb-8 max-w-xl drop-shadow-md font-['Inter']">
+                    Not sure where to start? Use our free AI-powered diet generator. Enter your physical metrics and goals, and instantly receive a personalized Indian diet plan. No credit card required.
+                  </motion.p>
+                  
+                  <motion.button 
+                    variants={fadeUpVariant}
+                    onClick={() => navigate('/free-diet-plan')}
+                    className="px-9 py-4 bg-white text-black text-base font-bold rounded-full hover:scale-105 hover:bg-gray-100 shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all flex items-center gap-3 cursor-pointer"
+                  >
+                    Try Free Diet Generator <Utensils size={20} className="text-black" />
+                  </motion.button>
+               </div>
+
+               {/* Right Column: High-Quality Watermark-Free Generated B&W Image (Sharp Edges) */}
+               <motion.div 
+                 variants={fadeUpVariant}
+                 className="relative hidden lg:flex justify-center items-center"
+               >
+                 <div className="relative w-full max-w-[480px] h-[460px] md:h-[520px] overflow-hidden rounded-none bg-black flex items-center justify-center border border-white/20 shadow-[0_30px_70px_rgba(0,0,0,0.9)]">
+                   <img
+                     src="/images/bw-hands-1.png"
+                     alt="Gym Healthy Diet Prep"
+                     className="w-full h-full object-cover filter contrast-110 brightness-105 z-0"
+                   />
+                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 pointer-events-none z-10"></div>
+                 </div>
+               </motion.div>
+            </div>
+          </motion.div>
         </Slide>
 
         {/* SLIDE 3: Trainer Showcase (Editorial Typography) */}

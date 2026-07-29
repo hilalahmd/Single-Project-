@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { User, MoveHorizontal } from 'lucide-react';
+import { MoveHorizontal } from 'lucide-react';
 
-export default function BeforeAfterSlider({ beforeImage, afterImage }) {
-  const [position, setPosition] = useState(0); // 0 to 100
+export default function BeforeAfterSlider({ 
+  beforeImage = '/images/transform-pair.png', 
+  afterImage = '/images/transform-pair.png' 
+}) {
+  const [position, setPosition] = useState(50); // 0 to 100
   const [isDragging, setIsDragging] = useState(false);
   const [hasAutoPlayed, setHasAutoPlayed] = useState(false);
   const [isPulsing, setIsPulsing] = useState(false);
   
   const containerRef = useRef(null);
   const observerRef = useRef(null);
-  const autoPlayRef = useRef(null);
+  const autoPlayRef.current = null;
 
   // Auto-play animation function
   const startAutoPlay = useCallback(() => {
@@ -17,18 +20,17 @@ export default function BeforeAfterSlider({ beforeImage, afterImage }) {
     
     let startTimestamp = null;
     const duration = 2500; // 2.5 seconds
-    const targetPosition = 75; // Go to 75%
+    const targetPosition = 75;
 
-    // Easing function (ease-in-out)
     const easeInOutQuad = (t) => t < .5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
     const step = (timestamp) => {
-      if (isDragging) return; // Cancel if user interacted
+      if (isDragging) return;
       
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
       
-      const currentPos = easeInOutQuad(progress) * targetPosition;
+      const currentPos = 25 + easeInOutQuad(progress) * (targetPosition - 25);
       setPosition(currentPos);
 
       if (progress < 1) {
@@ -36,7 +38,6 @@ export default function BeforeAfterSlider({ beforeImage, afterImage }) {
       } else {
         setHasAutoPlayed(true);
         setIsPulsing(true);
-        // Turn off pulse after 2 seconds
         setTimeout(() => setIsPulsing(false), 2000);
       }
     };
@@ -49,8 +50,7 @@ export default function BeforeAfterSlider({ beforeImage, afterImage }) {
     observerRef.current = new IntersectionObserver((entries) => {
       const [entry] = entries;
       if (entry.isIntersecting && !hasAutoPlayed) {
-        // Add a small delay before starting auto-play
-        setTimeout(startAutoPlay, 500);
+        setTimeout(startAutoPlay, 400);
       }
     }, { threshold: 0.5 });
 
@@ -68,7 +68,6 @@ export default function BeforeAfterSlider({ beforeImage, afterImage }) {
   const handleMove = useCallback((clientX) => {
     if (!containerRef.current) return;
     
-    // If user interacts, cancel any running auto-play or pulse
     if (autoPlayRef.current) cancelAnimationFrame(autoPlayRef.current);
     setIsPulsing(false);
     setHasAutoPlayed(true);
@@ -114,10 +113,12 @@ export default function BeforeAfterSlider({ beforeImage, afterImage }) {
     };
   }, [isDragging, onMouseMove, onTouchMove, stopDragging]);
 
+  const isSamePair = beforeImage === '/images/transform-pair.png' || beforeImage === afterImage;
+
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[350px] bg-[#0f1117] border border-[rgba(255,255,255,0.08)] rounded-[20px] overflow-hidden group hover:scale-[1.01] hover:shadow-[0_0_30px_rgba(255,107,26,0.15)] transition-all duration-500 select-none touch-none cursor-ew-resize"
+      className="relative w-full h-[450px] md:h-[500px] bg-black border border-white/20 rounded-none overflow-hidden group shadow-[0_30px_70px_rgba(0,0,0,0.9)] select-none touch-none cursor-ew-resize"
       onMouseMove={(e) => {
         handleMove(e.clientX);
       }}
@@ -127,60 +128,53 @@ export default function BeforeAfterSlider({ beforeImage, afterImage }) {
       }}
     >
       
-      {/* 1. BEFORE LAYER (Background) */}
-      <div className="absolute inset-0 flex items-center justify-center bg-[#07080a]">
-        {beforeImage ? (
-          <img src={beforeImage} alt="Before" className="w-full h-full object-cover" />
-        ) : (
-          <div className="flex flex-col items-center opacity-30 scale-90">
-            <User size={80} className="text-gray-600 mb-4" strokeWidth={1} />
-            <div className="h-2 w-24 bg-gray-700 rounded-full mb-2"></div>
-            <div className="h-2 w-16 bg-gray-800 rounded-full"></div>
-          </div>
-        )}
+      {/* 1. BEFORE LAYER (Unfit / Soft Body Before Workout) */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black overflow-hidden">
+        <img 
+          src={beforeImage} 
+          alt="Before Workout Transformation" 
+          className={`h-full object-cover filter grayscale contrast-110 ${
+            isSamePair ? 'w-[185%] max-w-none object-left' : 'w-full'
+          }`} 
+        />
       </div>
 
-      {/* 2. AFTER LAYER (Clipped Overlay) */}
+      {/* 2. AFTER LAYER (Shredded 6-Pack Muscular Body After Workout) */}
       <div 
-        className="absolute inset-0 flex items-center justify-center bg-[#1a110d] transition-none"
+        className="absolute inset-0 flex items-center justify-center bg-black overflow-hidden transition-none z-10"
         style={{ clipPath: `polygon(0 0, ${position}% 0, ${position}% 100%, 0 100%)` }}
       >
-        {afterImage ? (
-          <img src={afterImage} alt="After" className="w-full h-full object-cover" />
-        ) : (
-          <div className="flex flex-col items-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-[#ff6b1a] blur-[40px] opacity-20 rounded-full"></div>
-              <User size={80} className="text-[#ff6b1a] mb-4 relative z-10" strokeWidth={1.5} />
-            </div>
-            <div className="h-2 w-24 bg-[#ff6b1a]/40 rounded-full mb-2 shadow-[0_0_10px_rgba(255,107,26,0.3)]"></div>
-            <div className="h-2 w-16 bg-[#ff6b1a]/30 rounded-full"></div>
-          </div>
-        )}
+        <img 
+          src={afterImage} 
+          alt="After Workout Transformation" 
+          className={`h-full object-cover ${
+            isSamePair ? 'w-[185%] max-w-none object-right' : 'w-full'
+          }`} 
+        />
       </div>
 
-      {/* 3. STATIC CORNER LABELS (Unclipped) */}
-      <div className="absolute bottom-5 left-5 pointer-events-none">
-        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-black/50 px-2 py-1 rounded backdrop-blur-sm border border-white/10">
-          Before
+      {/* 3. STATIC CORNER LABELS */}
+      <div className="absolute bottom-5 left-5 pointer-events-none z-20">
+        <span className="text-[11px] font-black text-gray-300 uppercase tracking-widest bg-black/70 px-3 py-1.5 rounded-none backdrop-blur-md border border-white/20">
+          BEFORE
         </span>
       </div>
-      <div className="absolute bottom-5 right-5 pointer-events-none">
-        <span className="text-[10px] font-bold text-[#ff6b1a] uppercase tracking-widest bg-[#ff6b1a]/10 px-2 py-1 rounded backdrop-blur-sm border border-[#ff6b1a]/30">
-          After
+      <div className="absolute bottom-5 right-5 pointer-events-none z-20">
+        <span className="text-[11px] font-black text-white uppercase tracking-widest bg-black/70 px-3 py-1.5 rounded-none backdrop-blur-md border border-white/30">
+          AFTER
         </span>
       </div>
 
       {/* 4. DRAG SLIDER HANDLE */}
       <div 
-        className="absolute top-0 bottom-0 w-[2px] bg-gradient-to-b from-[#ff6b1a] to-[#ff8c3a] shadow-[0_0_15px_rgba(255,107,26,0.8)] pointer-events-none"
+        className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_15px_rgba(255,255,255,0.9)] pointer-events-none z-30"
         style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
       >
-        {/* The circular handle */}
+        {/* Circular handle */}
         <div 
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-gradient-to-br from-white to-gray-200 border-2 border-[#ff6b1a] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(255,107,26,0.6)] transition-transform duration-300 ${isPulsing ? 'animate-pulse scale-125' : ''}`}
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-white text-black border-2 border-white rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(255,255,255,0.8)] transition-transform duration-300 ${isPulsing ? 'animate-pulse scale-110' : ''}`}
         >
-          <MoveHorizontal size={16} className="text-[#ff6b1a]" />
+          <MoveHorizontal size={18} className="text-black" />
         </div>
       </div>
       
