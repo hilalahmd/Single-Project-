@@ -7,14 +7,14 @@ import API from '../../../shared/utils/api'
 // ── Step Indicator ────────────────────────────────────────────────────────────
 function StepIndicator({ current, total }) {
   return (
-    <div className="flex items-center justify-center gap-0 mb-8">
+    <div className="flex items-center justify-center gap-0 mb-8 px-2">
       {Array.from({ length: total }, (_, i) => {
         const step = i + 1
         const isDone   = step < current
         const isActive = step === current
         return (
           <div key={step} className="flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-all duration-300 ${
+            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-bold border transition-all duration-300 shrink-0 ${
               isDone   ? 'bg-blue-600 border-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
             : isActive ? 'bg-blue-50 dark:bg-[#1E293B] border-blue-500 text-blue-600 dark:text-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.2)]'
                        : 'bg-gray-100 dark:bg-[#0F172A] border-gray-300 dark:border-[#1E293B] text-gray-400 dark:text-gray-500'
@@ -22,7 +22,7 @@ function StepIndicator({ current, total }) {
               {isDone ? <Check size={14} strokeWidth={3} /> : step}
             </div>
             {i < total - 1 && (
-              <div className={`w-12 h-0.5 transition-all duration-300 ${step < current ? 'bg-blue-600' : 'bg-gray-300 dark:bg-[#1E293B]'}`} />
+              <div className={`w-6 sm:w-12 h-0.5 transition-all duration-300 ${step < current ? 'bg-blue-600' : 'bg-gray-300 dark:bg-[#1E293B]'}`} />
             )}
           </div>
         )

@@ -429,22 +429,24 @@ export default function EarningsPage() {
             <ArrowDownToLine size={16} /> Export CSV
           </button>
         </div>
-        <div>
-          <div className="grid grid-cols-4 px-6 py-4 bg-[#0F172A] border-b border-[#1E293B] text-[12px] font-bold text-gray-500 uppercase tracking-wider">
-            <span>Month</span><span>Sessions</span><span>Gross</span><span>Net (90%)</span>
+        <div className="overflow-x-auto">
+          <div className="min-w-[500px]">
+            <div className="grid grid-cols-4 px-6 py-4 bg-[#0F172A] border-b border-[#1E293B] text-[12px] font-bold text-gray-500 uppercase tracking-wider">
+              <span>Month</span><span>Sessions</span><span>Gross</span><span>Net (90%)</span>
+            </div>
+            {earningsData.history.length === 0 ? (
+               <div className="px-6 py-8 text-center text-gray-500">No earnings history yet.</div>
+            ) : (
+               earningsData.history.map(m => (
+                 <div key={m.month} className="grid grid-cols-4 px-6 py-4 border-b border-[#1E293B] last:border-0 text-[14px] hover:bg-[#0F172A] transition-colors items-center">
+                   <span className="font-bold text-white">{m.month}</span>
+                   <span className="text-gray-400 font-medium">{m.sessions}</span>
+                   <span className="text-gray-400 font-medium">₹{m.gross.toLocaleString()}</span>
+                   <span className="font-bold text-green-400">₹{m.net.toLocaleString()}</span>
+                 </div>
+               ))
+            )}
           </div>
-          {earningsData.history.length === 0 ? (
-             <div className="px-6 py-8 text-center text-gray-500">No earnings history yet.</div>
-          ) : (
-             earningsData.history.map(m => (
-               <div key={m.month} className="grid grid-cols-4 px-6 py-4 border-b border-[#1E293B] last:border-0 text-[14px] hover:bg-[#0F172A] transition-colors items-center">
-                 <span className="font-bold text-white">{m.month}</span>
-                 <span className="text-gray-400 font-medium">{m.sessions}</span>
-                 <span className="text-gray-400 font-medium">₹{m.gross.toLocaleString()}</span>
-                 <span className="font-bold text-green-400">₹{m.net.toLocaleString()}</span>
-               </div>
-             ))
-          )}
         </div>
       </div>
 

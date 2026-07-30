@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { MoveHorizontal } from 'lucide-react';
 
 export default function BeforeAfterSlider({ 
-  beforeImage = '/images/transform-pair.png', 
-  afterImage = '/images/transform-pair.png' 
+  beforeImage = '/images/athlete-chubby.png', 
+  afterImage = '/images/athlete-fit.png' 
 }) {
   const [position, setPosition] = useState(50); // 0 to 100
   const [isDragging, setIsDragging] = useState(false);
@@ -12,7 +12,7 @@ export default function BeforeAfterSlider({
   
   const containerRef = useRef(null);
   const observerRef = useRef(null);
-  const autoPlayRef.current = null;
+  const autoPlayRef = useRef(null);
 
   // Auto-play animation function
   const startAutoPlay = useCallback(() => {
@@ -64,7 +64,7 @@ export default function BeforeAfterSlider({
     };
   }, [hasAutoPlayed, startAutoPlay]);
 
-  // Handle Dragging
+  // Handle Dragging / Touch / Pointer
   const handleMove = useCallback((clientX) => {
     if (!containerRef.current) return;
     
@@ -113,12 +113,10 @@ export default function BeforeAfterSlider({
     };
   }, [isDragging, onMouseMove, onTouchMove, stopDragging]);
 
-  const isSamePair = beforeImage === '/images/transform-pair.png' || beforeImage === afterImage;
-
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[450px] md:h-[500px] bg-black border border-white/20 rounded-none overflow-hidden group shadow-[0_30px_70px_rgba(0,0,0,0.9)] select-none touch-none cursor-ew-resize"
+      className="relative w-full h-[460px] md:h-[520px] bg-black border border-white/20 rounded-none overflow-hidden group shadow-[0_25px_60px_rgba(0,0,0,0.9)] select-none touch-none cursor-ew-resize"
       onMouseMove={(e) => {
         handleMove(e.clientX);
       }}
@@ -128,53 +126,51 @@ export default function BeforeAfterSlider({
       }}
     >
       
-      {/* 1. BEFORE LAYER (Unfit / Soft Body Before Workout) */}
-      <div className="absolute inset-0 flex items-center justify-center bg-black overflow-hidden">
+      {/* 1. AFTER LAYER (Shredded Fit Body - Base Layer on Right) */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black overflow-hidden z-0">
         <img 
-          src={beforeImage} 
-          alt="Before Workout Transformation" 
-          className={`h-full object-cover filter grayscale contrast-110 ${
-            isSamePair ? 'w-[185%] max-w-none object-left' : 'w-full'
-          }`} 
+          src={afterImage} 
+          alt="After Workout Transformation" 
+          className="w-full h-full object-cover object-top" 
         />
       </div>
 
-      {/* 2. AFTER LAYER (Shredded 6-Pack Muscular Body After Workout) */}
+      {/* 2. BEFORE LAYER (Chubby Unfit Body - Clipped Layer on Left) */}
       <div 
         className="absolute inset-0 flex items-center justify-center bg-black overflow-hidden transition-none z-10"
         style={{ clipPath: `polygon(0 0, ${position}% 0, ${position}% 100%, 0 100%)` }}
       >
         <img 
-          src={afterImage} 
-          alt="After Workout Transformation" 
-          className={`h-full object-cover ${
-            isSamePair ? 'w-[185%] max-w-none object-right' : 'w-full'
-          }`} 
+          src={beforeImage} 
+          alt="Before Workout Transformation" 
+          className="w-full h-full object-cover object-top" 
         />
       </div>
 
-      {/* 3. STATIC CORNER LABELS */}
+      {/* 3. STATIC CORNER BADGES */}
       <div className="absolute bottom-5 left-5 pointer-events-none z-20">
-        <span className="text-[11px] font-black text-gray-300 uppercase tracking-widest bg-black/70 px-3 py-1.5 rounded-none backdrop-blur-md border border-white/20">
+        <span className="text-[10px] sm:text-xs font-black text-white uppercase tracking-widest bg-black/80 px-3 py-1.5 rounded-none backdrop-blur-md border border-white/20 shadow-lg">
           BEFORE
         </span>
       </div>
       <div className="absolute bottom-5 right-5 pointer-events-none z-20">
-        <span className="text-[11px] font-black text-white uppercase tracking-widest bg-black/70 px-3 py-1.5 rounded-none backdrop-blur-md border border-white/30">
+        <span className="text-[10px] sm:text-xs font-black text-white uppercase tracking-widest bg-black/80 px-3 py-1.5 rounded-none backdrop-blur-md border border-white/20 shadow-lg">
           AFTER
         </span>
       </div>
 
       {/* 4. DRAG SLIDER HANDLE */}
       <div 
-        className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_15px_rgba(255,255,255,0.9)] pointer-events-none z-30"
+        className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_20px_rgba(255,255,255,1)] pointer-events-none z-30"
         style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
       >
         {/* Circular handle */}
         <div 
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-9 h-9 bg-white text-black border-2 border-white rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(255,255,255,0.8)] transition-transform duration-300 ${isPulsing ? 'animate-pulse scale-110' : ''}`}
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white text-black border-2 border-white rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.9)] transition-transform duration-300 ${
+            isPulsing ? 'animate-pulse scale-110' : ''
+          }`}
         >
-          <MoveHorizontal size={18} className="text-black" />
+          <MoveHorizontal size={20} className="text-black" />
         </div>
       </div>
       

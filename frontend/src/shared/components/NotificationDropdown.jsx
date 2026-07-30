@@ -69,18 +69,19 @@ export default function NotificationDropdown({ theme }) {
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={handleOpen}
-        className={`relative flex items-center justify-center transition-colors ${theme.btnColor || 'text-gray-400 hover:text-white'}`}
+        className={`relative flex items-center justify-center p-2 min-w-[44px] min-h-[44px] rounded-lg transition-colors ${theme.btnColor || 'text-gray-400 hover:text-white'}`}
+        aria-label="Notifications"
       >
         <Bell size={20} />
         {unreadCount > 0 && (
-          <span className={`absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white rounded-full ${theme.bellDot || 'bg-[#F97316]'}`}>
+          <span className={`absolute top-1 right-1 flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white rounded-full ${theme.bellDot || 'bg-[#F97316]'}`}>
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className={`absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl shadow-2xl border z-50 overflow-hidden origin-top-right transition-all ${
+        <div className={`fixed sm:absolute top-16 sm:top-[120%] right-4 sm:right-0 w-[calc(100vw-2rem)] sm:w-96 rounded-2xl shadow-2xl border z-50 overflow-hidden origin-top-right transition-all ${
           theme.dropdownBg || 'bg-[#111318] border-[#1E293B]'
         }`}>
           <div className={`p-4 border-b flex justify-between items-center ${theme.dropdownHeaderBorder || 'border-[#1E293B]'}`}>

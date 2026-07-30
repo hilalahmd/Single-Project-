@@ -119,18 +119,18 @@ export default function LoginPage() {
           </p>
 
           {/* Feature grid */}
-          <div className="grid grid-cols-2 gap-6 w-full max-w-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 w-full max-w-lg">
             {[
               { icon: <Target size={20} className="text-blue-400"/>,    text: '1-on-1 Coaching' },
               { icon: <Activity size={20} className="text-indigo-400"/>, text: 'AI Meal Analysis' },
               { icon: <Dumbbell size={20} className="text-blue-400"/>,  text: 'Live Sessions' },
               { icon: <Heart size={20} className="text-blue-400"/>,     text: 'Progress Tracking' },
             ].map((f, i) => (
-              <div key={i} className="flex items-center gap-3 bg-[#0F172A]/40 border border-[#1E293B] p-3.5 rounded-2xl backdrop-blur-sm shadow-sm">
-                <div className="w-10 h-10 rounded-xl bg-[#030712] border border-[#1E293B] flex items-center justify-center shadow-inner shrink-0">
+              <div key={i} className="flex items-center gap-3 bg-[#0F172A]/40 border border-[#1E293B] p-3 sm:p-3.5 rounded-2xl backdrop-blur-sm shadow-sm">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#030712] border border-[#1E293B] flex items-center justify-center shadow-inner shrink-0">
                   {f.icon}
                 </div>
-                <span className="text-sm font-semibold text-gray-300">{f.text}</span>
+                <span className="text-xs sm:text-sm font-semibold text-gray-300">{f.text}</span>
               </div>
             ))}
           </div>
@@ -141,7 +141,7 @@ export default function LoginPage() {
           {/* Card glow */}
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 via-transparent to-indigo-600/20 rounded-3xl blur-2xl transform rotate-3 scale-105 -z-10 pointer-events-none" />
 
-          <div className="bg-[#0F172A]/60 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 sm:p-12 shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden relative">
+          <div className="bg-[#0F172A]/60 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 sm:p-8 lg:p-12 shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden relative">
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-white font-['Syne'] tracking-tight">Welcome back</h2>
               <p className="text-gray-400 text-sm font-medium mt-2">Sign in with your email and password.</p>

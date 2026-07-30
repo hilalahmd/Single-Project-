@@ -269,10 +269,10 @@ export default function FoodAIPage() {
                 </p>
 
                 {/* Buttons */}
-                <div className="flex flex-wrap items-center justify-center gap-3 w-full sm:w-auto">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
                   <button
                     onClick={handleUploadClick}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 rounded-full text-sm font-bold transition-all duration-200 active:scale-95 hover:-translate-y-0.5"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 min-h-[44px] rounded-full text-sm font-bold transition-all duration-200 active:scale-95 hover:-translate-y-0.5 cursor-pointer"
                     style={{
                       border: '1px solid rgba(255,255,255,0.15)',
                       color: '#e5e7eb',
@@ -285,7 +285,7 @@ export default function FoodAIPage() {
                   </button>
                   <button
                     onClick={handleUploadClick}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 rounded-full text-sm font-black transition-all duration-200 active:scale-95 hover:-translate-y-0.5 group"
+                    className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 min-h-[44px] rounded-full text-sm font-black transition-all duration-200 active:scale-95 hover:-translate-y-0.5 group cursor-pointer"
                     style={{
                       background: 'linear-gradient(135deg, #C4F135, #a3d625)',
                       color: '#0a0a0b',

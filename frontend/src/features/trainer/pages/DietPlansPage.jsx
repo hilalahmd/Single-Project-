@@ -85,14 +85,14 @@ export default function DietPlansPage() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-bold text-white">Diet Plans</h1>
+          <h1 className="text-[28px] sm:text-[32px] font-bold text-white tracking-tight">Diet Plans</h1>
           <p className="text-[14px] text-gray-400 mt-1">Manage nutrition protocols assigned to your clients.</p>
         </div>
         <button
           onClick={() => handleTrigger('Create New Diet Plan')}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-green-500 hover:to-green-400 text-white text-[14px] font-semibold rounded-lg transition-all shadow-sm cursor-pointer"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-green-500 hover:to-green-400 text-white text-[14px] font-semibold rounded-lg transition-all shadow-sm cursor-pointer self-start sm:self-auto min-h-[44px]"
         >
           <Plus size={18} /> New Plan
         </button>
@@ -106,7 +106,7 @@ export default function DietPlansPage() {
           <p className="text-sm mt-1 text-gray-500">Create and assign a nutrition plan to get started.</p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {plans.map(p => (
             <Card key={p._id} className="hover:border-green-600/50 group transition-colors">
               <div className="flex items-start justify-between mb-4">
@@ -123,7 +123,7 @@ export default function DietPlansPage() {
                 </div>
                 <button
                   onClick={() => handleTrigger(`Options for "${p.title}"`)}
-                  className="text-gray-500 hover:text-white transition-colors cursor-pointer"
+                  className="text-gray-500 hover:text-white transition-colors cursor-pointer p-2 min-w-[36px] min-h-[36px] flex items-center justify-center"
                 >
                   <MoreHorizontal size={18} />
                 </button>
@@ -137,7 +137,7 @@ export default function DietPlansPage() {
 
               {/* Nutrition targets */}
               {p.nutritionTargets?.calories && (
-                <div className="grid grid-cols-4 gap-2 mb-5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
                   {[
                     { label: 'Kcal', value: p.nutritionTargets.calories },
                     { label: 'Protein', value: `${p.nutritionTargets.protein}g` },

@@ -93,8 +93,8 @@ export default function UserManagementPage() {
   // Filtering is now handled professionally by the backend API!
 
   return (
-    <div className="max-w-7xl mx-auto relative overflow-hidden flex h-[calc(100vh-6rem)] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 bg-[#F9FAFB]">
-      <div className={`flex-1 overflow-y-auto space-y-8 pr-4 transition-all duration-300 ${selectedUser ? 'mr-96' : ''}`}>
+    <div className="max-w-7xl mx-auto relative overflow-hidden flex h-auto min-h-[calc(100vh-6rem)] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 bg-[#F9FAFB]">
+      <div className={`flex-1 overflow-y-auto space-y-8 pr-0 sm:pr-4 transition-all duration-300 ${selectedUser ? 'lg:mr-96' : ''}`}>
         <div>
           <h1 className="text-3xl font-bold text-black tracking-tight">User Management</h1>
           <p className="text-gray-500 mt-1 font-medium">Manage all clients and trainers.</p>
@@ -205,7 +205,7 @@ export default function UserManagementPage() {
       </div>
 
       {/* Slide-out Panel */}
-      <div className={`absolute top-0 right-0 h-full w-96 bg-white border-l border-gray-200 shadow-2xl transform transition-transform duration-300 flex flex-col z-10 ${selectedUser ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed lg:absolute top-0 right-0 h-full w-full sm:w-96 bg-white border-l border-gray-200 shadow-2xl transform transition-transform duration-300 flex flex-col z-50 ${selectedUser ? 'translate-x-0' : 'translate-x-full'}`}>
         {selectedUser && (
           <>
             <div className="flex justify-between items-center p-6 border-b border-gray-200">

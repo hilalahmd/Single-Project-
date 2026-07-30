@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import BeforeAfterSlider from '../components/BeforeAfterSlider'
+import PricingSection from '../sections/PricingSection'
 import API from '../../../shared/utils/api'
 
 let hasAnimatedIntro = false;
@@ -295,8 +296,8 @@ export default function LandingPage() {
           muted
           playsInline
           className={`absolute inset-0 w-full h-full object-cover z-0 transition-all duration-700 ${
-            currentSlide === 1 ? 'filter grayscale contrast-125 brightness-75 scale-105 opacity-80' : 
-            currentSlide === 2 ? 'opacity-0' : 'opacity-60'
+            currentSlide === 1 ? 'filter grayscale contrast-110 brightness-95 opacity-90 scale-105' : 
+            currentSlide === 2 ? 'opacity-0' : 'opacity-80'
           }`}
         >
           <source src="/videos/hero-bg.mp4" type="video/mp4" />
@@ -332,7 +333,10 @@ export default function LandingPage() {
               <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 {/* Left Column: Interactive Client Transformation Slider */}
                 <div className="order-2 lg:order-1 relative">
-                  <BeforeAfterSlider />
+                  <BeforeAfterSlider 
+                    beforeImage="/images/athlete-chubby.png" 
+                    afterImage="/images/athlete-fit.png" 
+                  />
                 </div>
 
                 {/* Right Column: Pure White Text & CTA */}
@@ -464,110 +468,7 @@ export default function LandingPage() {
 
         {/* SLIDE 4: Pricing */}
         <Slide isActive={currentSlide === 4}>
-          <div className="w-full h-full flex flex-col justify-center bg-[#09090b] relative z-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-              <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-white mb-4 tracking-tight">Simple Pricing</h2>
-                <p className="text-gray-400 text-lg font-medium">No hidden fees.</p>
-              </div>
-              <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
-                
-                {/* Free */}
-                <div className="p-8 flex flex-col bg-[#111827] border border-[#1F2937] rounded-xl h-full">
-                  <div className="mb-2">
-                    <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-2">Free</span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-6xl font-black text-white leading-none tracking-tighter">₹0</span>
-                      <span className="text-gray-400 font-medium text-sm">/month</span>
-                    </div>
-                  </div>
-                  <ul className="space-y-4 mb-10 flex-1 mt-8">
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>BMI/BMR calculators</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>AI diet plan (3/month)</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>Browse trainers</span>
-                    </li>
-                  </ul>
-                  <button className="w-full py-3.5 rounded-xl border border-white/20 bg-transparent text-white font-bold hover:bg-white hover:text-black transition-colors" onClick={() => navigate('/auth/register')}>Get Started</button>
-                </div>
-
-                {/* Wellness */}
-                <div className="p-8 flex flex-col bg-[#111827] border border-[#1F2937] rounded-xl h-full relative md:scale-[1.04] scale-[1.02] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-10">
-                  <div className="absolute top-0 right-0 bg-[#F97316] text-white text-[10px] font-bold px-4 py-1.5 rounded-tr-xl rounded-bl-xl uppercase tracking-widest shadow-md">
-                    Popular
-                  </div>
-                  <div className="mb-2">
-                    <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-2">Wellness</span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-6xl font-black text-white leading-none tracking-tighter">₹999</span>
-                      <span className="text-gray-400 font-medium text-sm">/month</span>
-                    </div>
-                  </div>
-                  <ul className="space-y-4 mb-10 flex-1 mt-8">
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-[#F97316] shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span className="text-white font-bold">Dedicated wellness coach</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>Diet + workout plan</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>Progress tracking</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>AI food analysis</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>Chat support</span>
-                    </li>
-                  </ul>
-                  <button className="w-full py-3.5 rounded-xl bg-[#F97316] text-white font-bold hover:bg-[#EA580C] shadow-lg transition-colors" onClick={() => navigate('/trainers?type=wellness')}>Browse Wellness Coaches</button>
-                </div>
-
-                {/* PT */}
-                <div className="p-8 flex flex-col bg-[#111827] border border-[#1F2937] rounded-xl h-full">
-                  <div className="mb-2">
-                    <span className="text-sm font-bold text-gray-400 uppercase tracking-widest block mb-2">Personal Training</span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-6xl font-black text-white leading-none tracking-tighter">₹2499</span>
-                      <span className="text-gray-400 font-medium text-sm">/month</span>
-                    </div>
-                  </div>
-                  <ul className="space-y-4 mb-10 flex-1 mt-8">
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>Everything in Wellness</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span className="text-white font-bold">Live 1-on-1 video sessions</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>Real-time form correction</span>
-                    </li>
-                    <li className="flex items-start gap-3 text-gray-300 font-medium">
-                      <Check size={18} className="text-gray-500 shrink-0 mt-0.5" strokeWidth={2.5} />
-                      <span>Priority support</span>
-                    </li>
-                  </ul>
-                  <button className="w-full py-3.5 rounded-xl border border-white/20 bg-transparent text-white font-bold hover:bg-white hover:text-black transition-colors" onClick={() => navigate('/trainers?type=personal_training')}>Browse PT Coaches</button>
-                </div>
-
-              </div>
-            </div>
-          </div>
+          <PricingSection />
         </Slide>
 
         {/* SLIDE 5: Footer CTA */}

@@ -234,16 +234,16 @@ export default function TrainerSchedulePage() {
     <div className="space-y-8 max-w-4xl mx-auto">
 
       {/* ── Page Header ── */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-bold text-white tracking-tight">Schedule</h1>
+          <h1 className="text-[28px] sm:text-[32px] font-bold text-white tracking-tight">Schedule</h1>
           <p className="text-[14px] text-gray-400 mt-1">
             Set your availability and manage booking requests.
           </p>
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] hover:bg-blue-600 text-white text-[14px] font-bold rounded-lg transition-all shadow-sm cursor-pointer"
+          className="flex items-center justify-center gap-2 px-6 py-3 min-h-[44px] bg-[#2563EB] hover:bg-blue-600 text-white text-[14px] font-bold rounded-lg transition-all shadow-sm cursor-pointer self-start sm:self-auto"
         >
           <Plus size={18} /> Set Availability
         </button>

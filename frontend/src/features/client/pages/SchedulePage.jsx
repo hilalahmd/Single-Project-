@@ -327,7 +327,7 @@ export default function SchedulePage() {
                     </div>
 
                     {/* Right: status + actions */}
-                    <div className="flex flex-col items-end gap-2 shrink-0">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 shrink-0">
                       {/* Status badge */}
                       <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wide ${statusPill[booking.status] || ''}`}>
                         {booking.status}
@@ -344,7 +344,7 @@ export default function SchedulePage() {
                           return (
                             <button
                               onClick={() => navigate(`/dashboard/video/${slot._id}`)}
-                              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[12px] font-black transition-all shadow-[0_4px_12px_rgba(34,197,94,0.3)] cursor-pointer"
+                              className="flex items-center justify-center gap-1.5 px-4 py-2.5 min-h-[44px] bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-[12px] font-black transition-all shadow-[0_4px_12px_rgba(34,197,94,0.3)] cursor-pointer"
                             >
                               <Video size={13} />
                               Join Call

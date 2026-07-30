@@ -90,14 +90,14 @@ export default function ProgressPage() {
           style={{ background: 'radial-gradient(circle, rgba(196,241,53,0.05) 0%, transparent 70%)' }} />
       </div>
 
-      <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-[32px] font-black text-white tracking-tight font-['Syne']">Progress Analytics</h1>
+          <h1 className="text-[28px] sm:text-[32px] font-black text-white tracking-tight font-['Syne']">Progress Analytics</h1>
           <p className="text-gray-400 text-sm mt-1">Track your weight and fitness journey.</p>
         </div>
         <button 
           onClick={() => setShowLogModal(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-black transition-all active:scale-95"
+          className="flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] rounded-full text-[13px] font-black transition-all active:scale-95 cursor-pointer self-start sm:self-auto"
           style={{ background: 'linear-gradient(135deg, #C4F135, #a3d625)', color: '#0a0a0b', boxShadow: '0 4px 16px rgba(196,241,53,0.2)' }}
         >
           <Plus size={16} />

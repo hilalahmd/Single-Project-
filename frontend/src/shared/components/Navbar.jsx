@@ -215,10 +215,11 @@ export default function Navbar() {
           </div>
 
           {/* Mobile hamburger */}
-          <div className="ml-auto md:hidden">
+          <div className="ml-auto md:hidden flex items-center gap-2">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className={`p-2 transition-colors duration-300 text-white`}
+              className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors duration-300 text-white hover:bg-white/10 active:bg-white/20`}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
             >
               {menuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -226,24 +227,27 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile dropdown */}
+      {/* Mobile Menu Backdrop & Drawer */}
       {menuOpen && (
-         <div className={`md:hidden absolute top-full left-0 w-full p-4 flex flex-col gap-4 border-b ${isHome ? 'bg-[#07080C] border-white/10' : 'bg-white shadow-sm border-gray-100'}`}>
+        <>
+          <div 
+            className="md:hidden fixed inset-0 top-[100%] bg-black/60 backdrop-blur-sm z-40 animate-in fade-in"
+            onClick={() => setMenuOpen(false)}
+          />
+          <div className={`md:hidden absolute top-full left-0 w-full p-6 flex flex-col gap-4 border-b shadow-2xl z-50 animate-in slide-in-from-top-2 ${isHome ? 'bg-[#090A0F] border-white/10' : 'bg-white shadow-lg border-gray-100'}`}>
             {/* Nav Links */}
             {getNavLinks(user, role, subscriptionTier).map(({ label, to }) => (
                <NavLink 
                  key={to} 
                  to={to} 
                  onClick={() => setMenuOpen(false)} 
-                 className={({ isActive }) => `text-sm font-bold uppercase tracking-widest ${isActive ? 'text-[#F97316]' : `${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}`}
+                 className={({ isActive }) => `text-sm font-bold uppercase tracking-widest py-2.5 min-h-[44px] flex items-center transition-colors ${isActive ? 'text-[#F97316]' : `${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}`}
                >
                  {label}
                </NavLink>
             ))}
             <hr className={isHome ? 'border-white/10' : 'border-gray-100'} />
-            
 
-            
             {user ? (
               role === 'user' ? (
                 <button 
@@ -251,7 +255,7 @@ export default function Navbar() {
                     setMenuOpen(false)
                     navigate('/dashboard')
                   }} 
-                  className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] transition-colors duration-200 cursor-pointer"
+                  className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3.5 min-h-[44px] rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center"
                 >
                   Dashboard
                 </button>
@@ -262,22 +266,23 @@ export default function Navbar() {
                     const dashboardUrl = role === 'admin' ? '/admin' : '/trainer/dashboard'
                     navigate(dashboardUrl)
                   }} 
-                  className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] transition-colors duration-200 cursor-pointer"
+                  className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3.5 min-h-[44px] rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center"
                 >
                   Dashboard
                 </button>
               )
             ) : (
-              <>
-                <Link to="/auth/login" onClick={() => setMenuOpen(false)} className={`text-sm font-bold uppercase tracking-widest ${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}>
+              <div className="flex flex-col gap-3">
+                <Link to="/auth/login" onClick={() => setMenuOpen(false)} className={`text-sm font-bold uppercase tracking-widest py-2.5 min-h-[44px] flex items-center ${isHome ? 'text-gray-300 hover:text-white' : 'text-[#64748B] hover:text-[#F97316]'}`}>
                   Log in
                 </Link>
-                <button onClick={() => { setMenuOpen(false); navigate('/auth/register'); }} className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] transition-colors duration-200 cursor-pointer">
+                <button onClick={() => { setMenuOpen(false); navigate('/auth/register'); }} className="bg-[#F97316] text-white shadow-[0_4px_14px_rgba(249,115,22,0.3)] text-center py-3.5 min-h-[44px] rounded-full font-bold text-xs uppercase tracking-wider hover:bg-[#EA580C] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center">
                   Get Started
                 </button>
-              </>
+              </div>
             )}
-         </div>
+          </div>
+        </>
       )}
     </header>
   )

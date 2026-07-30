@@ -296,26 +296,26 @@ export default function AIAssistantPage() {
                   </div>
                 </motion.div>
               ) : (
-                <div className="space-y-6 pb-20 max-w-3xl mx-auto w-full">
+                <div className="space-y-6 pb-28 sm:pb-24 max-w-3xl mx-auto w-full">
                   {messages.map((m, i) => (
                     <motion.div 
                       initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                       key={i} 
-                      className={`flex gap-4 w-full ${m.isUser ? 'justify-end' : 'justify-start'}`}
+                      className={`flex gap-3 sm:gap-4 w-full ${m.isUser ? 'justify-end' : 'justify-start'}`}
                     >
                       {!m.isUser && (
-                        <div className="w-8 h-8 bg-[#141419] border border-white/5 rounded-[10px] flex items-center justify-center shrink-0 mt-1">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#141419] border border-white/5 rounded-[10px] flex items-center justify-center shrink-0 mt-1">
                           <Bot size={16} className="text-white" />
                         </div>
                       )}
-                      <div className={`px-5 py-4 text-[15px] leading-[1.6] ${
+                      <div className={`px-4 sm:px-5 py-3.5 sm:py-4 text-sm sm:text-[15px] leading-[1.6] ${
                         m.isUser 
-                          ? 'bg-gradient-to-br from-[#FF7A1A] to-[#EA580C] text-white rounded-3xl rounded-tr-sm max-w-[70%] break-words' 
+                          ? 'bg-gradient-to-br from-[#FF7A1A] to-[#EA580C] text-white rounded-3xl rounded-tr-sm max-w-[85%] sm:max-w-[70%] break-words' 
                           : 'bg-[#141419] border border-white/5 text-gray-200 rounded-3xl rounded-tl-sm w-full break-words'
                       }`}>
-                        <div className="whitespace-pre-wrap leading-relaxed text-[15px]">{renderFormattedText(m.text)}</div>
+                        <div className="whitespace-pre-wrap leading-relaxed text-sm sm:text-[15px]">{renderFormattedText(m.text)}</div>
                       </div>
                     </motion.div>
                   ))}
@@ -323,12 +323,12 @@ export default function AIAssistantPage() {
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex gap-4 w-full justify-start"
+                      className="flex gap-3 sm:gap-4 w-full justify-start"
                     >
-                      <div className="w-8 h-8 bg-[#141419] border border-white/5 rounded-[10px] flex items-center justify-center shrink-0 mt-1">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#141419] border border-white/5 rounded-[10px] flex items-center justify-center shrink-0 mt-1">
                         <Loader2 size={14} className="text-[#FF7A1A] animate-spin" />
                       </div>
-                      <div className="px-5 py-5 bg-[#141419] border border-white/5 rounded-3xl rounded-tl-sm flex items-center gap-2">
+                      <div className="px-5 py-4 bg-[#141419] border border-white/5 rounded-3xl rounded-tl-sm flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce"></div>
                         <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.15s'}}></div>
                         <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.3s'}}></div>
@@ -342,28 +342,29 @@ export default function AIAssistantPage() {
           </div>
 
           {/* Input Area */}
-          <div className="p-4 sm:p-6 bg-gradient-to-t from-[#0B0B0F] to-transparent absolute bottom-0 left-0 right-0">
+          <div className="p-3 sm:p-6 bg-gradient-to-t from-[#0B0B0F] via-[#0B0B0F]/90 to-transparent absolute bottom-0 left-0 right-0 z-20">
             <div className="max-w-3xl mx-auto relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-[#FF7A1A]/0 via-[#FF7A1A]/10 to-[#FF7A1A]/0 rounded-[9999px] blur opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-              <div className="relative flex items-center bg-[#141419] border border-white/10 rounded-[9999px] pr-2 focus-within:border-[#FF7A1A]/50 focus-within:bg-[#1A1A22] transition-colors shadow-lg">
+              <div className="relative flex items-center bg-[#141419] border border-white/10 rounded-[9999px] pr-1.5 sm:pr-2 focus-within:border-[#FF7A1A]/50 focus-within:bg-[#1A1A22] transition-colors shadow-lg">
                 <input 
                   type="text"
                   placeholder="Message FitForge AI..." 
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage(input)}
-                  className="w-full bg-transparent pl-6 py-4 text-[15px] text-white placeholder-[#9CA3AF] focus:outline-none"
+                  className="w-full bg-transparent pl-4 sm:pl-6 py-3 sm:py-4 text-sm sm:text-[15px] text-white placeholder-[#9CA3AF] focus:outline-none"
                 />
                 <motion.button 
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleSendMessage(input)} 
                   disabled={isLoading || !input.trim()} 
-                  className="p-3 bg-[#FF7A1A] text-white rounded-full transition-colors hover:bg-[#EA580C] disabled:opacity-30 disabled:bg-white/10 disabled:text-gray-400 shrink-0 shadow-[0_2px_10px_rgba(255,122,26,0.3)] disabled:shadow-none"
+                  className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center bg-[#FF7A1A] text-white rounded-full transition-colors hover:bg-[#EA580C] disabled:opacity-30 disabled:bg-white/10 disabled:text-gray-400 shrink-0 shadow-[0_2px_10px_rgba(255,122,26,0.3)] disabled:shadow-none cursor-pointer"
+                  aria-label="Send message"
                 >
                   <Send size={18} className="translate-x-[1px] translate-y-[1px]" />
                 </motion.button>
               </div>
-              <div className="text-center mt-3">
+              <div className="text-center mt-2">
                 <span className="text-[10px] font-medium text-[#9CA3AF]">
                   FitForge AI can make mistakes. Verify important information.
                 </span>

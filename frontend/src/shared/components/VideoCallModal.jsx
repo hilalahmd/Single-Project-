@@ -268,64 +268,64 @@ export default function VideoCallModal({ callData, onClose }) {
       </div>
 
       {/* ── Local PiP (you) ──────────────────────────────────────────── */}
-      <div className="absolute top-20 right-5 w-36 md:w-48 aspect-video bg-[#111827] rounded-2xl overflow-hidden shadow-2xl border border-white/10 z-20 group">
+      <div className="absolute top-16 sm:top-20 right-3 sm:right-5 w-28 sm:w-36 md:w-48 aspect-video bg-[#111827] rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10 z-20 group">
         {cameraOn
           ? <video ref={localVideoRef} autoPlay playsInline muted className="w-full h-full object-cover scale-x-[-1]" />
           : (
             <div className="w-full h-full flex items-center justify-center bg-[#0F172A]">
-              <div className="w-10 h-10 rounded-full bg-[#1E293B] flex items-center justify-center">
-                <span className="text-white font-bold text-base">{user?.name?.charAt(0) || 'Y'}</span>
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#1E293B] flex items-center justify-center">
+                <span className="text-white font-bold text-xs sm:text-base">{user?.name?.charAt(0) || 'Y'}</span>
               </div>
             </div>
           )
         }
         {/* Muted indicator */}
         {!micOn && (
-          <div className="absolute top-2 right-2 bg-red-500 p-0.5 rounded-md">
-            <MicOff size={12} className="text-white" />
+          <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-red-500 p-0.5 rounded-md">
+            <MicOff size={10} className="text-white sm:w-3 sm:h-3" />
           </div>
         )}
-        <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-0.5 rounded-md">
-          <span className="text-white text-[10px] font-semibold">You</span>
+        <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 bg-black/70 px-1.5 py-0.5 rounded-md">
+          <span className="text-white text-[9px] sm:text-[10px] font-semibold">You</span>
         </div>
       </div>
 
       {/* ── Controls Bar ──────────────────────────────────────────────── */}
-      <div className="h-28 bg-black/80 backdrop-blur-xl border-t border-white/5 flex items-center justify-center gap-5 px-6">
+      <div className="h-24 sm:h-28 bg-black/80 backdrop-blur-xl border-t border-white/5 flex items-center justify-center gap-4 sm:gap-6 px-4">
 
         {/* Mic */}
         <button
           onClick={toggleMic}
           title={micOn ? 'Mute Mic' : 'Unmute Mic'}
-          className={`w-14 h-14 rounded-full flex flex-col items-center justify-center gap-1 transition-all duration-200 border ${
+          className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-200 border cursor-pointer ${
             micOn
-              ? 'bg-white/10 border-white/10 text-white hover:bg-white/20'
-              : 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30'
+              ? 'bg-white/10 border-white/10 text-white hover:bg-white/20 active:scale-95'
+              : 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30 active:scale-95'
           }`}
         >
-          {micOn ? <Mic size={22} /> : <MicOff size={22} />}
+          {micOn ? <Mic size={20} className="sm:w-5 sm:h-5" /> : <MicOff size={20} className="sm:w-5 sm:h-5" />}
         </button>
 
         {/* End Call */}
         <button
           onClick={endCall}
           title="End Call"
-          className="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all duration-200 shadow-[0_0_24px_rgba(220,38,38,0.5)] hover:scale-105 active:scale-95 border border-red-500/30"
+          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all duration-200 shadow-[0_0_24px_rgba(220,38,38,0.5)] hover:scale-105 active:scale-95 border border-red-500/30 cursor-pointer"
         >
-          <PhoneOff size={26} />
+          <PhoneOff size={22} className="sm:w-6 sm:h-6" />
         </button>
 
         {/* Camera */}
         <button
           onClick={toggleCamera}
           title={cameraOn ? 'Turn off Camera' : 'Turn on Camera'}
-          className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-200 border ${
+          className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-200 border cursor-pointer ${
             cameraOn
-              ? 'bg-white/10 border-white/10 text-white hover:bg-white/20'
-              : 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30'
+              ? 'bg-white/10 border-white/10 text-white hover:bg-white/20 active:scale-95'
+              : 'bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30 active:scale-95'
           }`}
         >
-          {cameraOn ? <Video size={22} /> : <VideoOff size={22} />}
+          {cameraOn ? <Video size={20} className="sm:w-5 sm:h-5" /> : <VideoOff size={20} className="sm:w-5 sm:h-5" />}
         </button>
 
       </div>

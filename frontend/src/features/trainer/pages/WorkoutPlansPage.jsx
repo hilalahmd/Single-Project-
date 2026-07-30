@@ -81,14 +81,14 @@ export default function WorkoutPlansPage() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-[32px] font-bold text-white">Assigned Workouts</h1>
+          <h1 className="text-[28px] sm:text-[32px] font-bold text-white tracking-tight">Assigned Workouts</h1>
           <p className="text-[14px] text-gray-400 mt-1">Manage plans you have assigned to clients.</p>
         </div>
         <button 
           onClick={() => handleTrigger('Create New Workout Plan')}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#2563EB] to-blue-500 hover:to-blue-400 text-white text-[14px] font-semibold rounded-lg transition-all shadow-sm cursor-pointer"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#2563EB] to-blue-500 hover:to-blue-400 text-white text-[14px] font-semibold rounded-lg transition-all shadow-sm cursor-pointer self-start sm:self-auto min-h-[44px]"
         >
           <Plus size={18} /> New Plan
         </button>
