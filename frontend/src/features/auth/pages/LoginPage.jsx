@@ -2,12 +2,25 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, Eye, EyeOff, Target, Dumbbell, Activity, Heart, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../../../shared/context/AuthContext'
+import { z } from 'zod'
+
+// Zod login schema — mirrors backend loginSchema (email format + non-empty password)
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email is required.')
+    .email('Please enter a valid email address.'),
+  password: z
+    .string()
+    .min(1, 'Password is required.'),
+})
 
 export default function LoginPage() {
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw]     = useState(false)
   const [loading, setLoading]   = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({})
   const { login }  = useAuth()
   const navigate   = useNavigate()
   const trackRef   = useRef(null)
@@ -33,7 +46,20 @@ export default function LoginPage() {
 
   const handleLogin = async (e) => {
     e?.preventDefault()
-    if (!email || !password) return
+
+    // Client-side Zod validation — runs before any API call
+    const result = loginSchema.safeParse({ email, password })
+    if (!result.success) {
+      const errs = {}
+      for (const issue of result.error.issues) {
+        const field = issue.path[0]
+        if (field && !errs[field]) errs[field] = issue.message
+      }
+      setFieldErrors(errs)
+      return
+    }
+    setFieldErrors({})
+
     setLoading(true)
     try {
       const data = await login(email, password)
@@ -151,17 +177,25 @@ export default function LoginPage() {
               {/* Email */}
               <div>
                 <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Email Address</label>
-                <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors">
+                <div className={`relative flex rounded-2xl overflow-hidden border bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors ${
+                  fieldErrors.email ? 'border-red-500/60' : 'border-[#1E293B]'
+                }`}>
                   <input
                     type="email"
                     autoComplete="email"
                     placeholder="you@example.com"
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    onChange={e => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: '' })) }}
                     className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium"
                     required
                   />
                 </div>
+                {fieldErrors.email && (
+                  <p className="text-red-400 text-xs font-medium mt-1.5 ml-1 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               {/* Password */}
@@ -172,13 +206,15 @@ export default function LoginPage() {
                     Forgot password?
                   </Link>
                 </div>
-                <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors">
+                <div className={`relative flex rounded-2xl overflow-hidden border bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors ${
+                  fieldErrors.password ? 'border-red-500/60' : 'border-[#1E293B]'
+                }`}>
                   <input
                     type={showPw ? 'text' : 'password'}
                     autoComplete="current-password"
                     placeholder="••••••••"
                     value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={e => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: '' })) }}
                     className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium"
                     required
                   />
@@ -190,12 +226,18 @@ export default function LoginPage() {
                     {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {fieldErrors.password && (
+                  <p className="text-red-400 text-xs font-medium mt-1.5 ml-1 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
 
               {/* Submit */}
               <button
                 type="submit"
-                disabled={!email || !password || loading}
+                disabled={loading}
                 className="w-full py-4 mt-2 bg-[#2563EB] text-white font-bold rounded-2xl hover:bg-blue-500 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] group"
               >
                 {loading

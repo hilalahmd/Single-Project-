@@ -3,6 +3,36 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Check, Target, Dumbbell, Activity, Heart, ArrowRight } from 'lucide-react'
 import { useAuth } from '../../../shared/context/AuthContext'
 import API from '../../../shared/utils/api'
+import { z } from 'zod'
+
+// ── Zod Schema for Step 1 (Account Details) ──────────────────────────────────
+// Frontend-only: includes phone + confirmPassword (not sent to backend)
+// Mirrors backend registerSchema rules (8-char min, uppercase, number)
+const registerStep1Schema = z.object({
+  fullName: z
+    .string()
+    .min(2, 'Full name must be at least 2 characters.'),
+  email: z
+    .string()
+    .min(1, 'Email is required.')
+    .email('Please enter a valid email address.'),
+  phone: z
+    .string()
+    .min(10, 'Enter a valid 10-digit phone number.')
+    .max(10, 'Enter a valid 10-digit phone number.')
+    .regex(/^\d+$/, 'Phone must contain only digits.'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters.')
+    .regex(/[A-Z]/, 'Must contain at least one uppercase letter.')
+    .regex(/[0-9]/, 'Must contain at least one number.'),
+  confirmPassword: z
+    .string()
+    .min(1, 'Please confirm your password.'),
+}).refine(
+  (data) => data.password === data.confirmPassword,
+  { message: 'Passwords do not match.', path: ['confirmPassword'] }
+)
 
 // ── Step Indicator ────────────────────────────────────────────────────────────
 function StepIndicator({ current, total }) {
@@ -163,6 +193,7 @@ export default function RegisterPage() {
   const [step, setStep]     = useState(1)
   const [done, setDone]     = useState(false)
   const [regError, setRegError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
   // Step 1
   const [form1, setForm1] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' })
@@ -182,7 +213,12 @@ export default function RegisterPage() {
   // Step 4
   const [form3, setForm3] = useState({ height: '', weight: '', age: '', gender: '', activityLevel: '' })
 
-  const f1 = (k) => (e) => { setForm1(p => ({ ...p, [k]: e.target.value })); setRegError('') }
+  // f1: updates form1 field AND clears both regError and its specific field error
+  const f1 = (k) => (e) => {
+    setForm1(p => ({ ...p, [k]: e.target.value }))
+    setRegError('')
+    setFieldErrors(p => ({ ...p, [k]: '' }))
+  }
   const f3 = (k) => (e) => setForm3(p => ({ ...p, [k]: e.target.value }))
 
   const validate = () => {
@@ -196,8 +232,24 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     setRegError('')
+    setFieldErrors({})
+
+    // ── Zod validation (field-specific, runs first) ──────────────────────────
+    const zodResult = registerStep1Schema.safeParse(form1)
+    if (!zodResult.success) {
+      const errs = {}
+      for (const issue of zodResult.error.issues) {
+        const field = issue.path[0]
+        if (field && !errs[field]) errs[field] = issue.message
+      }
+      setFieldErrors(errs)
+      return
+    }
+
+    // ── Existing validate() runs in parallel as safety net ───────────────────
     const err = validate()
     if (err) { setRegError(err); return }
+
     try {
       const data = await register(form1.fullName, form1.email, form1.password, 'user')
       if (data?.userId) { setUserId(data.userId); setStep(2) }
@@ -305,44 +357,84 @@ export default function RegisterPage() {
             {/* Full Name */}
             <div>
               <label className={labelCls}>Full Name</label>
-              <div className={fieldWrap}>
+              <div className={`relative flex rounded-2xl overflow-hidden border bg-white/80 dark:bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors ${
+                fieldErrors.fullName ? 'border-red-500/60' : 'border-gray-300 dark:border-[#1E293B]'
+              }`}>
                 <input type="text" placeholder="John Doe" value={form1.fullName} onChange={f1('fullName')} className={inputCls} />
               </div>
+              {fieldErrors.fullName && (
+                <p className="text-red-500 dark:text-red-400 text-xs font-medium mt-1.5 ml-1 flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {fieldErrors.fullName}
+                </p>
+              )}
             </div>
             {/* Email */}
             <div>
               <label className={labelCls}>Email</label>
-              <div className={fieldWrap}>
+              <div className={`relative flex rounded-2xl overflow-hidden border bg-white/80 dark:bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors ${
+                fieldErrors.email ? 'border-red-500/60' : 'border-gray-300 dark:border-[#1E293B]'
+              }`}>
                 <input type="email" placeholder="john@example.com" value={form1.email} onChange={f1('email')} className={inputCls} />
               </div>
+              {fieldErrors.email && (
+                <p className="text-red-500 dark:text-red-400 text-xs font-medium mt-1.5 ml-1 flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {fieldErrors.email}
+                </p>
+              )}
             </div>
             {/* Phone */}
             <div>
               <label className={labelCls}>Phone</label>
-              <div className={fieldWrap}>
+              <div className={`relative flex rounded-2xl overflow-hidden border bg-white/80 dark:bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors ${
+                fieldErrors.phone ? 'border-red-500/60' : 'border-gray-300 dark:border-[#1E293B]'
+              }`}>
                 <div className="px-4 py-4 border-r border-gray-300 dark:border-[#1E293B] bg-gray-50 dark:bg-[#0F172A] text-gray-600 dark:text-gray-500 font-bold text-sm shrink-0">+91</div>
                 <input type="tel" placeholder="9876543210" maxLength={10} value={form1.phone} onChange={f1('phone')} className={inputCls} />
               </div>
+              {fieldErrors.phone && (
+                <p className="text-red-500 dark:text-red-400 text-xs font-medium mt-1.5 ml-1 flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {fieldErrors.phone}
+                </p>
+              )}
             </div>
             {/* Password */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Password</label>
-                <div className={fieldWrap}>
+                <div className={`relative flex rounded-2xl overflow-hidden border bg-white/80 dark:bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors ${
+                  fieldErrors.password ? 'border-red-500/60' : 'border-gray-300 dark:border-[#1E293B]'
+                }`}>
                   <input type={showPw ? 'text' : 'password'} placeholder="••••••••" value={form1.password} onChange={f1('password')} className={inputCls} />
                   <button type="button" onClick={() => setShowPw(!showPw)} className="px-4 text-gray-500 hover:text-gray-300 transition-colors focus:outline-none">
                     {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                {fieldErrors.password && (
+                  <p className="text-red-500 dark:text-red-400 text-[10px] font-medium mt-1.5 ml-1 flex items-start gap-1 leading-tight">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
               <div>
                 <label className={labelCls}>Confirm</label>
-                <div className={fieldWrap}>
+                <div className={`relative flex rounded-2xl overflow-hidden border bg-white/80 dark:bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors ${
+                  fieldErrors.confirmPassword ? 'border-red-500/60' : 'border-gray-300 dark:border-[#1E293B]'
+                }`}>
                   <input type={showConfirm ? 'text' : 'password'} placeholder="••••••••" value={form1.confirmPassword} onChange={f1('confirmPassword')} className={inputCls} />
                   <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="px-4 text-gray-500 hover:text-gray-300 transition-colors focus:outline-none">
                     {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                {fieldErrors.confirmPassword && (
+                  <p className="text-red-500 dark:text-red-400 text-[10px] font-medium mt-1.5 ml-1 flex items-start gap-1 leading-tight">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {fieldErrors.confirmPassword}
+                  </p>
+                )}
               </div>
             </div>
           </div>

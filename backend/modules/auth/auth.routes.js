@@ -2,6 +2,8 @@ import express from 'express'
 import { register, verifyOTP, login, logout, getMe, forgotPassword, resetPassword } from './auth.controller.js'
 import { protect } from '../../middleware/authenticate.js'
 import rateLimit from 'express-rate-limit'
+import validateRequest from '../../validators/validateRequest.js'
+import { loginSchema, registerSchema } from '../../validators/auth.schemas.js'
 
 // Rate limiter for login/register — prevents brute-force attacks
 const authLimiter = rateLimit({
@@ -19,9 +21,9 @@ const passwordLimiter = rateLimit({
 
 const router = express.Router()
 
-router.post('/register', authLimiter, register)
+router.post('/register', authLimiter, validateRequest(registerSchema), register)
 router.post('/verify-otp', authLimiter, verifyOTP)
-router.post('/login', authLimiter, login)
+router.post('/login', authLimiter, validateRequest(loginSchema), login)
 router.post('/logout', logout)
 router.get('/me', protect, getMe)
 router.post('/forgot-password', passwordLimiter, forgotPassword)
