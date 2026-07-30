@@ -532,21 +532,40 @@ export default function LandingPage() {
 
       </div>
       
-      {/* Slide Indicators (Optional, highly recommended for slide navigation) */}
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col gap-3 z-50">
-        {[0, 1, 2, 3, 4, 5].map((index) => (
-          <button
-            key={index}
-            onClick={() => {
-              if (isAnimating.current || currentSlide === index) return;
-              setCurrentSlide(index);
-              isAnimating.current = true;
-              setTimeout(() => { isAnimating.current = false }, 1200);
-            }}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              currentSlide === index ? 'bg-[#F97316] scale-150 shadow-[0_0_10px_#F97316]' : 'bg-white/30 hover:bg-white/50'
-            }`}
-          />
+      {/* Slide Indicators (Slim Horizontal Dash Lines) */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-end gap-3.5 z-50">
+        {[
+          { idx: 0, label: 'Home' },
+          { idx: 1, label: 'Transformations' },
+          { idx: 2, label: 'Top Coaches' },
+          { idx: 3, label: 'How It Works' },
+          { idx: 4, label: 'Pricing Plans' },
+          { idx: 5, label: 'Reviews' }
+        ].map(({ idx, label }) => (
+          <div key={idx} className="relative flex items-center group">
+            {/* Tooltip label on hover */}
+            <span className="absolute right-12 opacity-0 group-hover:opacity-100 transition-all duration-300 text-[10px] font-bold tracking-widest uppercase text-white bg-black/80 px-2.5 py-1 rounded-md border border-white/20 shadow-lg pointer-events-none whitespace-nowrap -translate-x-1 group-hover:translate-x-0">
+              {label}
+            </span>
+
+            {/* Indicator Button - Hover automatically navigates to section without clicking */}
+            <button
+              onMouseEnter={() => {
+                if (currentSlide === idx) return;
+                setCurrentSlide(idx);
+              }}
+              onClick={() => {
+                if (currentSlide === idx) return;
+                setCurrentSlide(idx);
+              }}
+              aria-label={`Go to ${label}`}
+              className={`rounded-full transition-all duration-300 cursor-pointer ${
+                currentSlide === idx 
+                  ? 'w-8 h-1 bg-white shadow-[0_0_16px_rgba(255,255,255,1)] opacity-100' 
+                  : 'w-4 h-0.5 bg-white/30 group-hover:bg-white group-hover:w-8 group-hover:h-1 group-hover:shadow-[0_0_14px_rgba(255,255,255,0.9)] opacity-60 group-hover:opacity-100'
+              }`}
+            />
+          </div>
         ))}
       </div>
 
