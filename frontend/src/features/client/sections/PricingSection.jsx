@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Check, Sparkles, Shield, ArrowRight, Star, Video, Zap, Award, CheckCircle2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useAuth } from '../../../shared/context/AuthContext'
 
 export default function PricingSection() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [selectedPlanId, setSelectedPlanId] = useState('wellness')
   const [billingCycle, setBillingCycle] = useState('monthly') // 'monthly' | 'annual'
 
@@ -276,13 +278,25 @@ export default function PricingSection() {
                     ✦ <span className="text-white font-semibold">7-Day Free Trial</span> · Instant 1-Click Cancellation
                   </div>
 
-                  <button
-                    onClick={() => navigate(activePlan.route)}
-                    className="w-full sm:w-auto py-3 px-7 rounded-xl font-black text-xs uppercase tracking-wider text-white hover:text-white/80 transition-all flex items-center justify-center gap-2 group cursor-pointer"
-                  >
-                    <span className="underline underline-offset-4 decoration-white/40 group-hover:decoration-white">{activePlan.cta}</span>
-                    <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
-                  </button>
+                  {(() => {
+                    let ctaText = activePlan.cta
+                    let targetRoute = activePlan.route
+
+                    if (user && activePlan.id === 'free') {
+                      ctaText = 'Go to Dashboard'
+                      targetRoute = user.role === 'admin' ? '/admin' : user.role === 'user' ? '/dashboard' : '/trainer/dashboard'
+                    }
+
+                    return (
+                      <button
+                        onClick={() => navigate(targetRoute)}
+                        className="w-full sm:w-auto py-3 px-7 rounded-xl font-black text-xs uppercase tracking-wider text-white hover:text-white/80 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                      >
+                        <span className="underline underline-offset-4 decoration-white/40 group-hover:decoration-white">{ctaText}</span>
+                        <ArrowRight size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
+                      </button>
+                    )
+                  })()}
                 </div>
 
               </motion.div>
