@@ -123,6 +123,19 @@ export const verifyPayment = async (req, res) => {
         return res.status(404).json({ message: 'Payment record not found' })
       }
 
+      // Idempotency check: If payment was already verified, don't double-credit earnings or send duplicate notifications
+      if (payment.status === 'successful') {
+        const user = await User.findById(payment.user).populate({
+          path: 'assignedTrainer',
+          populate: { path: 'userId', select: 'name email avatar' }
+        })
+        return res.json({
+          success: true,
+          message: 'Payment already verified',
+          user
+        })
+      }
+
       // Update payment status
       payment.razorpayPaymentId = razorpay_payment_id
       payment.razorpaySignature = razorpay_signature
@@ -330,9 +343,22 @@ export const getTrainerTransactions = async (req, res) => {
       planTier: { $ne: 'platform_subscription' } 
     })
     .populate('user', 'name email avatar')
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
-    res.json(payments);
+    // Deduplicate by razorpayPaymentId or razorpayOrderId so duplicate entries are never shown twice
+    const uniquePayments = [];
+    const seenKeys = new Set();
+
+    for (const p of payments) {
+      const key = p.razorpayPaymentId || p.razorpayOrderId || p._id.toString();
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key);
+        uniquePayments.push(p);
+      }
+    }
+
+    res.json(uniquePayments);
   } catch (error) {
     console.error('Error fetching trainer transactions:', error);
     res.status(500).json({ message: 'Failed to fetch transactions' });

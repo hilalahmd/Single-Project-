@@ -498,7 +498,8 @@ export const getTrainerEarnings = async (req, res) => {
     // Check Subscription Status
     const isApproved = trainerProfile.status === 'approved';
     const expiresAt = trainerProfile.subscriptionExpiresAt;
-    const isSubscriptionActive = isApproved && expiresAt && new Date(expiresAt) > new Date();
+    // If expiresAt is not set for an approved trainer, allow active access (don't lock them out)
+    const isSubscriptionActive = isApproved && (!expiresAt || new Date(expiresAt) > new Date());
 
     // Fetch Payments to build history
     const payments = await Payment.find({ trainer: trainerProfile._id, status: 'successful' }).lean();

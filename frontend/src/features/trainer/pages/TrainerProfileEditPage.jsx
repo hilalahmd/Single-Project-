@@ -149,7 +149,7 @@ export default function TrainerProfileEditPage() {
 
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-[14px] font-semibold text-gray-300 mb-2">Wellness Plan Price ($/mo)</label>
+              <label className="block text-[14px] font-semibold text-gray-300 mb-2">Wellness Plan Price (₹/mo)</label>
               <input
                 type="number"
                 value={wellnessPrice}
@@ -158,7 +158,7 @@ export default function TrainerProfileEditPage() {
               />
             </div>
             <div>
-              <label className="block text-[14px] font-semibold text-gray-300 mb-2">Personal Training Price ($/mo)</label>
+              <label className="block text-[14px] font-semibold text-gray-300 mb-2">Personal Training Price (₹/mo)</label>
               <input
                 type="number"
                 value={personalPrice}

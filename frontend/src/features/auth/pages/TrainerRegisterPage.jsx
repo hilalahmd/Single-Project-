@@ -67,15 +67,21 @@ export default function TrainerRegisterPage() {
 
   const removeFile = (i) => setFiles(prev => prev.filter((_, idx) => idx !== i))
 
+  const [formErrors, setFormErrors] = useState({})
+
   const handleRegister = async () => {
+    setFormErrors({})
     if (form.password !== form.confirmPassword) {
-      alert("Passwords do not match");
+      setFormErrors({ confirmPassword: 'Passwords do not match' })
       return;
     }
     const data = await register(form.name, form.email, form.password, role)
     if (data.userId) {
       setUserId(data.userId)
       setStep(2)
+    } else if (data.errors) {
+      // Zod validation errors from backend — show field-specific messages
+      setFormErrors(data.errors)
     } else {
       alert(data.message)
     }
@@ -269,9 +275,10 @@ export default function TrainerRegisterPage() {
 
                 <div>
                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Full Name</label>
-                  <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors">
+                  <div className={`relative flex rounded-2xl overflow-hidden border ${formErrors.name ? 'border-red-500/70' : 'border-[#1E293B]'} bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors`}>
                     <input type="text" placeholder="e.g. Jane Smith" value={form.name} onChange={f('name')} className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium" />
                   </div>
+                  {formErrors.name && <p className="text-red-400 text-xs font-medium mt-1.5 ml-1">{formErrors.name}</p>}
                 </div>
 
                 <div>
@@ -284,9 +291,10 @@ export default function TrainerRegisterPage() {
 
                 <div>
                   <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Email Address</label>
-                  <div className="relative flex rounded-2xl overflow-hidden border border-[#1E293B] bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors">
+                  <div className={`relative flex rounded-2xl overflow-hidden border ${formErrors.email ? 'border-red-500/70' : 'border-[#1E293B]'} bg-[#030712]/80 backdrop-blur-sm focus-within:border-orange-500/50 transition-colors`}>
                     <input type="email" placeholder="coach@fitforge.com" value={form.email} onChange={f('email')} className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium" />
                   </div>
+                  {formErrors.email && <p className="text-red-400 text-xs font-medium mt-1.5 ml-1">{formErrors.email}</p>}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -298,6 +306,7 @@ export default function TrainerRegisterPage() {
                         {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
+                    {formErrors.password && <p className="text-red-400 text-xs font-medium mt-1.5 ml-1">{formErrors.password}</p>}
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Confirm</label>
@@ -307,6 +316,7 @@ export default function TrainerRegisterPage() {
                         {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
+                    {formErrors.confirmPassword && <p className="text-red-400 text-xs font-medium mt-1.5 ml-1">{formErrors.confirmPassword}</p>}
                   </div>
                 </div>
 

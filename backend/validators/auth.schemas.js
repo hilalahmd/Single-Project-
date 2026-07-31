@@ -25,8 +25,8 @@ export const loginSchema = z.object({
  */
 export const registerSchema = z.object({
   name: z
-    .string({ required_error: 'Name is required.' })
-    .min(2, 'Name must be at least 2 characters.')
+    .string({ required_error: 'Name is required1.' })
+    .min(2, 'Name must be at least  characters.')
     .max(60, 'Name must be under 60 characters.')
     .trim(),
 

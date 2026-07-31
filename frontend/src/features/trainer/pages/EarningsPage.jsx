@@ -176,6 +176,16 @@ export default function EarningsPage() {
       return setWithdrawError("Please fill all bank details")
     }
 
+    const cleanAccNo = bankDetails.accountNumber.trim()
+    if (!/^\d{9,18}$/.test(cleanAccNo)) {
+      return setWithdrawError("Invalid Account Number (must be between 9 and 18 numeric digits)")
+    }
+
+    const cleanIfsc = bankDetails.ifscCode.trim().toUpperCase()
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(cleanIfsc)) {
+      return setWithdrawError("Invalid IFSC Code (must be 11 characters, e.g. CNRB0001234, SBIN0001234)")
+    }
+
     setIsSubmitting(true)
     try {
       const res = await fetch(`${API}/payouts/request`, {
@@ -305,7 +315,7 @@ export default function EarningsPage() {
                     type="text" 
                     value={bankDetails.bankName}
                     onChange={(e) => setBankDetails({...bankDetails, bankName: e.target.value})}
-                    placeholder="SBI, HDFC..."
+                    placeholder="e.g. Canara Bank"
                     className="w-full bg-[#0F172A] border border-[#1E293B] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
                     required
                   />
@@ -314,10 +324,11 @@ export default function EarningsPage() {
                   <label className="text-xs font-bold text-gray-400 uppercase">IFSC Code</label>
                   <input 
                     type="text" 
+                    maxLength={11}
                     value={bankDetails.ifscCode}
-                    onChange={(e) => setBankDetails({...bankDetails, ifscCode: e.target.value})}
-                    placeholder="SBIN0001234"
-                    className="w-full bg-[#0F172A] border border-[#1E293B] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
+                    onChange={(e) => setBankDetails({...bankDetails, ifscCode: e.target.value.toUpperCase()})}
+                    placeholder="e.g. CNRB0001234"
+                    className="w-full bg-[#0F172A] border border-[#1E293B] rounded-xl px-4 py-3 text-white uppercase font-mono tracking-wider focus:outline-none focus:border-[#F97316] transition-colors"
                     required
                   />
                 </div>
@@ -327,10 +338,11 @@ export default function EarningsPage() {
                 <label className="text-xs font-bold text-gray-400 uppercase">Account Number</label>
                 <input 
                   type="text" 
+                  maxLength={18}
                   value={bankDetails.accountNumber}
-                  onChange={(e) => setBankDetails({...bankDetails, accountNumber: e.target.value})}
-                  placeholder="Enter Account Number"
-                  className="w-full bg-[#0F172A] border border-[#1E293B] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
+                  onChange={(e) => setBankDetails({...bankDetails, accountNumber: e.target.value.replace(/\D/g, '')})}
+                  placeholder="e.g. 989599839012"
+                  className="w-full bg-[#0F172A] border border-[#1E293B] rounded-xl px-4 py-3 text-white font-mono tracking-wider focus:outline-none focus:border-[#F97316] transition-colors"
                   required
                 />
               </div>
@@ -341,7 +353,7 @@ export default function EarningsPage() {
                   type="text" 
                   value={bankDetails.accountName}
                   onChange={(e) => setBankDetails({...bankDetails, accountName: e.target.value})}
-                  placeholder="Name as per bank"
+                  placeholder="e.g. Hilal Ahammed"
                   className="w-full bg-[#0F172A] border border-[#1E293B] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#F97316] transition-colors"
                   required
                 />

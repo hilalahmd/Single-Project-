@@ -6,9 +6,11 @@ import validateRequest from '../../validators/validateRequest.js'
 import { loginSchema, registerSchema } from '../../validators/auth.schemas.js'
 
 // Rate limiter for login/register — prevents brute-force attacks
+// Development-il 100 requests allow cheyyunnu, production-il 10 mathram
+const isDev = process.env.NODE_ENV !== 'production'
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Tightened from 20 to 10 — still generous for legitimate users
+  max: isDev ? 100 : 10, // Dev: 100, Prod: 10 — dev-il testing easy aavaan
   message: { message: 'Too many requests from this IP, please try again later.' }
 })
 

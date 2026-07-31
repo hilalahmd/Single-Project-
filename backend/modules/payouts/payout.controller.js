@@ -20,15 +20,43 @@ export const requestPayout = async (req, res) => {
       return res.status(400).json({ message: 'Insufficient balance' });
     }
 
-    // 3. Deduct from balance immediately to prevent double withdrawal
+    // 3. Strict Bank Details Validation
+    if (!bankDetails || typeof bankDetails !== 'object') {
+      return res.status(400).json({ message: 'Bank details are required' });
+    }
+
+    const { accountName, accountNumber, ifscCode, bankName } = bankDetails;
+
+    if (!accountName || !accountNumber || !ifscCode || !bankName) {
+      return res.status(400).json({ message: 'All bank details fields (Bank Name, Account Number, IFSC Code, Account Holder Name) are required' });
+    }
+
+    const cleanAccNo = accountNumber.toString().trim();
+    if (!/^\d{9,18}$/.test(cleanAccNo)) {
+      return res.status(400).json({ message: 'Invalid Account Number. Must be between 9 and 18 numeric digits.' });
+    }
+
+    const cleanIfsc = ifscCode.toString().trim().toUpperCase();
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(cleanIfsc)) {
+      return res.status(400).json({ message: 'Invalid IFSC Code. Must be a valid 11-character Indian IFSC code (e.g. CNRB0001234, SBIN0001234).' });
+    }
+
+    const sanitizedBankDetails = {
+      accountName: accountName.toString().trim(),
+      accountNumber: cleanAccNo,
+      ifscCode: cleanIfsc,
+      bankName: bankName.toString().trim()
+    };
+
+    // 4. Deduct from balance immediately to prevent double withdrawal
     trainer.earnings.balance -= amount;
     await trainer.save();
 
-    // 4. Create Payout Request
+    // 5. Create Payout Request
     const payout = await Payout.create({
       trainer: trainer._id,
       amount,
-      bankDetails,
+      bankDetails: sanitizedBankDetails,
       status: 'pending'
     });
 

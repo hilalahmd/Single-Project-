@@ -161,14 +161,25 @@ export default function PayoutManagementPage() {
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between border-b border-gray-100 pb-3">
                   <span className="text-gray-500 font-medium">Trainer Name</span>
-                  <span className="font-bold text-black">{selectedPayout.trainer?.userId?.name}</span>
+                  <span className="font-bold text-black">{selectedPayout.trainer?.userId?.name || 'Trainer'}</span>
                 </div>
-                <div className="flex justify-between border-b border-gray-100 pb-3">
-                  <span className="text-gray-500 font-medium">Bank Details</span>
-                  <div className="text-right">
-                    <div className="font-mono font-bold text-black">{selectedPayout.bankDetails?.accountNumber}</div>
-                    <div className="font-mono text-gray-500">{selectedPayout.bankDetails?.ifscCode}</div>
-                    <div className="text-gray-500">{selectedPayout.bankDetails?.bankName} ({selectedPayout.bankDetails?.accountName})</div>
+                
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200/60 space-y-2.5">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-500 font-semibold uppercase tracking-wider">Bank Name</span>
+                    <span className="font-bold text-gray-900">{selectedPayout.bankDetails?.bankName || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs border-t border-gray-200/40 pt-2">
+                    <span className="text-gray-500 font-semibold uppercase tracking-wider">Account Number</span>
+                    <span className="font-mono font-bold text-gray-900">{selectedPayout.bankDetails?.accountNumber || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs border-t border-gray-200/40 pt-2">
+                    <span className="text-gray-500 font-semibold uppercase tracking-wider">IFSC Code</span>
+                    <span className="font-mono font-bold text-blue-600 tracking-wide">{selectedPayout.bankDetails?.ifscCode?.toUpperCase() || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-xs border-t border-gray-200/40 pt-2">
+                    <span className="text-gray-500 font-semibold uppercase tracking-wider">Account Holder</span>
+                    <span className="font-bold text-gray-900">{selectedPayout.bankDetails?.accountName || 'N/A'}</span>
                   </div>
                 </div>
               </div>
