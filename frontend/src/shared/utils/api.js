@@ -1,6 +1,6 @@
 // Base URL string — default export
 // Used by most pages as: import API from '...'  →  fetch(`${API}/endpoint`)
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+const API = import.meta.env.VITE_API_URL || '/api'
 export default API
 
 // ─────────────────────────────────────────────────────────────────────────────
