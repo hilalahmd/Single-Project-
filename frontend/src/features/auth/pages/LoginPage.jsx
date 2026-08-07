@@ -79,7 +79,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#07080C] flex flex-col text-white font-['Inter'] selection:bg-[#2563EB] selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-black flex flex-col text-white font-['Inter'] selection:bg-white selection:text-black relative overflow-x-hidden">
 
       {/* ── Cinematic Background ── */}
       <div className="fixed inset-0 z-0 pointer-events-none will-change-transform transform-gpu">
@@ -87,37 +87,33 @@ export default function LoginPage() {
           ref={trackRef}
           width="100%" height="100%"
           preserveAspectRatio="none"
-          className="absolute top-0 h-full origin-center will-change-transform transform-gpu opacity-40 transition-transform duration-1000 ease-out"
+          className="absolute top-0 h-full origin-center will-change-transform transform-gpu opacity-30 transition-transform duration-1000 ease-out"
         >
           <g>
-            <line x1="50%" y1="0" x2="50%"  y2="100%" stroke="white" strokeWidth="2"  opacity="0.30" />
-            <line x1="50%" y1="0" x2="20%"  y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.30" />
-            <line x1="50%" y1="0" x2="-10%" y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.30" />
-            <line x1="50%" y1="0" x2="80%"  y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.30" />
-            <line x1="50%" y1="0" x2="110%" y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.30" />
-            <line x1="0" y1="30%" x2="100%" y2="30%" stroke="white" strokeWidth="1" opacity="0.15" />
-            <line x1="0" y1="60%" x2="100%" y2="60%" stroke="white" strokeWidth="2" opacity="0.15" />
-            <line x1="0" y1="90%" x2="100%" y2="90%" stroke="white" strokeWidth="4" opacity="0.15" />
+            <line x1="50%" y1="0" x2="50%"  y2="100%" stroke="white" strokeWidth="2"  opacity="0.25" />
+            <line x1="50%" y1="0" x2="20%"  y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.25" />
+            <line x1="50%" y1="0" x2="-10%" y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.25" />
+            <line x1="50%" y1="0" x2="80%"  y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.25" />
+            <line x1="50%" y1="0" x2="110%" y2="100%" stroke="white" strokeWidth="2"  strokeDasharray="10 10" opacity="0.25" />
+            <line x1="0" y1="30%" x2="100%" y2="30%" stroke="white" strokeWidth="1" opacity="0.1" />
+            <line x1="0" y1="60%" x2="100%" y2="60%" stroke="white" strokeWidth="2" opacity="0.1" />
+            <line x1="0" y1="90%" x2="100%" y2="90%" stroke="white" strokeWidth="4" opacity="0.1" />
           </g>
         </svg>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse,_transparent_10%,_rgba(7,8,12,0.95)_100%)] z-10 pointer-events-none" />
-        {/* Film Grain */}
-        <div
-          className="absolute inset-0 z-[70] opacity-[0.03] pointer-events-none transform-gpu"
-          style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")" }}
-        />
-        {/* Blue Orbs */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-600/15 blur-[150px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse,_transparent_10%,_rgba(0,0,0,0.95)_100%)] z-10 pointer-events-none" />
+        
+        {/* Soft White Ambient Glow */}
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-white/5 blur-[160px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-white/5 blur-[140px] rounded-full pointer-events-none" />
       </div>
 
       {/* ── Top Bar ── */}
       <header className="relative z-50 w-full pt-8 px-6 sm:px-12 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group">
-          <span className="text-2xl font-[900] tracking-tight text-white font-['Syne'] group-hover:text-blue-400 transition-colors">FITFORGE</span>
-          <span className="text-blue-400 font-bold text-[10px] tracking-widest uppercase ml-2 border border-blue-500/30 px-2 py-0.5 rounded-md bg-blue-500/10 hidden sm:block shadow-[0_0_10px_rgba(37,99,235,0.2)]">Member Login</span>
+          <span className="text-2xl font-black tracking-tight text-white font-['Syne'] group-hover:text-gray-300 transition-colors">FITFORGE</span>
+          <span className="text-white font-bold text-[10px] tracking-widest uppercase ml-2 border border-white/20 px-2.5 py-0.5 rounded-full bg-white/10 hidden sm:block shadow-sm">Member Login</span>
         </Link>
-        <Link to="/auth/register" className="text-sm font-bold text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">
+        <Link to="/auth/register" className="text-xs font-extrabold text-gray-400 hover:text-white uppercase tracking-wider transition-colors border-b border-transparent hover:border-white pb-0.5">
           Create account &rarr;
         </Link>
       </header>
@@ -128,35 +124,35 @@ export default function LoginPage() {
         {/* Left: Cinematic Copy */}
         <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left relative z-10">
           {/* Live badge */}
-          <div className="inline-flex items-center gap-2 bg-[#1E293B]/40 border border-[#2563EB]/30 rounded-full px-4 py-2 mb-8 shadow-[0_0_20px_rgba(37,99,235,0.15)] backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-8 shadow-lg backdrop-blur-md">
             <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
             </span>
-            <span className="text-blue-300 text-xs font-bold tracking-widest uppercase">500+ coaches active</span>
+            <span className="text-white text-[11px] font-extrabold tracking-widest uppercase">500+ coaches active</span>
           </div>
 
-          <h1 className="text-5xl sm:text-6xl font-black text-white font-['Syne'] leading-[1.1] mb-6 tracking-tight drop-shadow-2xl">
+          <h1 className="text-5xl sm:text-6xl font-black text-white font-['Syne'] leading-[1.1] mb-6 tracking-tight drop-shadow-2xl uppercase">
             Welcome to the{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">next level.</span>
+            <span className="text-gray-400">next level.</span>
           </h1>
-          <p className="text-gray-400 text-lg font-medium max-w-lg mb-12 leading-relaxed">
+          <p className="text-gray-400 text-base font-medium max-w-lg mb-12 leading-relaxed">
             Log in to connect with your dedicated coach, track your nutrition, and crush your fitness goals.
           </p>
 
           {/* Feature grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 w-full max-w-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full max-w-lg">
             {[
-              { icon: <Target size={20} className="text-blue-400"/>,    text: '1-on-1 Coaching' },
-              { icon: <Activity size={20} className="text-indigo-400"/>, text: 'AI Meal Analysis' },
-              { icon: <Dumbbell size={20} className="text-blue-400"/>,  text: 'Live Sessions' },
-              { icon: <Heart size={20} className="text-blue-400"/>,     text: 'Progress Tracking' },
+              { icon: <Target size={18} className="text-white"/>,    text: '1-on-1 Coaching' },
+              { icon: <Activity size={18} className="text-white"/>, text: 'AI Meal Analysis' },
+              { icon: <Dumbbell size={18} className="text-white"/>,  text: 'Live Sessions' },
+              { icon: <Heart size={18} className="text-white"/>,     text: 'Progress Tracking' },
             ].map((f, i) => (
-              <div key={i} className="flex items-center gap-3 bg-[#0F172A]/40 border border-[#1E293B] p-3 sm:p-3.5 rounded-2xl backdrop-blur-sm shadow-sm">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#030712] border border-[#1E293B] flex items-center justify-center shadow-inner shrink-0">
+              <div key={i} className="flex items-center gap-3 bg-[#0a0a0a] border border-white/15 p-3.5 rounded-2xl backdrop-blur-md shadow-lg">
+                <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shadow-inner shrink-0">
                   {f.icon}
                 </div>
-                <span className="text-xs sm:text-sm font-semibold text-gray-300">{f.text}</span>
+                <span className="text-xs font-bold text-gray-300">{f.text}</span>
               </div>
             ))}
           </div>
@@ -165,20 +161,20 @@ export default function LoginPage() {
         {/* Right: Glass Login Card */}
         <div className="w-full lg:w-5/12 max-w-md relative z-10">
           {/* Card glow */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 via-transparent to-indigo-600/20 rounded-3xl blur-2xl transform rotate-3 scale-105 -z-10 pointer-events-none" />
+          <div className="absolute inset-0 bg-white/5 rounded-3xl blur-2xl transform rotate-3 scale-105 -z-10 pointer-events-none" />
 
-          <div className="bg-[#0F172A]/60 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 sm:p-8 lg:p-12 shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden relative">
+          <div className="bg-[#0a0a0a] backdrop-blur-2xl border border-white/15 rounded-3xl p-6 sm:p-8 lg:p-10 shadow-2xl overflow-hidden relative">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-white font-['Syne'] tracking-tight">Welcome back</h2>
-              <p className="text-gray-400 text-sm font-medium mt-2">Sign in with your email and password.</p>
+              <h2 className="text-3xl font-black text-white font-['Syne'] tracking-tight uppercase">Welcome back</h2>
+              <p className="text-gray-400 text-xs font-medium mt-2">Sign in with your email and password.</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Email */}
               <div>
-                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2 ml-1">Email Address</label>
-                <div className={`relative flex rounded-2xl overflow-hidden border bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors ${
-                  fieldErrors.email ? 'border-red-500/60' : 'border-[#1E293B]'
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
+                <div className={`relative flex rounded-2xl overflow-hidden border bg-white/5 backdrop-blur-sm focus-within:border-white focus-within:ring-2 focus-within:ring-white/20 transition-all ${
+                  fieldErrors.email ? 'border-red-500/60' : 'border-white/15'
                 }`}>
                   <input
                     type="email"
@@ -186,7 +182,7 @@ export default function LoginPage() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={e => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: '' })) }}
-                    className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium"
+                    className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-bold"
                     required
                   />
                 </div>
@@ -201,13 +197,13 @@ export default function LoginPage() {
               {/* Password */}
               <div>
                 <div className="flex items-center justify-between mb-2 ml-1">
-                  <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">Password</label>
-                  <Link to="/auth/forgot-password" className="text-[11px] text-blue-400 font-bold hover:text-blue-300 transition-colors">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Password</label>
+                  <Link to="/auth/forgot-password" className="text-[11px] text-gray-400 font-bold hover:text-white transition-colors">
                     Forgot password?
                   </Link>
                 </div>
-                <div className={`relative flex rounded-2xl overflow-hidden border bg-[#030712]/80 backdrop-blur-sm focus-within:border-blue-500/50 transition-colors ${
-                  fieldErrors.password ? 'border-red-500/60' : 'border-[#1E293B]'
+                <div className={`relative flex rounded-2xl overflow-hidden border bg-white/5 backdrop-blur-sm focus-within:border-white focus-within:ring-2 focus-within:ring-white/20 transition-all ${
+                  fieldErrors.password ? 'border-red-500/60' : 'border-white/15'
                 }`}>
                   <input
                     type={showPw ? 'text' : 'password'}
@@ -215,13 +211,13 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     value={password}
                     onChange={e => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: '' })) }}
-                    className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-medium"
+                    className="flex-1 px-5 py-4 text-sm focus:outline-none bg-transparent text-white placeholder-gray-600 font-bold"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPw(!showPw)}
-                    className="px-4 text-gray-500 hover:text-gray-300 transition-colors bg-transparent focus:outline-none"
+                    className="px-4 text-gray-500 hover:text-gray-300 transition-colors bg-transparent focus:outline-none cursor-pointer"
                   >
                     {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -238,10 +234,10 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 mt-2 bg-[#2563EB] text-white font-bold rounded-2xl hover:bg-blue-500 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] group"
+                className="w-full py-4 mt-2 bg-white text-black font-extrabold rounded-2xl hover:bg-gray-200 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_4px_25px_rgba(255,255,255,0.25)] group cursor-pointer"
               >
                 {loading
-                  ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ? <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                   : <>
                       <span>Sign In</span>
                       <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -251,24 +247,24 @@ export default function LoginPage() {
 
               {/* Divider */}
               <div className="flex items-center gap-3 py-1">
-                <div className="flex-1 h-px bg-[#1E293B]" />
+                <div className="flex-1 h-px bg-white/10" />
                 <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
                   <ShieldCheck size={12} /> Secure Login
                 </span>
-                <div className="flex-1 h-px bg-[#1E293B]" />
+                <div className="flex-1 h-px bg-white/10" />
               </div>
 
               {/* Footer links */}
               <div className="text-center space-y-2 pt-1">
                 <p className="text-xs text-gray-500 font-medium">
                   New here?{' '}
-                  <Link to="/auth/register" className="text-gray-300 font-bold hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5 ml-1">
+                  <Link to="/auth/register" className="text-white font-bold hover:underline transition-colors ml-1">
                     Create account
                   </Link>
                 </p>
                 <p className="text-xs text-gray-500 font-medium">
                   Are you a trainer?{' '}
-                  <Link to="/auth/trainer-login" className="text-blue-400 font-bold hover:text-blue-300 transition-colors ml-1">
+                  <Link to="/auth/trainer-login" className="text-gray-300 font-bold hover:text-white transition-colors ml-1 underline">
                     Coach Login
                   </Link>
                 </p>

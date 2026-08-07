@@ -428,7 +428,7 @@ export default function LandingPage() {
                     <div 
                       key={`${t._id}-${i}`} 
                       className="flex flex-col items-center justify-center text-center w-[280px] md:w-[400px] shrink-0 cursor-pointer group"
-                      onClick={() => navigate(`/trainers/${t._id}`)}
+                      onClick={() => navigate('/trainers')}
                     >
                       {/* Star Rating */}
                       <div className="text-white text-xs tracking-[0.3em] mb-6 opacity-80">

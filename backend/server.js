@@ -343,7 +343,7 @@ io.on('connection', (socket) => {
 
 // 7. Pazhaya app.listen-nu pakaram puthiya server.listen kodukkunnu
 initializeRAG() // Ithu Server on aavumbol thanne text vayichu memory-il save aakkum
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT && process.env.PORT !== '5000' ? process.env.PORT : 5001
 server.listen(PORT, () => {
   console.log(`Server & Socket running on port ${PORT} 🔥`)
 })

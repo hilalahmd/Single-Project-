@@ -21,26 +21,29 @@ export default function FreeDietPlanPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#000000] text-white font-['Inter'] relative flex flex-col">
+      <div className="min-h-screen bg-black text-white font-['Inter'] selection:bg-white selection:text-black relative flex flex-col justify-center items-center overflow-hidden">
+        {/* Soft White Ambient Lighting */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-white/5 blur-[150px] pointer-events-none rounded-full" />
+
         <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12">
-          <div className="w-full max-w-md bg-[#0f1117] border border-[rgba(255,255,255,0.08)] p-8 rounded-[20px] shadow-2xl relative overflow-hidden text-center space-y-6">
-            <div className="w-16 h-16 rounded-full bg-[#ff6b1a]/10 border border-[#ff6b1a]/20 flex items-center justify-center mx-auto mb-2 animate-pulse">
-              <Leaf size={28} className="text-[#ff6b1a]" />
+          <div className="w-full max-w-md bg-[#0a0a0a] border border-white/15 p-8 rounded-3xl shadow-2xl relative overflow-hidden text-center space-y-6 backdrop-blur-2xl">
+            <div className="w-16 h-16 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-2 shadow-lg">
+              <Leaf size={28} className="text-white" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-white font-['Syne'] tracking-tight">Unlock AI Diet Generator</h2>
-              <p className="text-gray-400 mt-2 font-medium">To generate a custom diet preview plan matching your body metrics, please sign in or create a free account.</p>
+              <h2 className="text-2xl font-black text-white font-['Syne'] uppercase tracking-tight">Unlock AI Diet Generator</h2>
+              <p className="text-gray-400 mt-2 text-sm font-medium leading-relaxed">To generate a custom diet preview plan matching your body metrics, please sign in or create a free account.</p>
             </div>
             <div className="space-y-3 pt-2">
               <button
                 onClick={() => navigate('/auth/login', { state: { from: location } })}
-                className="w-full py-4 bg-[#ff6b1a] hover:bg-[#EA580C] text-white font-bold rounded-2xl shadow-[0_0_15px_rgba(255,107,26,0.3)] transition-all uppercase tracking-wide text-xs cursor-pointer"
+                className="w-full py-4 bg-white hover:bg-gray-200 text-black font-extrabold rounded-2xl shadow-[0_4px_25px_rgba(255,255,255,0.25)] transition-all uppercase tracking-wider text-xs cursor-pointer"
               >
                 Log In
               </button>
               <button
                 onClick={() => navigate('/auth/register')}
-                className="w-full py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl border border-white/10 transition-all uppercase tracking-wide text-xs cursor-pointer"
+                className="w-full py-4 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl border border-white/15 transition-all uppercase tracking-wider text-xs cursor-pointer"
               >
                 Register
               </button>
@@ -133,10 +136,10 @@ export default function FreeDietPlanPage() {
               <button
                 key={g}
                 onClick={() => setFormData({ ...formData, gender: g })}
-                className={`py-4 rounded-xl font-bold border-2 transition-all duration-300 ${
+                className={`py-4 rounded-2xl font-extrabold border transition-all duration-300 cursor-pointer ${
                   formData.gender === g
-                    ? 'border-[#ff6b1a] bg-[#ff6b1a]/10 text-white shadow-[0_0_20px_rgba(255,107,26,0.2)]'
-                    : 'border-[rgba(255,255,255,0.1)] text-gray-400 hover:border-white/20 hover:bg-white/5'
+                    ? 'border-white bg-white/15 text-white shadow-[0_4px_20px_rgba(255,255,255,0.2)]'
+                    : 'border-white/10 text-gray-400 hover:border-white/30 hover:bg-white/5'
                 }`}
               >
                 {g}
@@ -147,70 +150,70 @@ export default function FreeDietPlanPage() {
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Age <span className="text-gray-600 normal-case">(yrs)</span></label>
+            <label className="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Age <span className="text-gray-500 normal-case">(yrs)</span></label>
             <input
               type="number"
               placeholder="e.g. 25"
               value={formData.age}
               onChange={e => setFormData({ ...formData, age: e.target.value })}
-              className="w-full bg-[#1a1d27] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-4 text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-[#ff6b1a] focus:ring-1 focus:ring-[#ff6b1a] transition-all"
+              className="w-full bg-white/5 border border-white/15 rounded-2xl px-4 py-4 text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-white focus:ring-2 focus:ring-white/20 transition-all text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Height <span className="text-gray-600 normal-case">(cm)</span></label>
+            <label className="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Height <span className="text-gray-500 normal-case">(cm)</span></label>
             <input
               type="number"
               placeholder="e.g. 175"
               value={formData.height}
               onChange={e => setFormData({ ...formData, height: e.target.value })}
-              className="w-full bg-[#1a1d27] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-4 text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-[#ff6b1a] focus:ring-1 focus:ring-[#ff6b1a] transition-all"
+              className="w-full bg-white/5 border border-white/15 rounded-2xl px-4 py-4 text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-white focus:ring-2 focus:ring-white/20 transition-all text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Weight <span className="text-gray-600 normal-case">(kg)</span></label>
+            <label className="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Weight <span className="text-gray-500 normal-case">(kg)</span></label>
             <input
               type="number"
               placeholder="e.g. 70"
               value={formData.weight}
               onChange={e => setFormData({ ...formData, weight: e.target.value })}
-              className="w-full bg-[#1a1d27] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-4 text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-[#ff6b1a] focus:ring-1 focus:ring-[#ff6b1a] transition-all"
+              className="w-full bg-white/5 border border-white/15 rounded-2xl px-4 py-4 text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-white focus:ring-2 focus:ring-white/20 transition-all text-sm"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Country</label>
+          <label className="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Country</label>
           <select
             value={formData.country}
             onChange={e => setFormData({ ...formData, country: e.target.value })}
-            className="w-full bg-[#1a1d27] border border-[rgba(255,255,255,0.08)] rounded-xl px-4 py-4 text-white font-bold focus:outline-none focus:border-[#ff6b1a] focus:ring-1 focus:ring-[#ff6b1a] transition-all appearance-none"
+            className="w-full bg-[#111111] border border-white/15 rounded-2xl px-4 py-4 text-white font-bold focus:outline-none focus:border-white focus:ring-2 focus:ring-white/20 transition-all appearance-none text-sm"
           >
-            <option value="" className="bg-[#1a1d27]">Select your country</option>
+            <option value="" className="bg-[#111111]">Select your country</option>
             {COUNTRIES.map(c => (
-              <option key={c} value={c} className="bg-[#1a1d27]">{c}</option>
+              <option key={c} value={c} className="bg-[#111111]">{c}</option>
             ))}
           </select>
           <p className="text-xs text-gray-500 mt-2">We tailor your meal plan to foods available in your region.</p>
         </div>
 
-        <div className="border border-[rgba(255,255,255,0.08)] rounded-xl overflow-hidden">
+        <div className="border border-white/15 rounded-2xl overflow-hidden">
           <button
             type="button"
             onClick={() => setShowMeasurements(!showMeasurements)}
-            className="w-full flex items-center justify-between px-5 py-4 bg-[#1a1d27] hover:bg-[#1f232f] transition-colors"
+            className="w-full flex items-center justify-between px-5 py-4 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
           >
-            <span className="text-sm font-bold text-white">
+            <span className="text-xs font-bold text-white uppercase tracking-wider">
               Add measurements for more accuracy <span className="text-gray-500 font-normal normal-case">(optional)</span>
             </span>
             <ChevronRight
               size={18}
-              className={`text-[#ff6b1a] transition-transform duration-300 ${showMeasurements ? 'rotate-90' : ''}`}
+              className={`text-white transition-transform duration-300 ${showMeasurements ? 'rotate-90' : ''}`}
             />
           </button>
 
           {showMeasurements && (
-            <div className="p-5 bg-[#14161f] space-y-4 animate-fade-in">
-              <p className="text-xs text-gray-500 leading-relaxed">
+            <div className="p-5 bg-[#0a0a0a] space-y-4 border-t border-white/10">
+              <p className="text-xs text-gray-400 leading-relaxed">
                 These help us estimate your body fat % accurately using the Navy method. All optional — skip if you don't have a measuring tape handy.
               </p>
               <div className="grid grid-cols-2 gap-4">
@@ -224,7 +227,7 @@ export default function FreeDietPlanPage() {
                   { key: 'thigh', label: 'Thigh (cm)' },
                 ].map(m => (
                   <div key={m.key}>
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">{m.label}</label>
+                    <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">{m.label}</label>
                     <input
                       type="number"
                       placeholder="cm"
@@ -233,7 +236,7 @@ export default function FreeDietPlanPage() {
                         ...formData,
                         measurements: { ...formData.measurements, [m.key]: e.target.value }
                       })}
-                      className="w-full bg-[#1a1d27] border border-[rgba(255,255,255,0.08)] rounded-lg px-3 py-2.5 text-sm text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-[#ff6b1a] focus:ring-1 focus:ring-[#ff6b1a] transition-all"
+                      className="w-full bg-white/5 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white font-bold placeholder:text-gray-600 focus:outline-none focus:border-white transition-all"
                     />
                   </div>
                 ))}
@@ -245,9 +248,9 @@ export default function FreeDietPlanPage() {
         <button
           onClick={nextStep}
           disabled={!formData.gender || !formData.age || !formData.height || !formData.weight || !formData.country}
-          className="w-full mt-8 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white py-5 rounded-full font-[800] uppercase tracking-widest hover:shadow-[0_0_20px_rgba(255,107,26,0.4)] transition-all duration-300 disabled:opacity-50 flex justify-center items-center gap-2"
+          className="w-full mt-8 bg-white hover:bg-gray-200 text-black py-5 rounded-2xl font-extrabold uppercase tracking-widest shadow-[0_4px_25px_rgba(255,255,255,0.25)] transition-all duration-300 disabled:opacity-40 disabled:shadow-none flex justify-center items-center gap-2 text-xs cursor-pointer"
         >
-          Continue <ChevronRight size={20} />
+          Continue <ChevronRight size={18} />
         </button>
       </div>
     </div>
@@ -256,8 +259,8 @@ export default function FreeDietPlanPage() {
   const renderStep2 = () => (
     <div className="animate-fade-in-up">
       <div className="mb-8 text-center">
-        <h2 className="text-3xl font-black text-white font-['Syne'] tracking-tight mb-2">What is your goal?</h2>
-        <p className="text-gray-400 font-medium">This determines your caloric deficit or surplus.</p>
+        <h2 className="text-3xl font-black text-white font-['Syne'] tracking-tight mb-2 uppercase">What is your goal?</h2>
+        <p className="text-gray-400 font-medium text-sm">This determines your caloric deficit or surplus.</p>
       </div>
 
       <div className="space-y-4">
@@ -269,32 +272,32 @@ export default function FreeDietPlanPage() {
           <button
             key={goal.id}
             onClick={() => setFormData({ ...formData, goal: goal.id })}
-            className={`w-full p-5 rounded-xl border-2 flex items-center gap-5 transition-all duration-300 text-left ${
+            className={`w-full p-5 rounded-2xl border flex items-center gap-5 transition-all duration-300 text-left cursor-pointer ${
               formData.goal === goal.id
-                ? 'border-[#ff6b1a] bg-[#ff6b1a]/10 shadow-[0_0_20px_rgba(255,107,26,0.2)]'
-                : 'border-[rgba(255,255,255,0.08)] bg-[#1a1d27]/50 hover:border-white/20 hover:bg-white/5'
+                ? 'border-white bg-white/15 shadow-[0_4px_20px_rgba(255,255,255,0.2)] text-white'
+                : 'border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10 text-gray-400'
             }`}
           >
-            <div className={`p-3 rounded-lg ${formData.goal === goal.id ? 'bg-[#ff6b1a] text-white' : 'bg-white/5 text-gray-400'}`}>
+            <div className={`p-3 rounded-xl ${formData.goal === goal.id ? 'bg-white text-black' : 'bg-white/10 text-white'}`}>
               <goal.icon size={24} />
             </div>
             <div>
-              <div className="font-bold text-white text-lg">{goal.title}</div>
-              <div className="text-sm font-medium text-gray-400 mt-1">{goal.desc}</div>
+              <div className="font-extrabold text-white text-base">{goal.title}</div>
+              <div className="text-xs font-medium text-gray-400 mt-0.5">{goal.desc}</div>
             </div>
           </button>
         ))}
 
         <div className="flex gap-4 mt-8">
-          <button onClick={prevStep} className="px-6 py-5 rounded-full border border-white/20 text-white font-bold hover:bg-white/5 transition-colors">
+          <button onClick={prevStep} className="px-6 py-5 rounded-2xl border border-white/20 text-white font-bold hover:bg-white/10 transition-colors text-xs uppercase tracking-wider cursor-pointer">
             Back
           </button>
           <button
             onClick={nextStep}
             disabled={!formData.goal}
-            className="flex-1 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white py-5 rounded-full font-[800] uppercase tracking-widest hover:shadow-[0_0_20px_rgba(255,107,26,0.4)] transition-all duration-300 disabled:opacity-50 flex justify-center items-center gap-2"
+            className="flex-1 bg-white hover:bg-gray-200 text-black py-5 rounded-2xl font-extrabold uppercase tracking-widest shadow-[0_4px_25px_rgba(255,255,255,0.25)] transition-all duration-300 disabled:opacity-40 disabled:shadow-none flex justify-center items-center gap-2 text-xs cursor-pointer"
           >
-            Continue <ChevronRight size={20} />
+            Continue <ChevronRight size={18} />
           </button>
         </div>
       </div>
@@ -304,8 +307,8 @@ export default function FreeDietPlanPage() {
   const renderStep3 = () => (
     <div className="animate-fade-in-up">
       <div className="mb-8 text-center">
-        <h2 className="text-3xl font-black text-white font-['Syne'] tracking-tight mb-2">Dietary Preference</h2>
-        <p className="text-gray-400 font-medium">We'll tailor your meal plan to what you eat.</p>
+        <h2 className="text-3xl font-black text-white font-['Syne'] tracking-tight mb-2 uppercase">Dietary Preference</h2>
+        <p className="text-gray-400 font-medium text-sm">We'll tailor your meal plan to what you eat.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -318,16 +321,16 @@ export default function FreeDietPlanPage() {
           <button
             key={diet.id}
             onClick={() => setFormData({ ...formData, dietPref: diet.id })}
-            className={`p-6 rounded-xl border-2 flex flex-col items-center text-center gap-4 transition-all duration-300 ${
+            className={`p-6 rounded-2xl border flex flex-col items-center text-center gap-4 transition-all duration-300 cursor-pointer ${
               formData.dietPref === diet.id
-                ? 'border-[#ff6b1a] bg-[#ff6b1a]/10 shadow-[0_0_20px_rgba(255,107,26,0.2)]'
-                : 'border-[rgba(255,255,255,0.08)] bg-[#1a1d27]/50 hover:border-white/20 hover:bg-white/5'
+                ? 'border-white bg-white/15 shadow-[0_4px_20px_rgba(255,255,255,0.2)] text-white'
+                : 'border-white/10 bg-white/5 hover:border-white/30 hover:bg-white/10 text-gray-400'
             }`}
           >
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${formData.dietPref === diet.id ? 'bg-[#ff6b1a] text-white' : 'bg-white/5 text-gray-400'}`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${formData.dietPref === diet.id ? 'bg-white text-black' : 'bg-white/10 text-white'}`}>
               <diet.icon size={20} />
             </div>
-            <div className="font-bold text-white">{diet.title}</div>
+            <div className="font-extrabold text-white text-sm">{diet.title}</div>
           </button>
         ))}
       </div>
@@ -335,13 +338,13 @@ export default function FreeDietPlanPage() {
       {error && <p className="text-red-400 text-sm text-center mt-4">{error}</p>}
 
       <div className="flex gap-4 mt-8">
-        <button onClick={prevStep} className="px-6 py-5 rounded-full border border-white/20 text-white font-bold hover:bg-white/5 transition-colors">
+        <button onClick={prevStep} className="px-6 py-5 rounded-2xl border border-white/20 text-white font-bold hover:bg-white/10 transition-colors text-xs uppercase tracking-wider cursor-pointer">
           Back
         </button>
         <button
           onClick={handleGenerate}
           disabled={!formData.dietPref}
-          className="flex-1 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] text-white py-5 rounded-full font-[800] uppercase tracking-widest hover:shadow-[0_0_20px_rgba(255,107,26,0.4)] transition-all duration-300 disabled:opacity-50 disabled:shadow-none flex justify-center items-center gap-2"
+          className="flex-1 bg-white hover:bg-gray-200 text-black py-5 rounded-2xl font-extrabold uppercase tracking-widest shadow-[0_4px_25px_rgba(255,255,255,0.25)] transition-all duration-300 disabled:opacity-40 disabled:shadow-none flex justify-center items-center gap-2 text-xs cursor-pointer"
         >
           Generate Plan ✨
         </button>
@@ -352,15 +355,15 @@ export default function FreeDietPlanPage() {
   const renderStep4 = () => (
     <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
       <div className="relative mb-8">
-        <div className="w-24 h-24 rounded-full border-4 border-[#ff6b1a]/20 border-t-[#ff6b1a] animate-spin"></div>
+        <div className="w-24 h-24 rounded-full border-4 border-white/20 border-t-white animate-spin"></div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <Activity className="text-[#ff6b1a] animate-pulse" size={32} />
+          <Activity className="text-white animate-pulse" size={32} />
         </div>
       </div>
-      <h2 className="text-2xl font-bold text-white font-['Syne'] tracking-wide mb-3 animate-pulse">
+      <h2 className="text-2xl font-black text-white font-['Syne'] tracking-wide mb-3 animate-pulse uppercase">
         FitForge AI is analyzing...
       </h2>
-      <p className="text-gray-400 font-medium text-center max-w-sm">
+      <p className="text-gray-400 font-medium text-center max-w-sm text-sm">
         Calculating your macros and generating a personalized {formData.dietPref} meal plan for {formData.goal.replace('-', ' ')}...
       </p>
     </div>
@@ -408,65 +411,64 @@ export default function FreeDietPlanPage() {
         `}</style>
         
         {/* Background glow specific to step 5 */}
-        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-[#ff6b1a]/5 blur-[120px] rounded-full pointer-events-none hidden lg:block animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-green-500/5 blur-[120px] rounded-full pointer-events-none hidden lg:block animate-pulse"></div>
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-white/5 blur-[140px] rounded-full pointer-events-none hidden lg:block"></div>
 
         <div id="printable-diet-plan" className="grid lg:grid-cols-[1.2fr_1fr] gap-8 lg:gap-12 w-full max-w-6xl mx-auto">
           {/* Left Column */}
           <div className="space-y-6 lg:space-y-8">
             <div className="text-center lg:text-left mb-8 lg:mb-12 anim-scale-in">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-500 rounded-full flex items-center justify-center mx-auto lg:mx-0 mb-4 border border-green-200 dark:border-green-500/50 shadow-[0_0_30px_rgba(34,197,94,0.1)] dark:shadow-[0_0_30px_rgba(34,197,94,0.3)] no-print">
+              <div className="w-16 h-16 bg-white/10 text-white rounded-full flex items-center justify-center mx-auto lg:mx-0 mb-4 border border-white/20 shadow-xl no-print">
                 <CheckCircle2 size={32} />
               </div>
-              <h2 className="text-3xl lg:text-5xl font-black text-gray-900 dark:text-white font-['Syne'] tracking-tight mb-2 print-text-black">Your Sample Plan is Ready</h2>
-              <p className="text-[#ff6b1a] font-bold text-sm tracking-widest uppercase">Target: ~{dietPlan.dailyCalorieTarget} kcal / day</p>
+              <h2 className="text-3xl lg:text-5xl font-black text-white font-['Syne'] tracking-tight mb-2 uppercase print-text-black">Your Sample Plan is Ready</h2>
+              <p className="text-gray-300 font-bold text-sm tracking-widest uppercase">Target: ~{dietPlan.dailyCalorieTarget} kcal / day</p>
             </div>
 
             {dietPlan.estimatedBodyFatPercent && (
-              <div className="bg-white dark:bg-[#0f1117] border border-gray-200 dark:border-[rgba(255,255,255,0.08)] rounded-2xl p-6 anim-fade-up delay-100 shadow-lg">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Estimated Body Fat</p>
-                <p className="text-2xl font-black text-gray-900 dark:text-white mb-2 print-text-black">{dietPlan.estimatedBodyFatPercent}%</p>
-                {dietPlan.bodyFatNote && <p className="text-sm text-gray-500 dark:text-gray-400">{dietPlan.bodyFatNote}</p>}
+              <div className="bg-[#0a0a0a] border border-white/15 rounded-2xl p-6 anim-fade-up delay-100 shadow-xl">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Estimated Body Fat</p>
+                <p className="text-2xl font-black text-white mb-2 print-text-black">{dietPlan.estimatedBodyFatPercent}%</p>
+                {dietPlan.bodyFatNote && <p className="text-sm text-gray-400">{dietPlan.bodyFatNote}</p>}
               </div>
             )}
 
             {dietPlan.macros && (
-              <div className="bg-white dark:bg-[#0f1117] border border-gray-200 dark:border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-xl anim-fade-up delay-200">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Daily Macro Targets</p>
+              <div className="bg-[#0a0a0a] border border-white/15 rounded-2xl p-6 shadow-xl anim-fade-up delay-200">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Daily Macro Targets</p>
                 
                 <div className="grid grid-cols-3 gap-4 mb-8">
-                  <div className="relative overflow-hidden bg-orange-50/50 dark:bg-gradient-to-b dark:from-[#ff6b1a]/10 dark:to-transparent border border-orange-200 dark:border-[#ff6b1a]/20 rounded-xl p-4 text-center hover:scale-[1.02] transition-transform">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-[#ff6b1a]" />
-                    <p className="text-[10px] font-bold text-[#ff6b1a] uppercase tracking-wider mb-1">Protein</p>
-                    <p className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white print-text-black">{dietPlan.macros.protein}g</p>
-                    <p className="text-[10px] text-gray-500 font-bold mt-1">{pPct}% of kcal</p>
+                  <div className="relative overflow-hidden bg-white/5 border border-white/15 rounded-2xl p-4 text-center">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-white" />
+                    <p className="text-[10px] font-bold text-white uppercase tracking-wider mb-1">Protein</p>
+                    <p className="text-2xl lg:text-3xl font-black text-white print-text-black">{dietPlan.macros.protein}g</p>
+                    <p className="text-[10px] text-gray-400 font-bold mt-1">{pPct}% of kcal</p>
                   </div>
                   
-                  <div className="relative overflow-hidden bg-green-50/50 dark:bg-gradient-to-b dark:from-green-500/10 dark:to-transparent border border-green-200 dark:border-green-500/20 rounded-xl p-4 text-center hover:scale-[1.02] transition-transform">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-green-500" />
-                    <p className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-1">Carbs</p>
-                    <p className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white print-text-black">{dietPlan.macros.carbs}g</p>
-                    <p className="text-[10px] text-gray-500 font-bold mt-1">{cPct}% of kcal</p>
+                  <div className="relative overflow-hidden bg-white/5 border border-white/15 rounded-2xl p-4 text-center">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gray-400" />
+                    <p className="text-[10px] font-bold text-gray-300 uppercase tracking-wider mb-1">Carbs</p>
+                    <p className="text-2xl lg:text-3xl font-black text-white print-text-black">{dietPlan.macros.carbs}g</p>
+                    <p className="text-[10px] text-gray-400 font-bold mt-1">{cPct}% of kcal</p>
                   </div>
 
-                  <div className="relative overflow-hidden bg-amber-50/50 dark:bg-gradient-to-b dark:from-amber-500/10 dark:to-transparent border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 text-center hover:scale-[1.02] transition-transform">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-amber-500" />
-                    <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">Fat</p>
-                    <p className="text-2xl lg:text-3xl font-black text-gray-900 dark:text-white print-text-black">{dietPlan.macros.fat}g</p>
-                    <p className="text-[10px] text-gray-500 font-bold mt-1">{fPct}% of kcal</p>
+                  <div className="relative overflow-hidden bg-white/5 border border-white/15 rounded-2xl p-4 text-center">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gray-600" />
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Fat</p>
+                    <p className="text-2xl lg:text-3xl font-black text-white print-text-black">{dietPlan.macros.fat}g</p>
+                    <p className="text-[10px] text-gray-400 font-bold mt-1">{fPct}% of kcal</p>
                   </div>
                 </div>
 
                 <div className="space-y-3 no-print">
-                  <div className="h-3 w-full rounded-full bg-gray-100 dark:bg-white/5 overflow-hidden flex shadow-inner">
-                    <div className="h-full bg-[#ff6b1a] transition-all duration-[1500ms] ease-out" style={{ width: animateBars ? `${pPct}%` : '0%' }} />
-                    <div className="h-full bg-green-500 transition-all duration-[1500ms] ease-out delay-[200ms]" style={{ width: animateBars ? `${cPct}%` : '0%' }} />
-                    <div className="h-full bg-amber-500 transition-all duration-[1500ms] ease-out delay-[400ms]" style={{ width: animateBars ? `${fPct}%` : '0%' }} />
+                  <div className="h-3 w-full rounded-full bg-white/5 overflow-hidden flex shadow-inner border border-white/10">
+                    <div className="h-full bg-white transition-all duration-[1500ms] ease-out" style={{ width: animateBars ? `${pPct}%` : '0%' }} />
+                    <div className="h-full bg-gray-400 transition-all duration-[1500ms] ease-out delay-[200ms]" style={{ width: animateBars ? `${cPct}%` : '0%' }} />
+                    <div className="h-full bg-gray-600 transition-all duration-[1500ms] ease-out delay-[400ms]" style={{ width: animateBars ? `${fPct}%` : '0%' }} />
                   </div>
-                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-gray-500 px-1">
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#ff6b1a]" /> P: {pPct}%</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500" /> C: {cPct}%</span>
-                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500" /> F: {fPct}%</span>
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-gray-400 px-1">
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-white" /> P: {pPct}%</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-400" /> C: {cPct}%</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-600" /> F: {fPct}%</span>
                   </div>
                 </div>
               </div>
@@ -476,9 +478,9 @@ export default function FreeDietPlanPage() {
             <div className="no-print pt-2 anim-fade-up delay-300">
               <button 
                 onClick={() => window.print()}
-                className="w-full flex items-center justify-center gap-3 py-4 bg-[#ff6b1a] hover:bg-[#EA580C] text-white font-bold rounded-xl shadow-[0_0_20px_rgba(255,107,26,0.2)] dark:shadow-[0_0_20px_rgba(255,107,26,0.3)] transition-all uppercase tracking-wider text-sm cursor-pointer"
+                className="w-full flex items-center justify-center gap-3 py-4 bg-white hover:bg-gray-200 text-black font-extrabold rounded-2xl shadow-[0_4px_25px_rgba(255,255,255,0.25)] transition-all uppercase tracking-wider text-xs cursor-pointer"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Download Diet Plan (PDF)
               </button>
             </div>
@@ -486,44 +488,44 @@ export default function FreeDietPlanPage() {
 
           {/* Right Column - Tabbed View */}
           <div className="space-y-6 anim-fade-up delay-300">
-            <div className="bg-white dark:bg-[#0f1117] border border-gray-200 dark:border-[rgba(255,255,255,0.08)] rounded-2xl overflow-hidden shadow-lg hover:border-gray-300 dark:hover:border-white/20 transition-colors">
+            <div className="bg-[#0a0a0a] border border-white/15 rounded-3xl overflow-hidden shadow-2xl">
               
               {/* Tabs Row Header */}
-              <div className="bg-gray-50/80 dark:bg-white/5 px-6 py-4 border-b border-gray-200 dark:border-[rgba(255,255,255,0.05)] sticky top-0 z-10 backdrop-blur-md no-print">
+              <div className="bg-white/5 px-6 py-4 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md no-print">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
                     {dietPlan.days?.map((d, idx) => (
                       <button
                         key={idx}
                         onClick={() => { setActiveDayIdx(idx); setExpandedMeal(null); }}
-                        className={`whitespace-nowrap px-4 py-2 rounded-lg font-bold text-sm transition-all cursor-pointer ${activeDayIdx === idx ? 'bg-[#ff6b1a] text-white shadow-md' : 'bg-white dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white border border-gray-200 dark:border-transparent'}`}
+                        className={`whitespace-nowrap px-4 py-2 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer ${activeDayIdx === idx ? 'bg-white text-black shadow-md' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white border border-white/10'}`}
                       >
                         {d.day}
                       </button>
                     ))}
                   </div>
-                  <span className="text-[10px] font-bold bg-[#ff6b1a]/10 dark:bg-[#ff6b1a]/20 text-[#ff6b1a] px-3 py-1.5 rounded-full uppercase tracking-wider border border-[#ff6b1a]/20 shadow-sm whitespace-nowrap self-start sm:self-auto shrink-0">
+                  <span className="text-[10px] font-bold bg-white/10 text-white px-3 py-1.5 rounded-full uppercase tracking-wider border border-white/20 shadow-sm whitespace-nowrap self-start sm:self-auto shrink-0">
                     {formData.dietPref || 'Diet'}
                   </span>
                 </div>
 
                 {/* Next/Prev Navigation */}
                 {totalDays > 1 && (
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-[rgba(255,255,255,0.05)]">
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
                     <button 
                       onClick={() => { setActiveDayIdx(prev => Math.max(prev - 1, 0)); setExpandedMeal(null); }} 
                       disabled={activeDayIdx === 0}
-                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeDayIdx === 0 ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-white bg-white dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-transparent'}`}
+                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeDayIdx === 0 ? 'text-gray-600 cursor-not-allowed' : 'text-white bg-white/5 hover:bg-white/10 border border-white/15'}`}
                     >
                       <ChevronRight size={18} className="rotate-180" />
                     </button>
-                    <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                       Day {activeDayIdx + 1} of {totalDays}
                     </span>
                     <button 
                       onClick={() => { setActiveDayIdx(prev => Math.min(prev + 1, totalDays - 1)); setExpandedMeal(null); }} 
                       disabled={activeDayIdx === totalDays - 1}
-                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeDayIdx === totalDays - 1 ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed' : 'text-gray-700 dark:text-white bg-white dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-transparent'}`}
+                      className={`p-1.5 rounded-lg transition-colors cursor-pointer ${activeDayIdx === totalDays - 1 ? 'text-gray-600 cursor-not-allowed' : 'text-white bg-white/5 hover:bg-white/10 border border-white/15'}`}
                     >
                       <ChevronRight size={18} />
                     </button>
@@ -533,21 +535,21 @@ export default function FreeDietPlanPage() {
 
               {/* Single Selected Day Content */}
               {currentDay && (
-                <div className="divide-y divide-gray-100 dark:divide-[rgba(255,255,255,0.05)] bg-white dark:bg-[#0a0c10] min-h-[300px]">
+                <div className="divide-y divide-white/10 bg-[#0a0a0a] min-h-[300px]">
                   {/* For PDF Print Only */}
                   <h3 className="hidden print:block font-bold text-2xl p-6 text-black print-text-black">{currentDay.day} Meals</h3>
                   
                   {currentDay.meals.map((meal, i) => (
-                    <div key={i} className="group hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                    <div key={i} className="group hover:bg-white/[0.03] transition-colors">
                       <button 
                         onClick={() => setExpandedMeal(expandedMeal === `${activeDayIdx}-${i}` ? null : `${activeDayIdx}-${i}`)}
                         className="w-full text-left p-6 flex justify-between items-center cursor-pointer focus:outline-none no-print"
                       >
                         <div className="flex flex-col gap-1.5">
                           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{meal.name}</span>
-                          <span className="font-bold text-gray-900 dark:text-white text-lg group-hover:text-[#ff6b1a] transition-colors">{meal.time}</span>
+                          <span className="font-extrabold text-white text-lg group-hover:text-gray-300 transition-colors">{meal.time}</span>
                         </div>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${expandedMeal === `${activeDayIdx}-${i}` ? 'rotate-90 bg-[#ff6b1a]/10 dark:bg-[#ff6b1a]/20 text-[#ff6b1a] border border-[#ff6b1a]/30 shadow-sm' : 'bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400 border border-transparent group-hover:bg-gray-200 dark:group-hover:bg-white/10 group-hover:text-gray-900 dark:group-hover:text-white'}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${expandedMeal === `${activeDayIdx}-${i}` ? 'rotate-90 bg-white/20 text-white border border-white/30 shadow-sm' : 'bg-white/5 text-gray-400 border border-white/10 group-hover:bg-white/10 group-hover:text-white'}`}>
                           <ChevronRight size={16} strokeWidth={3} />
                         </div>
                       </button>
@@ -560,14 +562,14 @@ export default function FreeDietPlanPage() {
                              <span className="font-bold text-gray-600 uppercase text-xs">{meal.name} - {meal.time}</span>
                           </div>
 
-                          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#ff6b1a] to-transparent opacity-50 hidden sm:block no-print"></div>
+                          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-white to-transparent opacity-50 hidden sm:block no-print"></div>
                           <div className="sm:pl-5 print:pl-0">
-                            <p className="font-bold text-gray-800 dark:text-white text-[15px] mb-4 leading-relaxed print-text-black">{meal.items}</p>
+                            <p className="font-bold text-white text-[15px] mb-4 leading-relaxed print-text-black">{meal.items}</p>
                             <div className="flex flex-wrap gap-2 text-[10px] font-bold uppercase tracking-wider no-print">
-                              <span className="bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10">{meal.calories} kcal</span>
-                              <span className="bg-[#ff6b1a]/10 text-[#ff6b1a] px-3 py-1.5 rounded-lg border border-[#ff6b1a]/20">{meal.protein}g P</span>
-                              <span className="bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-500 px-3 py-1.5 rounded-lg border border-green-200 dark:border-green-500/20">{meal.carbs}g C</span>
-                              <span className="bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-500 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-500/20">{meal.fat}g F</span>
+                              <span className="bg-white/5 text-gray-300 px-3 py-1.5 rounded-lg border border-white/10">{meal.calories} kcal</span>
+                              <span className="bg-white/10 text-white px-3 py-1.5 rounded-lg border border-white/20">{meal.protein}g P</span>
+                              <span className="bg-white/5 text-gray-300 px-3 py-1.5 rounded-lg border border-white/10">{meal.carbs}g C</span>
+                              <span className="bg-white/5 text-gray-300 px-3 py-1.5 rounded-lg border border-white/10">{meal.fat}g F</span>
                             </div>
                             {/* PDF only macros text */}
                             <div className="hidden print:flex gap-4 text-xs font-bold text-gray-500 mt-2">
@@ -587,15 +589,15 @@ export default function FreeDietPlanPage() {
 
             {/* Unlock Prompt for Free Users */}
             {(!user || user.subscriptionTier === 'free') && (
-              <div className="bg-orange-50/50 dark:bg-gradient-to-br dark:from-[#ff6b1a]/10 dark:via-[#0f1117] dark:to-transparent border border-[#ff6b1a]/30 p-8 rounded-2xl relative overflow-hidden group hover:border-[#ff6b1a]/50 transition-colors shadow-xl no-print">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff6b1a]/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4 group-hover:bg-[#ff6b1a]/20 group-hover:scale-150 transition-all duration-700" />
-                <h3 className="font-black text-gray-900 dark:text-white text-xl mb-3 relative z-10">This is just a sample.</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 leading-relaxed relative z-10 font-medium">
+              <div className="bg-[#0a0a0a] border border-white/15 p-8 rounded-3xl relative overflow-hidden group hover:border-white/30 transition-colors shadow-2xl no-print">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4 group-hover:scale-150 transition-all duration-700" />
+                <h3 className="font-black text-white text-xl mb-3 relative z-10 uppercase tracking-wide font-['Syne']">This is just a sample.</h3>
+                <p className="text-gray-400 text-sm mb-6 leading-relaxed relative z-10 font-medium">
                   {dietPlan.closingNote}
                 </p>
                 <button
                   onClick={() => navigate('/plans')}
-                  className="w-full relative z-10 bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] hover:from-[#EA580C] hover:to-[#ff6b1a] text-white py-4.5 rounded-xl font-[800] uppercase tracking-widest shadow-[0_4px_20px_rgba(255,107,26,0.3)] hover:shadow-[0_8px_30px_rgba(255,107,26,0.5)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                  className="w-full relative z-10 bg-white hover:bg-gray-200 text-black py-4.5 rounded-2xl font-extrabold uppercase tracking-widest shadow-[0_4px_25px_rgba(255,255,255,0.25)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer text-xs"
                 >
                   Unlock Full 7-Day Plan
                 </button>
@@ -609,32 +611,30 @@ export default function FreeDietPlanPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#000000] text-gray-900 dark:text-white font-['Inter'] selection:bg-[#ff6b1a] selection:text-white relative flex flex-col">
+    <div className="min-h-screen bg-black text-white font-['Inter'] selection:bg-white selection:text-black relative flex flex-col">
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-transparent z-10"></div>
-        <div className="absolute top-[20%] left-[50%] -translate-x-1/2 w-[800px] h-[800px] bg-[#ff6b1a]/5 blur-[120px] rounded-full pointer-events-none z-10"></div>
-        <div className="absolute inset-0 z-[70] mix-blend-overlay opacity-[0.04]" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")" }}></div>
+        <div className="absolute top-[20%] left-[50%] -translate-x-1/2 w-[800px] h-[800px] bg-white/5 blur-[160px] rounded-full pointer-events-none z-10"></div>
       </div>
 
       <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-12">
         <div className={`w-full transition-all duration-700 ease-in-out ${step === 5 ? 'max-w-6xl' : 'max-w-md'}`}>
           {step < 4 && (
             <div className="mb-10">
-              <div className="flex justify-between text-xs font-bold text-gray-500 mb-3 uppercase tracking-widest">
+              <div className="flex justify-between text-xs font-bold text-gray-400 mb-3 uppercase tracking-widest">
                 <span>Step {step} of 3</span>
                 <span>{Math.round((step / 3) * 100)}%</span>
               </div>
-              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#ff6b1a] to-[#ff8c3a] transition-all duration-500 ease-out"
+                  className="h-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)] transition-all duration-500 ease-out"
                   style={{ width: `${(step / 3) * 100}%` }}
                 ></div>
               </div>
             </div>
           )}
 
-          <div className={`bg-[#0f1117] border border-[rgba(255,255,255,0.08)] shadow-2xl relative overflow-hidden transition-all duration-700 ease-in-out ${step === 5 ? 'p-0 bg-transparent border-none shadow-none overflow-visible' : 'p-8 rounded-[20px]'}`}>
-            {step !== 5 && <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>}
+          <div className={`bg-[#0a0a0a] border border-white/15 shadow-2xl relative overflow-hidden transition-all duration-700 ease-in-out backdrop-blur-2xl ${step === 5 ? 'p-0 bg-transparent border-none shadow-none overflow-visible' : 'p-8 rounded-3xl'}`}>
+            {step !== 5 && <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>}
 
             {step === 1 && renderStep1()}
             {step === 2 && renderStep2()}
